@@ -126,19 +126,18 @@
           </div>
         </div>
 
+        <!-- Opção Lembrar de Mim -->
+        <div class="flex items-center justify-between text-xs pt-1">
+          <label class="flex items-center gap-2 text-slate-400 hover:text-slate-200 cursor-pointer select-none">
+            <input id="login-remember" type="checkbox" class="w-4 h-4 rounded bg-slate-950 border-slate-700 text-cyan-500 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-cyan-500" />
+            <span>Lembrar de mim</span>
+          </label>
+        </div>
+
         <button type="submit" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-black py-3.5 rounded-xl uppercase tracking-wider text-sm transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] mt-2">
           Entrar no Sistema
         </button>
-
-        <!-- Botão Acesso Rápido Marrison Carlos -->
-        <button type="button" onclick="quickLoginMarrison()" class="w-full bg-slate-800 hover:bg-slate-700 border border-cyan-500/40 text-cyan-400 font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 mt-2">
-          <i data-lucide="zap" class="w-4 h-4"></i> Entrar com 1 Clique (Marrison Carlos)
-        </button>
       </form>
-
-      <div class="mt-6 pt-4 border-t border-slate-800/80 text-center text-xs text-slate-500">
-        Admin: <strong class="text-cyan-400">Marrison Carlos</strong> / senha: <strong class="text-cyan-400">Mkrlos@123</strong>
-      </div>
     </div>
   </div>
 
@@ -406,7 +405,7 @@
               <i data-lucide="banknote" class="w-6 h-6"></i>
             </div>
             <h4 id="alt-payment-title" class="font-bold text-white text-base">Recebimento em Dinheiro</h4>
-            <p id="alt-payment-desc" class="text-xs text-slate-400">Receba a quantia em espécie com o cliente antes de liberar os carrinhos para a pista.</p>
+            <p id="alt-payment-desc" class="text-xs text-slate-400">Receba a quantia em espécie com o cliente antes de liberar os carrinhos.</p>
           </div>
 
           <div class="mt-5 space-y-2.5">
@@ -639,7 +638,6 @@
       { id: 4, name: "Carrinho 4 (Azul Camuflado)", image: "carrinho (4).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null }
     ];
 
-    // Marrison Carlos assume integralmente a conta de Administrador mestre
     const DEFAULT_USERS = [
       { id: 1, name: "Marrison Carlos", username: "Marrison Carlos", password: "Mkrlos@123", role: "admin" },
       { id: 2, name: "Vendedor Pista", username: "vendedor", password: "123", role: "seller" }
@@ -650,7 +648,6 @@
 
     let users = JSON.parse(localStorage.getItem('dt_users')) || DEFAULT_USERS;
 
-    // Migração: Exclui qualquer 'admin' antigo e garante Marrison Carlos como administrador mestre
     users = users.filter(u => u.username.toLowerCase() !== 'admin');
     const marrisonExists = users.some(u => u.username.toLowerCase() === 'marrison carlos');
     if (!marrisonExists) {
@@ -667,7 +664,6 @@
     let dailyRevenue = parseFloat(localStorage.getItem('dt_revenue')) || 0;
     let dailyRentals = parseInt(localStorage.getItem('dt_rentals')) || 0;
     let dailyByPayment = JSON.parse(localStorage.getItem('dt_by_payment')) || { pix: 0, money: 0, card: 0 };
-    // Rastreamento por usuário: { "Marrison Carlos": { rentals: 5, revenue: 50.0 } }
     let dailyByUser = JSON.parse(localStorage.getItem('dt_by_user')) || {};
     let registerHistory = JSON.parse(localStorage.getItem('dt_reg_history')) || [];
     
@@ -787,11 +783,20 @@
       e.preventDefault();
       const u = document.getElementById('login-user').value.trim();
       const p = document.getElementById('login-pass').value.trim();
+      const remember = document.getElementById('login-remember').checked;
       const errEl = document.getElementById('login-error');
 
       const found = users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
       if (found) {
         currentUser = found;
+        
+        // Gerenciamento do Lembrar de Mim
+        if (remember) {
+          localStorage.setItem('dt_remember_username', found.username);
+        } else {
+          localStorage.removeItem('dt_remember_username');
+        }
+
         saveState();
         initApp();
         showToast(`Bem-vindo, ${found.name}!`, 'success');
@@ -801,21 +806,17 @@
       }
     }
 
-    function quickLoginMarrison() {
-      const marrison = users.find(u => u.username === "Marrison Carlos") || DEFAULT_USERS[0];
-      currentUser = marrison;
-      saveState();
-      initApp();
-      showToast(`Bem-vindo, ${marrison.name}!`, 'success');
-    }
-
     function handleLogout() {
       currentUser = null;
       saveState();
       document.getElementById('app-container').classList.add('hidden');
       document.getElementById('view-login').classList.remove('hidden');
-      document.getElementById('login-user').value = '';
+      
+      // Preserva o login se lembrar de mim estiver ativo
+      const savedUser = localStorage.getItem('dt_remember_username');
+      document.getElementById('login-user').value = savedUser || '';
       document.getElementById('login-pass').value = '';
+      document.getElementById('login-remember').checked = !!savedUser;
       document.getElementById('login-error').classList.add('hidden');
     }
 
@@ -1013,7 +1014,6 @@
       dailyRentals += selectedTrikeIds.length;
       dailyByPayment[currentPaymentMethod] = (dailyByPayment[currentPaymentMethod] || 0) + amount;
       
-      // Atribuição de Caixa e Produtividade ao Operador Atual
       if (!dailyByUser[operatorName]) {
         dailyByUser[operatorName] = { rentals: 0, revenue: 0 };
       }
@@ -1272,7 +1272,7 @@
         trikes.push({
           id: newId,
           name: name,
-          image: tempTrikePhoto || "image_893169.jpg",
+          image: tempTrikePhoto || "carrinho (1).jpg",
           status: 'available',
           endTime: null,
           totalRentals: 0
@@ -1337,7 +1337,7 @@
         <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div class="w-14 h-14 rounded-xl overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-700">
-              <img src="${t.image || 'image_893169.jpg'}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike'"/>
+              <img src="${t.image || 'carrinho (1).jpg'}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike'"/>
             </div>
             <div>
               <h4 class="font-bold text-sm text-white">${t.name}</h4>
@@ -1378,7 +1378,6 @@
       const newId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
       users.push({ id: newId, name, username: user, password: pass, role });
       
-      // Inicializa o caixa deste novo colaborador caso ainda não exista
       if (!dailyByUser[name]) {
         dailyByUser[name] = { rentals: 0, revenue: 0 };
       }
@@ -1507,7 +1506,7 @@
       document.getElementById('report-pay-money').innerText = `R$ ${(dailyByPayment.money || 0).toFixed(2)}`;
       document.getElementById('report-pay-card').innerText = `R$ ${(dailyByPayment.card || 0).toFixed(2)}`;
 
-      // Caixa e Produtividade por Membro da Equipe (Novo ou Já Cadastrado)
+      // Caixa e Produtividade por Membro da Equipe
       const usersBreakdownEl = document.getElementById('report-users-breakdown');
       usersBreakdownEl.innerHTML = users.map(u => {
         const stats = dailyByUser[u.name] || { rentals: 0, revenue: 0 };
@@ -1588,7 +1587,6 @@
       const now = new Date();
       const dateFormatted = `${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
 
-      // Arquiva fechamento com discriminativo individual por colaborador
       registerHistory.push({
         id: Date.now(),
         date: dateFormatted,
@@ -1603,7 +1601,6 @@
 
       showToast(`Caixa fechado! Total: R$ ${dailyRevenue.toFixed(2)} (${dailyRentals} corridas)`, "success");
       
-      // Zera contadores de turno
       dailyRevenue = 0;
       dailyRentals = 0;
       dailyByPayment = { pix: 0, money: 0, card: 0 };
@@ -1617,6 +1614,16 @@
     // --- 14. INICIALIZAÇÃO ---
     window.onload = function() {
       lucide.createIcons();
+
+      // Recupera o usuário salvo caso a opção Lembrar de mim tenha sido marcada
+      const savedUser = localStorage.getItem('dt_remember_username');
+      if (savedUser) {
+        const userInput = document.getElementById('login-user');
+        const rememberCheckbox = document.getElementById('login-remember');
+        if (userInput) userInput.value = savedUser;
+        if (rememberCheckbox) rememberCheckbox.checked = true;
+      }
+
       if (currentUser) {
         initApp();
       }
