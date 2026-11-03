@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Drift Trikes - Controle & Locação</title>
+  
+  <!-- PWA & Mobile Web App Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Drift Trikes" />
+  <meta name="theme-color" content="#020617" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Supabase JS Client (Pronto para sincronização) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- Fonte Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              cyan: '#06b6d4',
+              orange: '#f97316',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Ocultar barra de rolagem mas permitir navegação suave no mobile */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* Feedback visual ao clicar */
+    button:active, .clickable:active {
+      transform: scale(0.97);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans select-none pb-10">
+
+  <!-- ========================================== -->
+  <!-- CAIXA DE MENSAGENS / TOAST PERSONALIZADO   -->
+  <!-- ========================================== -->
+  <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 pointer-events-none transform -translate-y-4">
+    <div id="toast-content" class="bg-slate-900 border border-cyan-500 text-slate-100 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-semibold">
+      <span id="toast-icon"></span>
+      <span id="toast-message">Mensagem</span>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 1. TELA DE LOGIN                           -->
+  <!-- ========================================== -->
+  <div id="view-login" class="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
+    <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-cyan-500/20 rounded-full blur-[128px]"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-orange-500/20 rounded-full blur-[128px]"></div>
+    
+    <div class="bg-slate-900/90 backdrop-blur-xl border border-slate-800 p-8 rounded-3xl w-full max-w-md shadow-2xl z-10">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-slate-800 border-2 border-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.4)] mb-4">
+          <i data-lucide="zap" class="w-10 h-10 text-cyan-400"></i>
+        </div>
+        <h1 class="text-3xl font-black italic uppercase tracking-wider bg-gradient-to-r from-cyan-400 via-blue-400 to-orange-400 bg-clip-text text-transparent">
+          Drift Trikes
+        </h1>
+        <p class="text-slate-400 text-xs mt-1 uppercase font-bold tracking-widest">Painel Operacional & PIX</p>
+      </div>
+
+      <form id="form-login" class="space-y-4" onsubmit="handleLogin(event)">
+        <div id="login-error" class="hidden bg-red-500/10 border border-red-500/50 text-red-400 p-3 rounded-xl text-xs font-semibold text-center"></div>
+        
+        <div>
+          <label class="block text-slate-400 text-xs font-bold mb-1.5 uppercase">Usuário</label>
+          <div class="relative">
+            <i data-lucide="user" class="w-5 h-5 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <input id="login-user" type="text" required placeholder="Digite o usuário" class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-500 text-slate-100 pl-11 pr-4 py-3 rounded-xl text-sm focus:outline-none transition-colors" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-400 text-xs font-bold mb-1.5 uppercase">Senha</label>
+          <div class="relative">
+            <i data-lucide="lock" class="w-5 h-5 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <input id="login-pass" type="password" required placeholder="Digite a senha" class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-500 text-slate-100 pl-11 pr-4 py-3 rounded-xl text-sm focus:outline-none transition-colors" />
+          </div>
+        </div>
+
+        <button type="submit" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-black py-3.5 rounded-xl uppercase tracking-wider text-sm transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] mt-2">
+          Entrar no Sistema
+        </button>
+
+        <!-- Botão de Acesso Rápido para Facilitar Testes -->
+        <button type="button" onclick="quickLoginAdmin()" class="w-full bg-slate-800 hover:bg-slate-700 border border-cyan-500/40 text-cyan-400 font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 mt-2">
+          <i data-lucide="zap" class="w-4 h-4"></i> Entrar com 1 Clique (Admin Marrison)
+        </button>
+      </form>
+
+      <div class="mt-6 pt-4 border-t border-slate-800/80 text-center text-xs text-slate-500">
+        Acesso padrão: <strong class="text-cyan-400">admin</strong> / senha: <strong class="text-cyan-400">admin</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 2. CABEÇALHO & MENU SUPERIOR (APROVADO)   -->
+  <!-- ========================================== -->
+  <div id="app-container" class="hidden flex-1 flex flex-col">
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 shadow-xl">
+      <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between border-b border-slate-800/60">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/40 flex items-center justify-center">
+            <i data-lucide="zap" class="w-5 h-5 text-cyan-400"></i>
+          </div>
+          <div>
+            <h1 class="font-black text-lg tracking-wide uppercase italic leading-tight text-white">Drift Trikes</h1>
+            <p id="header-user-tag" class="text-[10px] text-cyan-400 font-semibold uppercase tracking-wider">Operador</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="handleLogout()" class="text-slate-400 hover:text-red-400 bg-slate-800/80 hover:bg-red-950/40 border border-slate-700/60 p-2.5 rounded-xl transition-colors flex items-center gap-1.5" title="Sair">
+            <span class="text-xs font-bold hidden sm:inline">Sair</span>
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Barra de Navegação Horizontal Estilo App Mobile -->
+      <nav class="w-full bg-slate-900 overflow-x-auto no-scrollbar py-2 px-3 border-t border-slate-800/40">
+        <div class="max-w-5xl mx-auto flex items-center justify-start sm:justify-center gap-2 min-w-max">
+          <button onclick="navigate('dashboard')" id="nav-dashboard" class="nav-item flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
+            <i data-lucide="layout-dashboard" class="w-5 h-5 mb-1"></i>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Início</span>
+          </button>
+
+          <button onclick="navigate('rental')" id="nav-rental" class="nav-item flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
+            <i data-lucide="play" class="w-5 h-5 mb-1"></i>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Alugar</span>
+          </button>
+
+          <button onclick="navigate('active')" id="nav-active" class="nav-item flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all relative">
+            <span id="badge-active" class="hidden absolute top-1 right-2 w-2.5 h-2.5 bg-orange-500 rounded-full animate-ping"></span>
+            <i data-lucide="timer" class="w-5 h-5 mb-1"></i>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Na Pista</span>
+          </button>
+
+          <!-- Itens Exclusivos de Administrador -->
+          <button onclick="navigate('fleet')" id="nav-fleet" class="nav-item admin-only flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
+            <i data-lucide="car" class="w-5 h-5 mb-1"></i>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Frota</span>
+          </button>
+
+          <button onclick="navigate('users')" id="nav-users" class="nav-item admin-only flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
+            <i data-lucide="user-plus" class="w-5 h-5 mb-1"></i>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Equipe</span>
+          </button>
+
+          <button onclick="navigate('reports')" id="nav-reports" class="nav-item admin-only flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
+            <i data-lucide="bar-chart-3" class="w-5 h-5 mb-1"></i>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Caixa</span>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <!-- ÁREA PRINCIPAL -->
+    <main class="flex-1 max-w-5xl mx-auto w-full p-4">
+
+      <!-- ========================================== -->
+      <!-- TELA: DASHBOARD                            -->
+      <!-- ========================================== -->
+      <section id="view-dashboard" class="app-view space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Ação Rápida: Alugar -->
+          <div onclick="navigate('rental')" class="bg-gradient-to-br from-cyan-600 to-blue-700 p-6 rounded-3xl cursor-pointer hover:shadow-[0_0_25px_rgba(6,182,212,0.4)] transition-all relative overflow-hidden group">
+            <div class="absolute -right-4 -bottom-4 opacity-20 group-hover:scale-110 transition-transform">
+              <i data-lucide="play" class="w-36 h-36"></i>
+            </div>
+            <span class="bg-cyan-900/60 text-cyan-200 text-xs font-black uppercase px-3 py-1 rounded-full border border-cyan-400/30">Locação Rápida</span>
+            <h2 class="text-3xl font-black italic uppercase text-white mt-3 mb-1">Liberar<br>Carrinhos</h2>
+            <p class="text-cyan-100 font-semibold text-sm">R$ 10,00 • 10 Minutos cada</p>
+          </div>
+
+          <!-- Ação Rápida: Na Pista -->
+          <div onclick="navigate('active')" class="bg-slate-900 border border-slate-800 hover:border-cyan-500/60 p-6 rounded-3xl cursor-pointer transition-all flex flex-col justify-between">
+            <div class="flex items-start justify-between">
+              <div>
+                <span class="bg-orange-500/10 text-orange-400 text-xs font-black uppercase px-3 py-1 rounded-full border border-orange-500/30">Cronômetros</span>
+                <h3 class="text-xl font-bold text-slate-100 mt-2">Monitoramento da Pista</h3>
+              </div>
+              <div class="p-3 bg-slate-800 rounded-2xl text-orange-400">
+                <i data-lucide="timer" class="w-7 h-7"></i>
+              </div>
+            </div>
+            <div class="mt-6 flex items-baseline gap-2">
+              <span id="dash-active-count" class="text-4xl font-black text-cyan-400">0</span>
+              <span class="text-slate-400 text-sm font-semibold">em corrida agora</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resumo da Frota -->
+        <div>
+          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Status dos Drift Trikes</h3>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
+              <div class="p-3 bg-green-500/10 text-green-400 rounded-xl">
+                <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <p id="dash-avail-count" class="text-2xl font-black text-white">4</p>
+                <p class="text-xs text-slate-400 font-medium">Disponíveis</p>
+              </div>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
+              <div class="p-3 bg-orange-500/10 text-orange-400 rounded-xl">
+                <i data-lucide="clock" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <p id="dash-running-count" class="text-2xl font-black text-white">0</p>
+                <p class="text-xs text-slate-400 font-medium">Na Pista</p>
+              </div>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
+              <div class="p-3 bg-cyan-500/10 text-cyan-400 rounded-xl">
+                <i data-lucide="car" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <p id="dash-total-count" class="text-2xl font-black text-white">4</p>
+                <p class="text-xs text-slate-400 font-medium">Total Frota</p>
+              </div>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
+              <div class="p-3 bg-blue-500/10 text-blue-400 rounded-xl">
+                <i data-lucide="bar-chart" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <p id="dash-today-count" class="text-2xl font-black text-white">0</p>
+                <p class="text-xs text-slate-400 font-medium">Corridas Hoje</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Carrossel / Galeria Visual da Frota -->
+        <div onclick="navigate('rental')" class="bg-slate-900/60 border border-slate-800 hover:border-cyan-500/60 p-4 sm:p-6 rounded-3xl cursor-pointer transition-all group">
+          <div class="flex items-center justify-between mb-4">
+            <h4 class="font-bold text-base text-slate-200 uppercase tracking-wider flex items-center gap-2 group-hover:text-cyan-400 transition-colors">
+              <i data-lucide="car" class="w-5 h-5 text-cyan-400"></i> Visão da Garagem
+            </h4>
+          </div>
+          <div id="dash-fleet-preview" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Renderizado dinamicamente com as fotos -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TELA: SELEÇÃO PARA ALUGAR (PASSO 1)        -->
+      <!-- ========================================== -->
+      <section id="view-rental" class="app-view space-y-5 hidden">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-black uppercase italic text-white">Selecione os Carrinhos</h2>
+            <p class="text-xs text-slate-400">Marque 1 ou mais carrinhos para a mesma pessoa/comanda</p>
+          </div>
+          <span class="text-xs font-bold text-orange-400 bg-orange-500/10 border border-orange-500/30 px-3 py-1.5 rounded-full">
+            R$ 10,00 = 10 Min
+          </span>
+        </div>
+
+        <!-- Grade de Carrinhos Disponíveis -->
+        <div id="rental-trikes-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <!-- Renderizado via JS -->
+        </div>
+
+        <!-- Barra Inferior Fixa para Prosseguir ao PIX -->
+        <div id="rental-bottom-bar" class="fixed bottom-3 left-0 w-full px-4 z-40 hidden">
+          <div class="max-w-5xl mx-auto bg-slate-900/95 backdrop-blur-xl border-2 border-cyan-500/80 p-4 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.3)] flex items-center justify-between">
+            <div>
+              <p class="text-xs text-slate-400 font-bold uppercase">Total Selecionado</p>
+              <p class="text-2xl font-black text-white" id="rental-bar-total">R$ 0,00</p>
+              <span class="text-[11px] text-cyan-400 font-semibold" id="rental-bar-count">0 carrinho(s)</span>
+            </div>
+            <button onclick="goToPayment()" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black px-6 py-3.5 rounded-xl uppercase tracking-wider text-sm flex items-center gap-2 shadow-lg">
+              Cobrar PIX <i data-lucide="arrow-right" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TELA: PAGAMENTO PIX (FOTO 2 / CARTAZ)      -->
+      <!-- ========================================== -->
+      <section id="view-payment" class="app-view hidden max-w-lg mx-auto space-y-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 text-center shadow-2xl relative overflow-hidden">
+          <div class="absolute -top-10 -right-10 w-36 h-36 bg-orange-500/20 rounded-full blur-[70px]"></div>
+
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+            <button onclick="navigate('rental')" class="text-xs font-bold text-slate-400 hover:text-white flex items-center gap-1">
+              <i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar
+            </button>
+            <span class="text-xs font-black uppercase text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/30">
+              Aguardando Pagamento
+            </span>
+          </div>
+
+          <h2 class="text-2xl font-black text-white italic uppercase">Cobrança da Locação</h2>
+          <p id="payment-summary-text" class="text-sm text-slate-400 mt-1 mb-3">1 Carrinho • 10 Minutos</p>
+
+          <!-- Seletor de Método de Pagamento -->
+          <div class="mb-4">
+            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Forma de Pagamento</label>
+            <div class="grid grid-cols-3 gap-2 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
+              <button type="button" onclick="selectPaymentMethod('pix')" id="pay-method-pix" class="py-2.5 px-3 rounded-xl font-bold text-xs uppercase flex items-center justify-center gap-1.5 transition-all bg-orange-500 text-white shadow">
+                <i data-lucide="qr-code" class="w-4 h-4"></i> PIX
+              </button>
+              <button type="button" onclick="selectPaymentMethod('money')" id="pay-method-money" class="py-2.5 px-3 rounded-xl font-bold text-xs uppercase flex items-center justify-center gap-1.5 transition-all text-slate-400 hover:text-white">
+                <i data-lucide="banknote" class="w-4 h-4"></i> Dinheiro
+              </button>
+              <button type="button" onclick="selectPaymentMethod('card')" id="pay-method-card" class="py-2.5 px-3 rounded-xl font-bold text-xs uppercase flex items-center justify-center gap-1.5 transition-all text-slate-400 hover:text-white">
+                <i data-lucide="credit-card" class="w-4 h-4"></i> Cartão
+              </button>
+            </div>
+          </div>
+
+          <!-- Valor Destaque -->
+          <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl mb-4 flex items-center justify-between">
+            <span class="text-xs text-slate-400 font-bold uppercase">Valor a Cobrar</span>
+            <span id="payment-total-value" class="text-3xl font-black text-orange-400">R$ 10,00</span>
+          </div>
+
+          <!-- Container do Cartaz PIX (Visível quando método for PIX) -->
+          <div id="payment-pix-container" class="space-y-4">
+            <!-- Cartaz do QR Code Real (Renderizado diretamente / Alta Definição) -->
+            <div class="bg-white p-3 sm:p-4 rounded-3xl shadow-2xl inline-block max-w-[320px] w-full border-4 border-orange-500 text-slate-900 select-none">
+              
+              <!-- Moldura do QR Code Real (Sem distorção de proporção) -->
+              <div class="rounded-2xl bg-white shadow-inner mb-3 overflow-hidden flex flex-col items-center justify-center p-2 border border-slate-200">
+                <img 
+                  id="pix-qr-image"
+                  src="image_8929c9.jpg" 
+                  alt="Cartaz QR Code PIX Jonas André" 
+                  class="w-full h-auto max-h-[380px] object-contain block mx-auto rounded-xl"
+                  onerror="handleQrCodeImageError(this)"
+                />
+              </div>
+
+              <!-- Dados do Beneficiário -->
+              <div class="text-left text-xs space-y-1.5 px-1 font-sans">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-1">
+                  <span class="text-slate-400 font-semibold flex items-center gap-1"><i data-lucide="user" class="w-3.5 h-3.5 text-orange-500"></i> Nome</span>
+                  <strong class="text-slate-800 uppercase font-black tracking-wide">JONAS ANDRÉ</strong>
+                </div>
+                <div class="flex items-center justify-between border-b border-slate-100 pb-1">
+                  <span class="text-slate-400 font-semibold flex items-center gap-1"><i data-lucide="key" class="w-3.5 h-3.5 text-orange-500"></i> Chave Pix</span>
+                  <strong class="text-slate-800 font-black">82999900971</strong>
+                </div>
+                <div class="flex items-center justify-between border-b border-slate-100 pb-1">
+                  <span class="text-slate-400 font-semibold flex items-center gap-1"><i data-lucide="building-2" class="w-3.5 h-3.5 text-orange-500"></i> Instituição</span>
+                  <strong class="text-slate-800 font-black">Mercado Pago</strong>
+                </div>
+              </div>
+
+              <!-- Botão para Carregar Foto da Galeria se Quiser Usar Arquivo Local -->
+              <div class="mt-3 pt-2 border-t border-slate-100 text-center">
+                <label class="cursor-pointer text-[11px] text-orange-600 hover:text-orange-700 font-bold inline-flex items-center gap-1">
+                  <i data-lucide="upload" class="w-3.5 h-3.5"></i> Usar Foto 2 da Minha Galeria
+                  <input type="file" accept="image/*" class="hidden" onchange="uploadCustomPixPoster(event)">
+                </label>
+              </div>
+            </div>
+
+            <!-- Chave Copia e Cola Oficial do Banco Central / Celular -->
+            <div class="mt-4 bg-slate-950/80 border border-slate-800 p-3.5 rounded-2xl text-left text-xs space-y-2.5">
+              <button onclick="copyPixCode()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md">
+                <i data-lucide="copy" class="w-4 h-4"></i>
+                <span>Copiar Pix Copia e Cola (Banco)</span>
+              </button>
+
+              <div class="flex justify-between items-center text-slate-400 pt-1 border-t border-slate-800/80">
+                <span>Chave Celular direta:</span>
+                <button onclick="copyPixKey('82999900971')" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all">
+                  <span>82999900971</span>
+                  <i data-lucide="copy" class="w-3.5 h-3.5 text-orange-400"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mensagem alternativa para Dinheiro ou Cartão -->
+          <div id="payment-alt-container" class="hidden bg-slate-950 border border-slate-800 p-6 rounded-2xl text-center space-y-2">
+            <div id="alt-payment-icon" class="w-12 h-12 rounded-2xl mx-auto flex items-center justify-center bg-cyan-500/10 text-cyan-400">
+              <i data-lucide="banknote" class="w-6 h-6"></i>
+            </div>
+            <h4 id="alt-payment-title" class="font-bold text-white text-base">Recebimento em Dinheiro</h4>
+            <p id="alt-payment-desc" class="text-xs text-slate-400">Receba a quantia em espécie com o cliente antes de liberar os carrinhos para a pista.</p>
+          </div>
+
+          <!-- Botão de Liberação de Alta Prioridade -->
+          <div class="mt-5 space-y-2.5">
+            <button onclick="confirmPaymentAndRelease()" class="w-full bg-gradient-to-r from-green-600 via-emerald-500 to-green-600 hover:from-green-500 hover:to-emerald-400 text-white font-black py-4 rounded-2xl uppercase tracking-wider text-base flex items-center justify-center gap-2.5 shadow-[0_0_25px_rgba(34,197,94,0.4)] transition-all">
+              <i data-lucide="check-circle" class="w-6 h-6"></i>
+              Pagamento Confirmado • Liberar
+            </button>
+            <button onclick="navigate('rental')" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-3 rounded-xl uppercase text-xs tracking-wider transition-colors">
+              Cancelar e Escolher Outros
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TELA: NA PISTA (CRONÔMETRO EM TEMPO REAL)  -->
+      <!-- ========================================== -->
+      <section id="view-active" class="app-view hidden space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-black uppercase italic text-white flex items-center gap-2">
+              <i data-lucide="timer" class="w-6 h-6 text-cyan-400"></i> Monitoramento na Pista
+            </h2>
+            <p class="text-xs text-slate-400">Tempo regressivo de 10 minutos por carrinho</p>
+          </div>
+          <button onclick="navigate('rental')" class="bg-cyan-600/20 border border-cyan-500/40 text-cyan-300 hover:bg-cyan-600/30 font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1">
+            <i data-lucide="plus" class="w-4 h-4"></i> Mais Aluguel
+          </button>
+        </div>
+
+        <div id="active-rentals-list" class="space-y-3">
+          <!-- Renderizado via JS -->
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TELA: GERENCIAR FROTA (CADASTRAR/EDITAR)   -->
+      <!-- ========================================== -->
+      <section id="view-fleet" class="app-view hidden space-y-6">
+        <!-- Formulário Adicionar / Editar -->
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl relative" id="fleet-form-card">
+          <div class="flex items-center justify-between mb-4">
+            <h3 id="fleet-form-title" class="font-bold text-base text-slate-200 flex items-center gap-2">
+              <i data-lucide="plus-circle" class="w-5 h-5 text-cyan-400"></i> Adicionar Novo Carrinho
+            </h3>
+            <button id="fleet-cancel-edit-btn" onclick="cancelTrikeEdit()" class="hidden text-xs text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800 px-3 py-1 rounded-lg">
+              <i data-lucide="x" class="w-3.5 h-3.5"></i> Cancelar
+            </button>
+          </div>
+
+          <form id="form-trike" onsubmit="handleSaveTrike(event)" class="space-y-4">
+            <input type="hidden" id="trike-edit-id" value="" />
+
+            <div class="flex flex-col sm:flex-row items-center gap-4">
+              <!-- Upload / Foto do Carrinho -->
+              <label class="cursor-pointer group flex-shrink-0 flex flex-col items-center">
+                <div class="w-24 h-24 rounded-2xl border-2 border-dashed border-slate-700 group-hover:border-cyan-400 bg-slate-950 flex items-center justify-center overflow-hidden relative shadow-inner">
+                  <img id="trike-preview-img" src="" alt="Foto" class="hidden w-full h-full object-cover" />
+                  <div id="trike-preview-placeholder" class="text-center p-2">
+                    <i data-lucide="camera" class="w-7 h-7 text-slate-500 mx-auto group-hover:text-cyan-400"></i>
+                    <span class="text-[10px] text-slate-500 font-bold block mt-1">FOTO</span>
+                  </div>
+                </div>
+                <input type="file" id="trike-file-input" accept="image/*" class="hidden" onchange="previewTrikePhoto(event)" />
+                <span class="text-[10px] text-cyan-400 mt-1 font-semibold">Tirar ou escolher foto</span>
+              </label>
+
+              <!-- Nome / Identificação -->
+              <div class="flex-1 w-full space-y-3">
+                <div>
+                  <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nome e Cor do Carrinho</label>
+                  <input 
+                    type="text" 
+                    id="trike-name-input" 
+                    required 
+                    placeholder="Ex: Carrinho 5 (Preto Neon)" 
+                    class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-500 text-slate-100 px-4 py-3 rounded-xl text-sm outline-none"
+                  />
+                </div>
+
+                <button type="submit" id="fleet-submit-btn" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded-xl uppercase tracking-wider text-xs shadow-lg transition-all">
+                  Cadastrar Carrinho
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Lista de Carrinhos Cadastrados -->
+        <div>
+          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Carrinhos na Frota (<span id="fleet-total-badge">0</span>)</h3>
+          <div id="fleet-manage-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Renderizado via JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TELA: GERENCIAR EQUIPE (USUÁRIOS & ADM)   -->
+      <!-- ========================================== -->
+      <section id="view-users" class="app-view hidden space-y-6">
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
+          <h3 class="font-bold text-base text-slate-200 mb-4 flex items-center gap-2">
+            <i data-lucide="user-plus" class="w-5 h-5 text-purple-400"></i> Novo Vendedor ou Administrador
+          </h3>
+          <form onsubmit="handleCreateUser(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nome Completo</label>
+              <input id="new-user-name" type="text" required placeholder="Ex: Carlos Silva" class="w-full bg-slate-950 border border-slate-700 px-4 py-2.5 rounded-xl text-sm focus:border-purple-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Login (Usuário)</label>
+              <input id="new-user-username" type="text" required placeholder="carlos" class="w-full bg-slate-950 border border-slate-700 px-4 py-2.5 rounded-xl text-sm focus:border-purple-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Senha de Acesso</label>
+              <input id="new-user-password" type="password" required placeholder="••••••" class="w-full bg-slate-950 border border-slate-700 px-4 py-2.5 rounded-xl text-sm focus:border-purple-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nível de Acesso</label>
+              <select id="new-user-role" class="w-full bg-slate-950 border border-slate-700 px-4 py-2.5 rounded-xl text-sm focus:border-purple-500 outline-none text-slate-200">
+                <option value="seller">Vendedor (Apenas Operar/Alugar)</option>
+                <option value="admin">Administrador (Controle Total)</option>
+              </select>
+            </div>
+            <div class="sm:col-span-2 pt-2">
+              <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl uppercase tracking-wider text-xs shadow-lg transition-all">
+                Cadastrar Colaborador
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div>
+          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Membros da Equipe</h3>
+          <div id="users-manage-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Renderizado via JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- TELA: CAIXA / FECHAMENTO DO DIA            -->
+      <!-- ========================================== -->
+      <section id="view-reports" class="app-view hidden space-y-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl relative overflow-hidden text-center shadow-xl">
+            <div class="absolute -top-6 -right-6 w-28 h-28 bg-green-500/10 rounded-full blur-[40px]"></div>
+            <p class="text-xs font-bold uppercase text-slate-400 tracking-wider mb-1">Faturamento Atual</p>
+            <h2 id="report-revenue" class="text-4xl font-black text-green-400">R$ 0,00</h2>
+            <span class="text-xs text-slate-500 mt-2 block">Total no caixa deste turno</span>
+          </div>
+
+          <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl relative overflow-hidden text-center shadow-xl">
+            <div class="absolute -top-6 -right-6 w-28 h-28 bg-cyan-500/10 rounded-full blur-[40px]"></div>
+            <p class="text-xs font-bold uppercase text-slate-400 tracking-wider mb-1">Total de Locações</p>
+            <h2 id="report-rentals" class="text-4xl font-black text-cyan-400">0</h2>
+            <span class="text-xs text-slate-500 mt-2 block">Ciclos de tempo liberados</span>
+          </div>
+        </div>
+
+        <!-- Discriminação por Forma de Pagamento -->
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
+          <h3 class="font-bold text-base text-slate-200 mb-4 flex items-center gap-2">
+            <i data-lucide="wallet" class="w-5 h-5 text-orange-400"></i> Por Forma de Pagamento
+          </h3>
+          <div class="grid grid-cols-3 gap-3 text-center">
+            <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
+              <span class="text-[10px] font-bold text-slate-400 uppercase">PIX (Jonas)</span>
+              <p id="report-pay-pix" class="text-lg font-black text-orange-400 mt-1">R$ 0,00</p>
+            </div>
+            <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
+              <span class="text-[10px] font-bold text-slate-400 uppercase">Dinheiro</span>
+              <p id="report-pay-money" class="text-lg font-black text-emerald-400 mt-1">R$ 0,00</p>
+            </div>
+            <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
+              <span class="text-[10px] font-bold text-slate-400 uppercase">Cartão</span>
+              <p id="report-pay-card" class="text-lg font-black text-cyan-400 mt-1">R$ 0,00</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estatísticas por Carrinho -->
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
+          <h3 class="font-bold text-base text-slate-200 mb-4 flex items-center gap-2">
+            <i data-lucide="bar-chart-2" class="w-5 h-5 text-cyan-400"></i> Desempenho por Carrinho
+          </h3>
+          <div id="report-trikes-breakdown" class="space-y-2">
+            <!-- Renderizado via JS -->
+          </div>
+        </div>
+
+        <!-- Histórico de Fechamentos Anteriores -->
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
+          <h3 class="font-bold text-base text-slate-200 mb-4 flex items-center gap-2">
+            <i data-lucide="history" class="w-5 h-5 text-purple-400"></i> Histórico de Caixas Fechados
+          </h3>
+          <div id="report-history-list" class="space-y-2.5 max-h-60 overflow-y-auto no-scrollbar">
+            <!-- Renderizado via JS -->
+          </div>
+        </div>
+
+        <!-- Botão Fechar Caixa -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl text-center space-y-3">
+          <div class="w-12 h-12 bg-red-500/10 text-red-400 rounded-2xl flex items-center justify-center mx-auto">
+            <i data-lucide="lock" class="w-6 h-6"></i>
+          </div>
+          <h4 class="font-black uppercase text-base text-white">Fechar Caixa do Expediente</h4>
+          <p class="text-xs text-slate-400 max-w-sm mx-auto">
+            Gera o resumo final do turno, salva no histórico perpétuo e zera os contadores para o próximo expediente.
+          </p>
+          <button onclick="handleCloseRegister()" class="bg-red-500/20 hover:bg-red-500 border border-red-500 text-red-400 hover:text-white font-black px-8 py-3.5 rounded-xl uppercase text-xs tracking-wider transition-all">
+            Zerar e Salvar Fechamento
+          </button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- SCRIPT PRINCIPAL DO SISTEMA                -->
+  <!-- ========================================== -->
+  <script>
+    // --- 1. CONFIGURAÇÃO SUPABASE & REGRAS ---
+    const SUPABASE_URL = "https://licwqwoqlfzfwbvugall.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_uY40Pc9DsLgxfBeIaGhS4g_Je4AfyxJ";
+    
+    // Inicialização do Supabase Client para quando for conectar as tabelas reais
+    let supabaseClient = null;
+    try {
+      if (window.supabase) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+    } catch(err) {
+      console.warn("Supabase local mode fallback:", err);
+    }
+
+    const PRICE_PER_TRIKE = 10.00;
+    const RENTAL_MINUTES = 10;
+    const RENTAL_MS = RENTAL_MINUTES * 60 * 1000;
+
+    // --- 2. DADOS PADRÃO (COM OS CARRINHOS DA FOTO 1) ---
+    const DEFAULT_TRIKES = [
+      { 
+        id: 1, 
+        name: "Carrinho 1 (Vermelho Xtreme)", 
+        image: "image_893169.jpg", // Foto 1 dos carrinhos
+        status: "available", 
+        endTime: null,
+        totalRentals: 0,
+        rentedBy: null
+      },
+      { 
+        id: 2, 
+        name: "Carrinho 2 (Amarelo Graffiti)", 
+        image: "image_893169.jpg", 
+        status: "available", 
+        endTime: null,
+        totalRentals: 0,
+        rentedBy: null 
+      },
+      { 
+        id: 3, 
+        name: "Carrinho 3 (Azul Camuflado)", 
+        image: "image_893169.jpg", 
+        status: "available", 
+        endTime: null,
+        totalRentals: 0,
+        rentedBy: null 
+      },
+      { 
+        id: 4, 
+        name: "Carrinho 4 (Fogo & Gelo)", 
+        image: "image_893169.jpg", 
+        status: "available", 
+        endTime: null,
+        totalRentals: 0,
+        rentedBy: null 
+      }
+    ];
+
+    const DEFAULT_USERS = [
+      { id: 1, name: "Marrison Carlos (Dev/Admin)", username: "admin", password: "admin", role: "admin" },
+      { id: 2, name: "Vendedor Pista", username: "vendedor", password: "123", role: "seller" }
+    ];
+
+    // --- 3. CARREGAMENTO DO LOCALSTORAGE COM PERSISTÊNCIA ---
+    let trikes = JSON.parse(localStorage.getItem('dt_trikes')) || DEFAULT_TRIKES;
+    let users = JSON.parse(localStorage.getItem('dt_users')) || DEFAULT_USERS;
+
+    // Atualiza nome se o usuário admin já estiver salvo em cache anterior
+    users = users.map(u => {
+      if (u.username === 'admin') {
+        return { ...u, name: 'Marrison Carlos (Dev/Admin)' };
+      }
+      return u;
+    });
+
+    let dailyRevenue = parseFloat(localStorage.getItem('dt_revenue')) || 0;
+    let dailyRentals = parseInt(localStorage.getItem('dt_rentals')) || 0;
+    let dailyByPayment = JSON.parse(localStorage.getItem('dt_by_payment')) || { pix: 0, money: 0, card: 0 };
+    let registerHistory = JSON.parse(localStorage.getItem('dt_reg_history')) || [];
+    
+    let currentPaymentMethod = 'pix';
+    let customPixPoster = localStorage.getItem('dt_custom_pix') || null;
+    let currentUser = JSON.parse(localStorage.getItem('dt_current_user')) || null;
+    if (currentUser && currentUser.username === 'admin') {
+      currentUser.name = 'Marrison Carlos (Dev/Admin)';
+      localStorage.setItem('dt_current_user', JSON.stringify(currentUser));
+    }
+    let currentView = 'dashboard';
+    let selectedTrikeIds = [];
+    let tempTrikePhoto = null;
+
+    function saveState() {
+      localStorage.setItem('dt_trikes', JSON.stringify(trikes));
+      localStorage.setItem('dt_users', JSON.stringify(users));
+      localStorage.setItem('dt_revenue', dailyRevenue.toString());
+      localStorage.setItem('dt_rentals', dailyRentals.toString());
+      localStorage.setItem('dt_by_payment', JSON.stringify(dailyByPayment));
+      localStorage.setItem('dt_reg_history', JSON.stringify(registerHistory));
+      if (customPixPoster) {
+        localStorage.setItem('dt_custom_pix', customPixPoster);
+      }
+      if (currentUser) {
+        localStorage.setItem('dt_current_user', JSON.stringify(currentUser));
+      } else {
+        localStorage.removeItem('dt_current_user');
+      }
+    }
+
+    // --- 4. SISTEMA DE TOAST CUSTOMIZADO & ALERTAS ---
+    function showToast(msg, type = 'info') {
+      const toast = document.getElementById('toast');
+      const msgEl = document.getElementById('toast-message');
+      const iconEl = document.getElementById('toast-icon');
+
+      msgEl.innerText = msg;
+      if (type === 'success') {
+        iconEl.innerHTML = '<i data-lucide="check-circle" class="w-5 h-5 text-green-400"></i>';
+      } else if (type === 'error') {
+        iconEl.innerHTML = '<i data-lucide="alert-circle" class="w-5 h-5 text-red-400"></i>';
+      } else {
+        iconEl.innerHTML = '<i data-lucide="info" class="w-5 h-5 text-cyan-400"></i>';
+      }
+      lucide.createIcons();
+
+      toast.classList.remove('opacity-0', '-translate-y-4', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('opacity-0', '-translate-y-4', 'pointer-events-none');
+      }, 3000);
+    }
+
+    // Alerta sonoro nativo sintetizado (Web Audio API) + Vibração no celular
+    function playBeepAlert(isCritical = false) {
+      // Vibração no celular do operador se suportado
+      if (navigator.vibrate) {
+        if (isCritical) {
+          navigator.vibrate([200, 100, 200, 100, 400]);
+        } else {
+          navigator.vibrate(150);
+        }
+      }
+
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = isCritical ? 'sawtooth' : 'triangle';
+        osc.frequency.setValueAtTime(isCritical ? 587 : 440, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(isCritical ? 880 : 660, audioCtx.currentTime + 0.35);
+        gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.35);
+      } catch (e) {
+        console.log('Audio Context muted:', e);
+      }
+    }
+
+    // --- 5. NAVEGAÇÃO ENTRE TELAS ---
+    function navigate(viewName) {
+      currentView = viewName;
+      
+      // Ocultar todas as seções
+      document.querySelectorAll('.app-view').forEach(el => el.classList.add('hidden'));
+
+      // Desativar botões de navegação
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.classList.remove('text-cyan-400', 'bg-slate-800', 'shadow-inner');
+        btn.classList.add('text-slate-400');
+      });
+
+      // Ativar a tela correspondente
+      const targetView = document.getElementById(`view-${viewName}`);
+      if (targetView) targetView.classList.remove('hidden');
+
+      // Destacar o botão do menu
+      const activeNav = document.getElementById(`nav-${viewName}`);
+      if (activeNav) {
+        activeNav.classList.remove('text-slate-400');
+        activeNav.classList.add('text-cyan-400', 'bg-slate-800', 'shadow-inner');
+      }
+
+      // Renderizar conteúdo específico da tela
+      if (viewName === 'dashboard') renderDashboard();
+      if (viewName === 'rental') renderRentalSelection();
+      if (viewName === 'active') renderActiveRentals();
+      if (viewName === 'fleet') renderFleetManagement();
+      if (viewName === 'users') renderUsersManagement();
+      if (viewName === 'reports') renderReports();
+
+      lucide.createIcons();
+    }
+
+    // --- 6. AUTENTICAÇÃO ---
+    function handleLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('login-user').value.trim();
+      const p = document.getElementById('login-pass').value.trim();
+      const errEl = document.getElementById('login-error');
+
+      const found = users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
+      if (found) {
+        currentUser = found;
+        saveState();
+        initApp();
+        showToast(`Bem-vindo, ${found.name}!`, 'success');
+      } else {
+        errEl.innerText = "Usuário ou senha inválidos!";
+        errEl.classList.remove('hidden');
+      }
+    }
+
+    function handleLogout() {
+      currentUser = null;
+      saveState();
+      document.getElementById('app-container').classList.add('hidden');
+      document.getElementById('view-login').classList.remove('hidden');
+      document.getElementById('login-user').value = '';
+      document.getElementById('login-pass').value = '';
+      document.getElementById('login-error').classList.add('hidden');
+    }
+
+    function initApp() {
+      document.getElementById('view-login').classList.add('hidden');
+      document.getElementById('app-container').classList.remove('hidden');
+
+      // Tag do usuário no cabeçalho
+      const userTag = document.getElementById('header-user-tag');
+      userTag.innerText = `${currentUser.name} (${currentUser.role === 'admin' ? 'ADMIN' : 'VENDEDOR'})`;
+
+      // Controle de privilégios: esconder abas restritas se for apenas vendedor
+      const adminElements = document.querySelectorAll('.admin-only');
+      adminElements.forEach(el => {
+        if (currentUser.role === 'admin') {
+          el.classList.remove('hidden');
+        } else {
+          el.classList.add('hidden');
+        }
+      });
+
+      navigate('dashboard');
+    }
+
+    // --- 7. TELA DASHBOARD ---
+    function renderDashboard() {
+      const avail = trikes.filter(t => t.status === 'available').length;
+      const inUse = trikes.filter(t => t.status === 'in-use').length;
+
+      document.getElementById('dash-active-count').innerText = inUse;
+      document.getElementById('dash-avail-count').innerText = avail;
+      document.getElementById('dash-running-count').innerText = inUse;
+      document.getElementById('dash-total-count').innerText = trikes.length;
+      document.getElementById('dash-today-count').innerText = dailyRentals;
+
+      // Galeria visual expandida com fotos maiores e foco centralizado
+      const previewCont = document.getElementById('dash-fleet-preview');
+      previewCont.innerHTML = trikes.map(t => `
+        <div class="bg-slate-950 border-2 ${t.status === 'in-use' ? 'border-orange-500/80 shadow-[0_0_15px_rgba(249,115,22,0.25)]' : 'border-slate-800 hover:border-slate-700'} rounded-2xl p-3 text-center overflow-hidden transition-all flex flex-col justify-between">
+          <div class="h-44 sm:h-48 w-full rounded-xl overflow-hidden bg-slate-900 mb-3 relative group">
+            <img 
+              src="${t.image || 'image_893169.jpg'}" 
+              alt="${t.name}" 
+              class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300" 
+              onerror="this.onerror=null; this.src='https://placehold.co/400x300/020617/06b6d4?text=Trike';"
+            />
+            <span class="absolute top-2 right-2 text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${t.status === 'in-use' ? 'bg-orange-500 text-white' : 'bg-green-500 text-slate-950'}">
+              ${t.status === 'in-use' ? 'NA PISTA' : 'LIVRE'}
+            </span>
+          </div>
+          <p class="font-bold text-sm text-slate-100 truncate">${t.name}</p>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    // --- 8. TELA: SELEÇÃO PARA ALUGUEL ---
+    function renderRentalSelection() {
+      const availableTrikes = trikes.filter(t => t.status === 'available');
+      const listEl = document.getElementById('rental-trikes-list');
+      const bottomBar = document.getElementById('rental-bottom-bar');
+
+      if (availableTrikes.length === 0) {
+        listEl.innerHTML = `
+          <div class="sm:col-span-2 bg-slate-900 border border-slate-800 p-8 rounded-3xl text-center space-y-2">
+            <i data-lucide="alert-triangle" class="w-12 h-12 text-yellow-500 mx-auto"></i>
+            <h4 class="text-base font-bold text-white">Todos os carrinhos estão em uso!</h4>
+            <p class="text-xs text-slate-400">Aguarde o encerramento das corridas ou devolva antecipadamente na aba 'Na Pista'.</p>
+          </div>
+        `;
+        bottomBar.classList.add('hidden');
+        lucide.createIcons();
+        return;
+      }
+
+      listEl.innerHTML = availableTrikes.map(t => {
+        const isSelected = selectedTrikeIds.includes(t.id);
+        return `
+          <div onclick="toggleTrikeSelection(${t.id})" class="p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between ${isSelected ? 'bg-cyan-950/40 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]' : 'bg-slate-900 border-slate-800 hover:border-slate-700'}">
+            <div class="flex items-center gap-3">
+              <div class="w-16 h-16 rounded-xl overflow-hidden bg-slate-950 border border-slate-800 flex-shrink-0">
+                <img src="${t.image || 'image_893169.jpg'}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike';"/>
+              </div>
+              <div>
+                <h4 class="font-bold text-sm text-white">${t.name}</h4>
+                <p class="text-xs text-cyan-400 font-semibold mt-0.5">R$ 10,00 • 10 Min</p>
+              </div>
+            </div>
+            <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-cyan-500 border-cyan-400 text-slate-950' : 'border-slate-600 bg-slate-950'}">
+              ${isSelected ? '<i data-lucide="check" class="w-4 h-4 stroke-[3]"></i>' : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Barra flutuante de total
+      if (selectedTrikeIds.length > 0) {
+        bottomBar.classList.remove('hidden');
+        document.getElementById('rental-bar-total').innerText = `R$ ${(selectedTrikeIds.length * PRICE_PER_TRIKE).toFixed(2)}`;
+        document.getElementById('rental-bar-count').innerText = `${selectedTrikeIds.length} carrinho(s) selecionado(s)`;
+      } else {
+        bottomBar.classList.add('hidden');
+      }
+
+      lucide.createIcons();
+    }
+
+    function toggleTrikeSelection(id) {
+      if (selectedTrikeIds.includes(id)) {
+        selectedTrikeIds = selectedTrikeIds.filter(x => x !== id);
+      } else {
+        selectedTrikeIds.push(id);
+      }
+      renderRentalSelection();
+    }
+
+    function quickLoginAdmin() {
+      const admin = users.find(u => u.username === 'admin') || DEFAULT_USERS[0];
+      currentUser = admin;
+      saveState();
+      initApp();
+      showToast(`Bem-vindo, ${admin.name}!`, 'success');
+    }
+
+    // --- 9. TELA DE PAGAMENTO COM SELETOR DE MÉTODO ---
+    function selectPaymentMethod(method) {
+      currentPaymentMethod = method;
+      const pixBtn = document.getElementById('pay-method-pix');
+      const moneyBtn = document.getElementById('pay-method-money');
+      const cardBtn = document.getElementById('pay-method-card');
+
+      const pixCont = document.getElementById('payment-pix-container');
+      const altCont = document.getElementById('payment-alt-container');
+      const altTitle = document.getElementById('alt-payment-title');
+      const altDesc = document.getElementById('alt-payment-desc');
+      const altIcon = document.getElementById('alt-payment-icon');
+
+      [pixBtn, moneyBtn, cardBtn].forEach(b => {
+        b.className = "py-2.5 px-3 rounded-xl font-bold text-xs uppercase flex items-center justify-center gap-1.5 transition-all text-slate-400 hover:text-white";
+      });
+
+      if (method === 'pix') {
+        pixBtn.className = "py-2.5 px-3 rounded-xl font-bold text-xs uppercase flex items-center justify-center gap-1.5 transition-all bg-orange-500 text-white shadow";
+        pixCont.classList.remove('hidden');
+        altCont.classList.add('hidden');
+      } else if (method === 'money') {
+        moneyBtn.className = "py-2.5 px-3 rounded-xl font-bold text-xs uppercase flex items-center justify-center gap-1.5 transition-all bg-emerald-600 text-white shadow";
+        pixCont.classList.add('hidden');
+        altCont.classList.remove('hidden');
+        altTitle.innerText = "Recebimento em Dinheiro";
+        altDesc.innerText = "Receba a quantia em espécie com o cliente antes de liberar os carrinhos.";
+        altIcon.innerHTML = '<i data-lucide="banknote" class="w-6 h-6 text-emerald-400"></i>';
+      } else if (method === 'card') {
+        cardBtn.className = "py-2.5 px-3 rounded-xl font-bold text-xs uppercase flex items-center justify-center gap-1.5 transition-all bg-cyan-600 text-white shadow";
+        pixCont.classList.add('hidden');
+        altCont.classList.remove('hidden');
+        altTitle.innerText = "Recebimento via Cartão";
+        altDesc.innerText = "Passe o valor na maquininha (Débito ou Crédito) antes de confirmar.";
+        altIcon.innerHTML = '<i data-lucide="credit-card" class="w-6 h-6 text-cyan-400"></i>';
+      }
+      lucide.createIcons();
+    }
+
+    function goToPayment() {
+      if (selectedTrikeIds.length === 0) {
+        showToast("Selecione ao menos 1 carrinho!", "error");
+        return;
+      }
+      const total = selectedTrikeIds.length * PRICE_PER_TRIKE;
+      document.getElementById('payment-total-value').innerText = `R$ ${total.toFixed(2)}`;
+      document.getElementById('payment-summary-text').innerText = `${selectedTrikeIds.length} Carrinho(s) • ${RENTAL_MINUTES} Minutos na Pista`;
+      selectPaymentMethod('pix');
+      navigate('payment');
+    }
+
+    function copyPixKey(key) {
+      const tempInput = document.createElement("input");
+      tempInput.value = key;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand("copy");
+      document.body.removeChild(tempInput);
+      showToast("Chave PIX copiada!", "success");
+    }
+
+    function confirmPaymentAndRelease() {
+      const now = Date.now();
+      const end = now + RENTAL_MS;
+      const operatorName = currentUser ? currentUser.name : 'Operador';
+
+      trikes = trikes.map(t => {
+        if (selectedTrikeIds.includes(t.id)) {
+          return {
+            ...t,
+            status: 'in-use',
+            endTime: end,
+            totalRentals: (t.totalRentals || 0) + 1,
+            rentedBy: operatorName
+          };
+        }
+        return t;
+      });
+
+      const amount = selectedTrikeIds.length * PRICE_PER_TRIKE;
+      dailyRevenue += amount;
+      dailyRentals += selectedTrikeIds.length;
+      dailyByPayment[currentPaymentMethod] = (dailyByPayment[currentPaymentMethod] || 0) + amount;
+      
+      saveState();
+      playBeepAlert(false);
+      showToast(`${selectedTrikeIds.length} Carrinho(s) Liberado(s)! [${currentPaymentMethod.toUpperCase()}]`, 'success');
+      
+      selectedTrikeIds = [];
+      navigate('active');
+    }
+
+    // --- 10. CRONÔMETRO / MONITORAMENTO NA PISTA + EXTENSÕES ---
+    function extendRentalTime(trikeId, extraMinutes, extraValue) {
+      trikes = trikes.map(t => {
+        if (t.id === trikeId) {
+          const now = Date.now();
+          const baseTime = (t.endTime && t.endTime > now) ? t.endTime : now;
+          return {
+            ...t,
+            status: 'in-use',
+            endTime: baseTime + (extraMinutes * 60 * 1000)
+          };
+        }
+        return t;
+      });
+
+      dailyRevenue += extraValue;
+      dailyByPayment[currentPaymentMethod] = (dailyByPayment[currentPaymentMethod] || 0) + extraValue;
+      saveState();
+      playBeepAlert(false);
+      showToast(`+${extraMinutes} Min adicionados! (+R$ ${extraValue.toFixed(2)})`, "success");
+      renderActiveRentals();
+    }
+
+    function renderActiveRentals() {
+      const inUse = trikes.filter(t => t.status === 'in-use');
+      const list = document.getElementById('active-rentals-list');
+      const badge = document.getElementById('badge-active');
+
+      if (inUse.length > 0) {
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+
+      if (inUse.length === 0) {
+        list.innerHTML = `
+          <div class="bg-slate-900 border border-slate-800 p-10 rounded-3xl text-center">
+            <i data-lucide="timer-off" class="w-12 h-12 text-slate-600 mx-auto mb-2"></i>
+            <h4 class="text-base font-bold text-slate-300">Pista vazia no momento</h4>
+            <p class="text-xs text-slate-500 mt-1">Alugue carrinhos para iniciar os cronômetros de 10 minutos.</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      const now = Date.now();
+
+      list.innerHTML = inUse.map(t => {
+        const remaining = Math.max(0, t.endTime - now);
+        const mins = Math.floor(remaining / 60000);
+        const secs = Math.floor((remaining % 60000) / 1000);
+        const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        
+        const isUrgent = remaining <= 60000 && remaining > 0;
+        const isOver = remaining === 0;
+
+        let statusClass = "border-slate-800 bg-slate-900";
+        let timerColor = "text-cyan-400";
+
+        if (isUrgent) {
+          statusClass = "border-orange-500/80 bg-orange-950/20";
+          timerColor = "text-orange-400 animate-pulse";
+        } else if (isOver) {
+          statusClass = "border-red-500 bg-red-950/40";
+          timerColor = "text-red-500 animate-ping";
+        }
+
+        return `
+          <div class="p-4 rounded-2xl border-2 ${statusClass} flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg transition-all">
+            <div class="flex items-center gap-3.5">
+              <div class="w-16 h-16 rounded-xl overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-700/80">
+                <img src="${t.image || 'image_893169.jpg'}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike'"/>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-black uppercase tracking-wider ${isOver ? 'text-red-400' : 'text-slate-400'}">
+                    ${isOver ? 'TEMPO ESGOTADO' : 'CORRENDO'}
+                  </span>
+                  ${t.rentedBy ? `<span class="text-[10px] text-cyan-400 bg-cyan-950 px-1.5 py-0.5 rounded border border-cyan-800">Op: ${t.rentedBy}</span>` : ''}
+                </div>
+                <h4 class="text-base font-bold text-white">${t.name}</h4>
+                <div class="text-2xl font-black font-mono tracking-wider ${timerColor} mt-0.5">
+                  ${isOver ? '00:00 - RECOLHER' : timeStr}
+                </div>
+              </div>
+            </div>
+
+            <!-- Controles Rápidos: +Tempo e Devolver -->
+            <div class="flex items-center gap-2 flex-wrap">
+              <button onclick="extendRentalTime(${t.id}, 5, 5.00)" class="bg-cyan-950/60 hover:bg-cyan-900 border border-cyan-700/60 text-cyan-300 font-bold py-2.5 px-3 rounded-xl text-xs uppercase flex items-center gap-1 transition-all" title="Adicionar 5 minutos (+ R$ 5,00)">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i> 5 min
+              </button>
+              <button onclick="extendRentalTime(${t.id}, 10, 10.00)" class="bg-orange-950/60 hover:bg-orange-900 border border-orange-700/60 text-orange-300 font-bold py-2.5 px-3 rounded-xl text-xs uppercase flex items-center gap-1 transition-all" title="Adicionar 10 minutos (+ R$ 10,00)">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i> 10 min
+              </button>
+              <button onclick="stopRentalEarly(${t.id})" class="bg-slate-950 hover:bg-red-950/40 border border-slate-700 hover:border-red-500 text-slate-300 hover:text-red-400 font-bold py-2.5 px-3.5 rounded-xl text-xs uppercase flex items-center gap-1.5 transition-all">
+                <i data-lucide="stop-circle" class="w-4 h-4 text-red-400"></i> Devolver
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    function stopRentalEarly(trikeId) {
+      trikes = trikes.map(t => {
+        if (t.id === trikeId) {
+          return { ...t, status: 'available', endTime: null, rentedBy: null };
+        }
+        return t;
+      });
+      saveState();
+      showToast("Carrinho devolvido e liberado!", "info");
+      renderActiveRentals();
+    }
+
+    // Loop global de atualização do tempo a cada segundo
+    setInterval(() => {
+      const inUse = trikes.filter(t => t.status === 'in-use');
+      if (inUse.length > 0) {
+        if (currentView === 'active') {
+          renderActiveRentals();
+        }
+      }
+    }, 1000);
+
+    // Payload Pix Padrão Banco Central (EMV/BRCode) oficial para chave celular +5582999900971 do Jonas André
+    function getOfficialPixPayload(amount = 10.00) {
+      const key = "+5582999900971";
+      const name = "JONAS ANDRE";
+      const city = "MACEIO";
+      const formattedAmount = Number(amount).toFixed(2);
+      
+      const partMerchant = `0014br.gov.bcb.pix01${String(key.length).padStart(2, '0')}${key}`;
+      let raw = `00020126${String(partMerchant.length).padStart(2, '0')}${partMerchant}52040000530398654${String(formattedAmount.length).padStart(2, '0')}${formattedAmount}5802BR59${String(name.length).padStart(2, '0')}${name}60${String(city.length).padStart(2, '0')}${city}62070503***6304`;
+      
+      // Cálculo do CRC16-CCITT oficial exigido pelo BACEN
+      let crc = 0xFFFF;
+      for (let i = 0; i < raw.length; i++) {
+        crc ^= (raw.charCodeAt(i) << 8);
+        for (let j = 0; j < 8; j++) {
+          if ((crc & 0x8000) !== 0) {
+            crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
+          } else {
+            crc = (crc << 1) & 0xFFFF;
+          }
+        }
+      }
+      const crcHex = crc.toString(16).toUpperCase().padStart(4, '0');
+      return raw + crcHex;
+    }
+
+    function copyPixCode() {
+      const totalAmount = selectedTrikeIds.length > 0 ? (selectedTrikeIds.length * PRICE_PER_TRIKE) : PRICE_PER_TRIKE;
+      const pixPayload = getOfficialPixPayload(totalAmount);
+      const tempInput = document.createElement("textarea");
+      tempInput.value = pixPayload;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand("copy");
+      document.body.removeChild(tempInput);
+      showToast("Código Pix Copia e Cola copiado!", "success");
+    }
+
+    function handleQrCodeImageError(imgElement) {
+      if (customPixPoster) {
+        imgElement.src = customPixPoster;
+        return;
+      }
+      imgElement.onerror = null;
+      // Gera QR Code com o Payload oficial do Banco Central formatado para o valor correto
+      const totalAmount = selectedTrikeIds.length > 0 ? (selectedTrikeIds.length * PRICE_PER_TRIKE) : PRICE_PER_TRIKE;
+      const pixPayload = encodeURIComponent(getOfficialPixPayload(totalAmount));
+      imgElement.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=2&data=${pixPayload}`;
+    }
+
+    function uploadCustomPixPoster(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          customPixPoster = e.target.result;
+          saveState();
+          const imgEl = document.getElementById('pix-qr-image');
+          if (imgEl) imgEl.src = customPixPoster;
+          showToast("Cartaz do QR Code atualizado com sucesso!", "success");
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // --- 11. GERENCIAR FROTA (CADASTRAR/EDITAR CARRINHOS) ---
+    function previewTrikePhoto(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          tempTrikePhoto = e.target.result;
+          const img = document.getElementById('trike-preview-img');
+          const placeholder = document.getElementById('trike-preview-placeholder');
+          img.src = tempTrikePhoto;
+          img.classList.remove('hidden');
+          placeholder.classList.add('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function handleSaveTrike(e) {
+      e.preventDefault();
+      const editId = document.getElementById('trike-edit-id').value;
+      const name = document.getElementById('trike-name-input').value.trim();
+
+      if (!name) return;
+
+      if (editId) {
+        // Atualização de carrinho existente
+        trikes = trikes.map(t => {
+          if (t.id === parseInt(editId, 10)) {
+            return {
+              ...t,
+              name: name,
+              image: tempTrikePhoto || t.image
+            };
+          }
+          return t;
+        });
+        showToast("Carrinho atualizado!", "success");
+      } else {
+        // Criação de novo carrinho
+        const newId = trikes.length > 0 ? Math.max(...trikes.map(x => x.id)) + 1 : 1;
+        trikes.push({
+          id: newId,
+          name: name,
+          image: tempTrikePhoto || "image_893169.jpg",
+          status: 'available',
+          endTime: null,
+          totalRentals: 0
+        });
+        showToast("Novo carrinho cadastrado!", "success");
+      }
+
+      saveState();
+      cancelTrikeEdit();
+      renderFleetManagement();
+    }
+
+    function startEditTrike(id) {
+      const t = trikes.find(x => x.id === id);
+      if (!t) return;
+
+      document.getElementById('trike-edit-id').value = t.id;
+      document.getElementById('trike-name-input').value = t.name;
+      document.getElementById('fleet-form-title').innerHTML = `<i data-lucide="edit-3" class="w-5 h-5 text-orange-400"></i> Editando ${t.name}`;
+      document.getElementById('fleet-submit-btn').innerText = "Salvar Alterações";
+      document.getElementById('fleet-cancel-edit-btn').classList.remove('hidden');
+
+      if (t.image) {
+        tempTrikePhoto = t.image;
+        document.getElementById('trike-preview-img').src = t.image;
+        document.getElementById('trike-preview-img').classList.remove('hidden');
+        document.getElementById('trike-preview-placeholder').classList.add('hidden');
+      } else {
+        tempTrikePhoto = null;
+        document.getElementById('trike-preview-img').classList.add('hidden');
+        document.getElementById('trike-preview-placeholder').classList.remove('hidden');
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      lucide.createIcons();
+    }
+
+    function cancelTrikeEdit() {
+      document.getElementById('trike-edit-id').value = '';
+      document.getElementById('trike-name-input').value = '';
+      document.getElementById('fleet-form-title').innerHTML = `<i data-lucide="plus-circle" class="w-5 h-5 text-cyan-400"></i> Adicionar Novo Carrinho`;
+      document.getElementById('fleet-submit-btn').innerText = "Cadastrar Carrinho";
+      document.getElementById('fleet-cancel-edit-btn').classList.add('hidden');
+      document.getElementById('trike-preview-img').classList.add('hidden');
+      document.getElementById('trike-preview-placeholder').classList.remove('hidden');
+      tempTrikePhoto = null;
+      lucide.createIcons();
+    }
+
+    function removeTrike(id) {
+      trikes = trikes.filter(t => t.id !== id);
+      saveState();
+      showToast("Carrinho removido da frota", "info");
+      renderFleetManagement();
+    }
+
+    function renderFleetManagement() {
+      document.getElementById('fleet-total-badge').innerText = trikes.length;
+      const list = document.getElementById('fleet-manage-list');
+
+      list.innerHTML = trikes.map(t => `
+        <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-14 h-14 rounded-xl overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-700">
+              <img src="${t.image || 'image_893169.jpg'}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike'"/>
+            </div>
+            <div>
+              <h4 class="font-bold text-sm text-white">${t.name}</h4>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded ${t.status === 'in-use' ? 'bg-orange-500/20 text-orange-400' : 'bg-green-500/20 text-green-400'}">
+                ${t.status === 'in-use' ? 'Em Corrida' : 'Disponível'}
+              </span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1.5">
+            <button onclick="startEditTrike(${t.id})" class="p-2.5 rounded-xl bg-slate-800 hover:bg-cyan-950 text-slate-300 hover:text-cyan-400 transition-colors" title="Editar">
+              <i data-lucide="edit-2" class="w-4 h-4"></i>
+            </button>
+            <button onclick="removeTrike(${t.id})" class="p-2.5 rounded-xl bg-slate-800 hover:bg-red-950 text-slate-300 hover:text-red-400 transition-colors" title="Excluir">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    // --- 12. GERENCIAR USUÁRIOS (EQUIPE & PRIVILÉGIOS) ---
+    function handleCreateUser(e) {
+      e.preventDefault();
+      const name = document.getElementById('new-user-name').value.trim();
+      const user = document.getElementById('new-user-username').value.trim();
+      const pass = document.getElementById('new-user-password').value.trim();
+      const role = document.getElementById('new-user-role').value;
+
+      const newId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
+      users.push({ id: newId, name, username: user, password: pass, role });
+      saveState();
+
+      document.getElementById('new-user-name').value = '';
+      document.getElementById('new-user-username').value = '';
+      document.getElementById('new-user-password').value = '';
+      
+      showToast("Membro cadastrado com sucesso!", "success");
+      renderUsersManagement();
+    }
+
+    function toggleUserPrivilege(id) {
+      if (id === currentUser.id) {
+        showToast("Você não pode alterar seu próprio privilégio!", "error");
+        return;
+      }
+      users = users.map(u => {
+        if (u.id === id) {
+          const newRole = u.role === 'admin' ? 'seller' : 'admin';
+          return { ...u, role: newRole };
+        }
+        return u;
+      });
+      saveState();
+      showToast("Privilégio atualizado com sucesso!", "success");
+      renderUsersManagement();
+    }
+
+    function removeUser(id) {
+      if (id === currentUser.id) {
+        showToast("Você não pode excluir sua própria conta!", "error");
+        return;
+      }
+      users = users.filter(u => u.id !== id);
+      saveState();
+      showToast("Usuário removido da equipe", "info");
+      renderUsersManagement();
+    }
+
+    function renderUsersManagement() {
+      const list = document.getElementById('users-manage-list');
+      list.innerHTML = users.map(u => {
+        const isMe = currentUser && currentUser.id === u.id;
+        const isAdmin = u.role === 'admin';
+        return `
+          <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center ${isAdmin ? 'bg-purple-500/20 text-purple-400' : 'bg-cyan-500/20 text-cyan-400'}">
+                <i data-lucide="${isAdmin ? 'shield-check' : 'user'}" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <p class="font-bold text-sm text-white">${u.name} ${isMe ? '<span class="text-xs text-cyan-400">(Você)</span>' : ''}</p>
+                <p class="text-xs text-slate-500">@${u.username} • <span class="uppercase font-semibold ${isAdmin ? 'text-purple-400' : 'text-slate-400'}">${isAdmin ? 'Administrador' : 'Vendedor'}</span></p>
+              </div>
+            </div>
+
+            ${!isMe ? `
+              <div class="flex items-center gap-1.5">
+                <button onclick="toggleUserPrivilege(${u.id})" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 transition-colors" title="Mudar privilégio">
+                  ${isAdmin ? 'Tornar Vendedor' : 'Tornar Admin'}
+                </button>
+                <button onclick="removeUser(${u.id})" class="p-2 rounded-lg bg-slate-800 hover:bg-red-950 text-slate-400 hover:text-red-400 transition-colors" title="Remover">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    // --- 13. RELATÓRIOS & FECHAMENTO DE CAIXA PERPÉTUO ---
+    function renderReports() {
+      document.getElementById('report-revenue').innerText = `R$ ${dailyRevenue.toFixed(2)}`;
+      document.getElementById('report-rentals').innerText = dailyRentals;
+
+      // Discriminação por Pagamento
+      document.getElementById('report-pay-pix').innerText = `R$ ${(dailyByPayment.pix || 0).toFixed(2)}`;
+      document.getElementById('report-pay-money').innerText = `R$ ${(dailyByPayment.money || 0).toFixed(2)}`;
+      document.getElementById('report-pay-card').innerText = `R$ ${(dailyByPayment.card || 0).toFixed(2)}`;
+
+      const breakdown = document.getElementById('report-trikes-breakdown');
+      breakdown.innerHTML = trikes.map(t => {
+        const count = t.totalRentals || 0;
+        const total = count * PRICE_PER_TRIKE;
+        return `
+          <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800">
+            <span class="text-xs font-bold text-slate-200">${t.name}</span>
+            <div class="text-right">
+              <span class="text-xs font-black text-cyan-400">${count} locações</span>
+              <span class="text-[11px] text-slate-400 block">R$ ${total.toFixed(2)}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Histórico de fechamentos
+      const histList = document.getElementById('report-history-list');
+      if (registerHistory.length === 0) {
+        histList.innerHTML = `<p class="text-xs text-slate-500 text-center py-3">Nenhum fechamento registrado ainda.</p>`;
+      } else {
+        histList.innerHTML = registerHistory.slice(-10).reverse().map(h => `
+          <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between text-xs">
+            <div>
+              <span class="font-bold text-slate-200">${h.date}</span>
+              <p class="text-[10px] text-slate-400">Fechado por: ${h.closedBy} • ${h.rentals} locações</p>
+            </div>
+            <div class="text-right">
+              <span class="font-black text-green-400">R$ ${h.revenue.toFixed(2)}</span>
+              <p class="text-[10px] text-slate-500">PIX: R$ ${(h.pix || 0).toFixed(2)} | Din: R$ ${(h.money || 0).toFixed(2)}</p>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    function handleCloseRegister() {
+      if (dailyRevenue === 0 && dailyRentals === 0) {
+        showToast("O caixa atual já está zerado!", "info");
+        return;
+      }
+
+      const now = new Date();
+      const dateFormatted = `${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+
+      // Salva no histórico perpétuo
+      registerHistory.push({
+        id: Date.now(),
+        date: dateFormatted,
+        revenue: dailyRevenue,
+        rentals: dailyRentals,
+        pix: dailyByPayment.pix || 0,
+        money: dailyByPayment.money || 0,
+        card: dailyByPayment.card || 0,
+        closedBy: currentUser ? currentUser.name : 'Marrison Carlos'
+      });
+
+      showToast(`Caixa fechado! Total: R$ ${dailyRevenue.toFixed(2)} (${dailyRentals} corridas)`, "success");
+      
+      dailyRevenue = 0;
+      dailyRentals = 0;
+      dailyByPayment = { pix: 0, money: 0, card: 0 };
+      trikes = trikes.map(t => ({ ...t, totalRentals: 0 }));
+      
+      saveState();
+      renderReports();
+    }
+
+    // --- 14. INICIALIZAÇÃO AUTOMÁTICA ---
+    window.onload = function() {
+      lucide.createIcons();
+      if (currentUser) {
+        initApp();
+      }
+    };
+  </script>
+</body>
+</html>
