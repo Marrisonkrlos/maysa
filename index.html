@@ -5,20 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Drift Trikes - Controle & Locação</title>
   
-  <!-- PWA & Mobile Web App Meta Tags -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Drift Trikes" />
   <meta name="theme-color" content="#020617" />
 
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
-  <!-- Fonte Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -27,36 +22,21 @@
     tailwind.config = {
       theme: {
         extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-          },
-          colors: {
-            brand: {
-              cyan: '#06b6d4',
-              orange: '#f97316',
-            }
-          }
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: { brand: { cyan: '#06b6d4', orange: '#f97316' } }
         }
       }
     }
   </script>
 
   <style>
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
-    button:active, .clickable:active {
-      transform: scale(0.97);
-    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    button:active, .clickable:active { transform: scale(0.97); }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans select-none pb-10">
 
-  <!-- TOAST PERSONALIZADO -->
   <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 pointer-events-none transform -translate-y-4">
     <div id="toast-content" class="bg-slate-900 border border-cyan-500 text-slate-100 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-semibold">
       <span id="toast-icon"></span>
@@ -64,7 +44,6 @@
     </div>
   </div>
 
-  <!-- MODAL: ALTERAR SENHA DE USUÁRIO -->
   <div id="modal-password" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl space-y-4">
       <div class="flex items-center justify-between">
@@ -91,7 +70,7 @@
     </div>
   </div>
 
-  <!-- 1. TELA DE LOGIN -->
+  <!-- TELA DE LOGIN -->
   <div id="view-login" class="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
     <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-cyan-500/20 rounded-full blur-[128px]"></div>
     <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-orange-500/20 rounded-full blur-[128px]"></div>
@@ -126,7 +105,6 @@
           </div>
         </div>
 
-        <!-- Opção Lembrar de Mim -->
         <div class="flex items-center justify-between text-xs pt-1">
           <label class="flex items-center gap-2 text-slate-400 hover:text-slate-200 cursor-pointer select-none">
             <input id="login-remember" type="checkbox" class="w-4 h-4 rounded bg-slate-950 border-slate-700 text-cyan-500 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-cyan-500" />
@@ -141,7 +119,7 @@
     </div>
   </div>
 
-  <!-- 2. CABEÇALHO & APP CONTAINER -->
+  <!-- CABEÇALHO & APP CONTAINER -->
   <div id="app-container" class="hidden flex-1 flex flex-col">
     <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 shadow-xl">
       <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between border-b border-slate-800/60">
@@ -163,10 +141,8 @@
         </div>
       </div>
 
-      <!-- Menu Horizontal Mobile -->
       <nav class="w-full bg-slate-900 overflow-x-auto no-scrollbar py-2 px-3 border-t border-slate-800/40">
         <div class="max-w-5xl mx-auto flex items-center justify-start sm:justify-center gap-2 min-w-max">
-          <!-- Acessíveis por Todos (Admin e Vendedor) -->
           <button onclick="navigate('dashboard')" id="nav-dashboard" class="nav-item flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
             <i data-lucide="layout-dashboard" class="w-5 h-5 mb-1"></i>
             <span class="text-[10px] font-bold uppercase tracking-wider">Início</span>
@@ -183,7 +159,6 @@
             <span class="text-[10px] font-bold uppercase tracking-wider">Na Pista</span>
           </button>
 
-          <!-- Itens Exclusivos de Administrador (Marrison Carlos) -->
           <button onclick="navigate('fleet')" id="nav-fleet" class="nav-item admin-only flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
             <i data-lucide="car" class="w-5 h-5 mb-1"></i>
             <span class="text-[10px] font-bold uppercase tracking-wider">Frota</span>
@@ -194,7 +169,6 @@
             <span class="text-[10px] font-bold uppercase tracking-wider">Equipe</span>
           </button>
 
-          <!-- Caixa agora liberado para Vendedores e Administradores -->
           <button onclick="navigate('reports')" id="nav-reports" class="nav-item flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
             <i data-lucide="bar-chart-3" class="w-5 h-5 mb-1"></i>
             <span class="text-[10px] font-bold uppercase tracking-wider">Caixa</span>
@@ -203,7 +177,6 @@
       </nav>
     </header>
 
-    <!-- ÁREA PRINCIPAL -->
     <main class="flex-1 max-w-5xl mx-auto w-full p-4">
 
       <!-- DASHBOARD -->
@@ -357,7 +330,7 @@
               <div class="rounded-2xl bg-white shadow-inner mb-3 overflow-hidden flex flex-col items-center justify-center p-2 border border-slate-200">
                 <img 
                   id="pix-qr-image"
-                  src="pix.jpg" 
+                  src="./pix.jpg" 
                   alt="Cartaz QR Code PIX Jonas André" 
                   class="w-full h-auto max-h-[380px] object-contain block mx-auto rounded-xl"
                   onerror="handleQrCodeImageError(this)"
@@ -423,7 +396,7 @@
         </div>
       </section>
 
-      <!-- NA PISTA (CRONÔMETRO) -->
+      <!-- NA PISTA -->
       <section id="view-active" class="app-view hidden space-y-4">
         <div class="flex items-center justify-between">
           <div>
@@ -534,7 +507,7 @@
         </div>
       </section>
 
-      <!-- CAIXA / RELATÓRIO DO EXPEDIENTE (ADMIN E VENDEDOR) -->
+      <!-- CAIXA / RELATÓRIO DO EXPEDIENTE -->
       <section id="view-reports" class="app-view hidden space-y-6">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl relative overflow-hidden text-center shadow-xl">
@@ -552,7 +525,6 @@
           </div>
         </div>
 
-        <!-- Discriminação por Pagamento -->
         <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
           <h3 class="font-bold text-base text-slate-200 mb-4 flex items-center gap-2">
             <i data-lucide="wallet" class="w-5 h-5 text-orange-400"></i> Por Forma de Pagamento
@@ -573,7 +545,6 @@
           </div>
         </div>
 
-        <!-- Faturamento & Produtividade por Membro da Equipe -->
         <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
           <h3 class="font-bold text-base text-slate-200 mb-4 flex items-center gap-2">
             <i data-lucide="users" class="w-5 h-5 text-purple-400"></i> Faturamento & Produtividade por Membro
@@ -581,7 +552,6 @@
           <div id="report-users-breakdown" class="space-y-2"></div>
         </div>
 
-        <!-- Estatísticas por Carrinho -->
         <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
           <h3 class="font-bold text-base text-slate-200 mb-4 flex items-center gap-2">
             <i data-lucide="bar-chart-2" class="w-5 h-5 text-cyan-400"></i> Desempenho por Carrinho
@@ -589,7 +559,6 @@
           <div id="report-trikes-breakdown" class="space-y-2"></div>
         </div>
 
-        <!-- Histórico de Caixas Anteriores -->
         <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
           <h3 class="font-bold text-base text-slate-200 mb-4 flex items-center gap-2">
             <i data-lucide="history" class="w-5 h-5 text-purple-400"></i> Histórico de Caixas Fechados
@@ -597,7 +566,6 @@
           <div id="report-history-list" class="space-y-2.5 max-h-64 overflow-y-auto no-scrollbar"></div>
         </div>
 
-        <!-- Fechar Caixa do Turno -->
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl text-center space-y-3">
           <div class="w-12 h-12 bg-red-500/10 text-red-400 rounded-2xl flex items-center justify-center mx-auto">
             <i data-lucide="lock" class="w-6 h-6"></i>
@@ -616,7 +584,6 @@
   </div>
 
   <script>
-    // --- 1. CONSTANTES & SUPABASE ---
     const SUPABASE_URL = "https://licwqwoqlfzfwbvugall.supabase.co";
     const SUPABASE_KEY = "sb_publishable_uY40Pc9DsLgxfBeIaGhS4g_Je4AfyxJ";
     
@@ -633,35 +600,44 @@
     const RENTAL_MINUTES = 10;
     const RENTAL_MS = RENTAL_MINUTES * 60 * 1000;
 
-    // --- 2. DADOS PADRÃO ---
+    // Caminhos compatíveis com servidores Linux/GitHub Pages
     const DEFAULT_TRIKES = [
-      { id: 1, name: "Carrinho 1 (Fogo & Gelo)", image: "carrinho (1).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
-      { id: 2, name: "Carrinho 2 (Vermelho Xtreme)", image: "carrinho (2).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
-      { id: 3, name: "Carrinho 3 (Amarelo Graffiti)", image: "carrinho (3).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
-      { id: 4, name: "Carrinho 4 (Azul Camuflado)", image: "carrinho (4).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null }
+      { id: 1, name: "Carrinho 1 (Fogo & Gelo)", image: "./carrinho%20(1).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
+      { id: 2, name: "Carrinho 2 (Vermelho Xtreme)", image: "./carrinho%20(2).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
+      { id: 3, name: "Carrinho 3 (Amarelo Graffiti)", image: "./carrinho%20(3).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
+      { id: 4, name: "Carrinho 4 (Azul Camuflado)", image: "./carrinho%20(4).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null }
     ];
 
+    // Jonas e Maysa já incluídos no padrão local
     const DEFAULT_USERS = [
       { id: 1, name: "Marrison Carlos", username: "Marrison Carlos", password: "Mkrlos@123", role: "admin" },
-      { id: 2, name: "Vendedor Pista", username: "vendedor", password: "123", role: "seller" }
+      { id: 2, name: "Jonas", username: "jonas", password: "123", role: "seller" },
+      { id: 3, name: "Maysa", username: "maysa", password: "123", role: "seller" }
     ];
 
-    // --- 3. ESTADO COM MIGRAÇÃO AUTOMÁTICA ---
     let trikes = JSON.parse(localStorage.getItem('dt_trikes')) || DEFAULT_TRIKES;
+
+    // Normaliza links antigos com espaço para URL encoded no celular
+    trikes = trikes.map(t => {
+      if (t.image && t.image.includes(' ')) {
+        t.image = encodeURI(t.image);
+      }
+      return t;
+    });
 
     let users = JSON.parse(localStorage.getItem('dt_users')) || DEFAULT_USERS;
 
+    // Garante que Jonas e Maysa estejam presentes caso o celular tenha um cache desatualizado
+    if (!users.some(u => u.username.toLowerCase() === 'jonas')) {
+      users.push({ id: 2, name: "Jonas", username: "jonas", password: "123", role: "seller" });
+    }
+    if (!users.some(u => u.username.toLowerCase() === 'maysa')) {
+      users.push({ id: 3, name: "Maysa", username: "maysa", password: "123", role: "seller" });
+    }
+
     users = users.filter(u => u.username.toLowerCase() !== 'admin');
-    const marrisonExists = users.some(u => u.username.toLowerCase() === 'marrison carlos');
-    if (!marrisonExists) {
+    if (!users.some(u => u.username.toLowerCase() === 'marrison carlos')) {
       users.unshift({ id: 1, name: "Marrison Carlos", username: "Marrison Carlos", password: "Mkrlos@123", role: "admin" });
-    } else {
-      users = users.map(u => {
-        if (u.username.toLowerCase() === 'marrison carlos') {
-          return { ...u, name: "Marrison Carlos", username: "Marrison Carlos", role: "admin" };
-        }
-        return u;
-      });
     }
 
     let dailyRevenue = parseFloat(localStorage.getItem('dt_revenue')) || 0;
@@ -674,16 +650,32 @@
     let customPixPoster = localStorage.getItem('dt_custom_pix') || null;
     let currentUser = JSON.parse(localStorage.getItem('dt_current_user')) || null;
 
-    if (currentUser) {
-      if (currentUser.username.toLowerCase() === 'admin') {
-        currentUser = users.find(u => u.username === "Marrison Carlos");
-        localStorage.setItem('dt_current_user', JSON.stringify(currentUser));
-      }
-    }
-
     let currentView = 'dashboard';
     let selectedTrikeIds = [];
     let tempTrikePhoto = null;
+
+    // Sincroniza usuários do Supabase no início
+    async function syncUsersFromSupabase() {
+      if (!supabaseClient) return;
+      try {
+        const { data, error } = await supabaseClient.from('users').select('*');
+        if (!error && data && data.length > 0) {
+          data.forEach(remoteUser => {
+            const idx = users.findIndex(u => u.username.toLowerCase() === remoteUser.username.toLowerCase());
+            if (idx >= 0) {
+              users[idx] = { ...users[idx], ...remoteUser };
+            } else {
+              users.push(remoteUser);
+            }
+          });
+          saveState();
+          if (currentView === 'users') renderUsersManagement();
+          if (currentView === 'reports') renderReports();
+        }
+      } catch(e) {
+        console.warn("Falha ao sincronizar com Supabase:", e);
+      }
+    }
 
     function saveState() {
       localStorage.setItem('dt_trikes', JSON.stringify(trikes));
@@ -703,7 +695,6 @@
       }
     }
 
-    // --- 4. TOAST & ALERTAS ---
     function showToast(msg, type = 'info') {
       const toast = document.getElementById('toast');
       const msgEl = document.getElementById('toast-message');
@@ -752,7 +743,6 @@
       }
     }
 
-    // --- 5. NAVEGAÇÃO ---
     function navigate(viewName) {
       currentView = viewName;
       
@@ -781,18 +771,30 @@
       lucide.createIcons();
     }
 
-    // --- 6. AUTENTICAÇÃO ---
-    function handleLogin(e) {
+    async function handleLogin(e) {
       e.preventDefault();
       const u = document.getElementById('login-user').value.trim();
       const p = document.getElementById('login-pass').value.trim();
       const remember = document.getElementById('login-remember').checked;
       const errEl = document.getElementById('login-error');
 
-      const found = users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
+      let found = users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
+
+      // Tenta login remoto via Supabase se não achar localmente
+      if (!found && supabaseClient) {
+        try {
+          const { data } = await supabaseClient
+            .from('users')
+            .select('*')
+            .ilike('username', u)
+            .eq('password', p)
+            .single();
+          if (data) found = data;
+        } catch(err) {}
+      }
+
       if (found) {
         currentUser = found;
-        
         if (remember) {
           localStorage.setItem('dt_remember_username', found.username);
         } else {
@@ -828,7 +830,6 @@
       const userTag = document.getElementById('header-user-tag');
       userTag.innerText = `${currentUser.name} (${currentUser.role === 'admin' ? 'ADMIN' : 'VENDEDOR'})`;
 
-      // Regra de permissões: esconde Frota e Equipe se for vendedor
       const adminElements = document.querySelectorAll('.admin-only');
       adminElements.forEach(el => {
         if (currentUser.role === 'admin') {
@@ -841,7 +842,6 @@
       navigate('dashboard');
     }
 
-    // --- 7. TELA DASHBOARD ---
     function renderDashboard() {
       const avail = trikes.filter(t => t.status === 'available').length;
       const inUse = trikes.filter(t => t.status === 'in-use').length;
@@ -857,7 +857,7 @@
         <div class="bg-slate-950 border-2 ${t.status === 'in-use' ? 'border-orange-500/80 shadow-[0_0_15px_rgba(249,115,22,0.25)]' : 'border-slate-800 hover:border-slate-700'} rounded-2xl p-3 text-center overflow-hidden transition-all flex flex-col justify-between">
           <div class="h-44 sm:h-48 w-full rounded-xl overflow-hidden bg-slate-900 mb-3 relative group">
             <img 
-              src="${t.image || 'carrinho (1).jpg'}" 
+              src="${t.image}" 
               alt="${t.name}" 
               class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300" 
               onerror="this.onerror=null; this.src='https://placehold.co/400x300/020617/06b6d4?text=Trike';"
@@ -873,7 +873,6 @@
       lucide.createIcons();
     }
 
-    // --- 8. SELEÇÃO PARA ALUGUEL ---
     function renderRentalSelection() {
       const availableTrikes = trikes.filter(t => t.status === 'available');
       const listEl = document.getElementById('rental-trikes-list');
@@ -898,7 +897,7 @@
           <div onclick="toggleTrikeSelection(${t.id})" class="p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between ${isSelected ? 'bg-cyan-950/40 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]' : 'bg-slate-900 border-slate-800 hover:border-slate-700'}">
             <div class="flex items-center gap-3">
               <div class="w-16 h-16 rounded-xl overflow-hidden bg-slate-950 border border-slate-800 flex-shrink-0">
-                <img src="${t.image || 'carrinho (1).jpg'}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike';"/>
+                <img src="${t.image}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike';"/>
               </div>
               <div>
                 <h4 class="font-bold text-sm text-white">${t.name}</h4>
@@ -932,7 +931,6 @@
       renderRentalSelection();
     }
 
-    // --- 9. PAGAMENTO ---
     function selectPaymentMethod(method) {
       currentPaymentMethod = method;
       const pixBtn = document.getElementById('pay-method-pix');
@@ -1030,7 +1028,6 @@
       navigate('active');
     }
 
-    // --- 10. CRONÔMETRO NA PISTA ---
     function extendRentalTime(trikeId, extraMinutes, extraValue) {
       const operatorName = currentUser ? currentUser.name : 'Marrison Carlos';
 
@@ -1110,7 +1107,7 @@
           <div class="p-4 rounded-2xl border-2 ${statusClass} flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg transition-all">
             <div class="flex items-center gap-3.5">
               <div class="w-16 h-16 rounded-xl overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-700/80">
-                <img src="${t.image || 'carrinho (1).jpg'}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike'"/>
+                <img src="${t.image}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike'"/>
               </div>
               <div>
                 <div class="flex items-center gap-2">
@@ -1163,7 +1160,6 @@
       }
     }, 1000);
 
-    // BACEN Pix EMV
     function getOfficialPixPayload(amount = 10.00) {
       const key = "+5582999900971";
       const name = "JONAS ANDRE";
@@ -1205,11 +1201,7 @@
         return;
       }
       if (imgElement.src.endsWith('pix.jpg')) {
-        imgElement.src = 'pix.png';
-        return;
-      }
-      if (imgElement.src.endsWith('pix.png')) {
-        imgElement.src = 'pix.jpeg';
+        imgElement.src = './pix.png';
         return;
       }
       imgElement.onerror = null;
@@ -1227,13 +1219,12 @@
           saveState();
           const imgEl = document.getElementById('pix-qr-image');
           if (imgEl) imgEl.src = customPixPoster;
-          showToast("Cartaz do QR Code atualizado com sucesso!", "success");
+          showToast("Cartaz do QR Code atualizado!", "success");
         };
         reader.readAsDataURL(file);
       }
     }
 
-    // --- 11. GERENCIAR FROTA ---
     function previewTrikePhoto(event) {
       const file = event.target.files[0];
       if (file) {
@@ -1260,11 +1251,7 @@
       if (editId) {
         trikes = trikes.map(t => {
           if (t.id === parseInt(editId, 10)) {
-            return {
-              ...t,
-              name: name,
-              image: tempTrikePhoto || t.image
-            };
+            return { ...t, name, image: tempTrikePhoto || t.image };
           }
           return t;
         });
@@ -1274,7 +1261,7 @@
         trikes.push({
           id: newId,
           name: name,
-          image: tempTrikePhoto || "carrinho (1).jpg",
+          image: tempTrikePhoto || "./carrinho%20(1).jpg",
           status: 'available',
           endTime: null,
           totalRentals: 0
@@ -1339,7 +1326,7 @@
         <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div class="w-14 h-14 rounded-xl overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-700">
-              <img src="${t.image || 'carrinho (1).jpg'}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike'"/>
+              <img src="${t.image}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike'"/>
             </div>
             <div>
               <h4 class="font-bold text-sm text-white">${t.name}</h4>
@@ -1363,8 +1350,7 @@
       lucide.createIcons();
     }
 
-    // --- 12. GERENCIAR EQUIPE & TROCA DE SENHA ---
-    function handleCreateUser(e) {
+    async function handleCreateUser(e) {
       e.preventDefault();
       const name = document.getElementById('new-user-name').value.trim();
       const user = document.getElementById('new-user-username').value.trim();
@@ -1378,10 +1364,20 @@
       }
 
       const newId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
-      users.push({ id: newId, name, username: user, password: pass, role });
+      const newUser = { id: newId, name, username: user, password: pass, role };
+      users.push(newUser);
       
       if (!dailyByUser[name]) {
         dailyByUser[name] = { rentals: 0, revenue: 0 };
+      }
+
+      // Sincroniza criação no Supabase
+      if (supabaseClient) {
+        try {
+          await supabaseClient.from('users').insert([{ name, username: user, password: pass, role }]);
+        } catch(err) {
+          console.warn("Erro ao salvar no Supabase:", err);
+        }
       }
 
       saveState();
@@ -1399,7 +1395,7 @@
       if (!user) return;
 
       document.getElementById('modal-password-user-id').value = user.id;
-      document.getElementById('modal-password-user-desc').innerText = `Alterando senha do operador: ${user.name} (@${user.username})`;
+      document.getElementById('modal-password-user-desc').innerText = `Alterando senha de: ${user.name} (@${user.username})`;
       document.getElementById('modal-new-password').value = '';
       document.getElementById('modal-password').classList.remove('hidden');
     }
@@ -1409,15 +1405,17 @@
       document.getElementById('modal-new-password').value = '';
     }
 
-    function handleSaveNewPassword(e) {
+    async function handleSaveNewPassword(e) {
       e.preventDefault();
       const userId = parseInt(document.getElementById('modal-password-user-id').value, 10);
       const newPass = document.getElementById('modal-new-password').value.trim();
 
       if (!newPass) return;
 
+      let targetUsername = null;
       users = users.map(u => {
         if (u.id === userId) {
+          targetUsername = u.username;
           return { ...u, password: newPass };
         }
         return u;
@@ -1427,34 +1425,57 @@
         currentUser.password = newPass;
       }
 
+      if (supabaseClient && targetUsername) {
+        try {
+          await supabaseClient.from('users').update({ password: newPass }).eq('username', targetUsername);
+        } catch(err) {}
+      }
+
       saveState();
       closePasswordModal();
       showToast("Senha atualizada com sucesso!", "success");
     }
 
-    function toggleUserPrivilege(id) {
+    async function toggleUserPrivilege(id) {
       if (id === currentUser.id) {
         showToast("Você não pode alterar seu próprio privilégio!", "error");
         return;
       }
+      let targetUser = null;
       users = users.map(u => {
         if (u.id === id) {
           const newRole = u.role === 'admin' ? 'seller' : 'admin';
-          return { ...u, role: newRole };
+          targetUser = { ...u, role: newRole };
+          return targetUser;
         }
         return u;
       });
+
+      if (supabaseClient && targetUser) {
+        try {
+          await supabaseClient.from('users').update({ role: targetUser.role }).eq('username', targetUser.username);
+        } catch(err) {}
+      }
+
       saveState();
       showToast("Privilégio atualizado com sucesso!", "success");
       renderUsersManagement();
     }
 
-    function removeUser(id) {
+    async function removeUser(id) {
       if (id === currentUser.id) {
         showToast("Você não pode excluir sua própria conta!", "error");
         return;
       }
+      const target = users.find(u => u.id === id);
       users = users.filter(u => u.id !== id);
+
+      if (supabaseClient && target) {
+        try {
+          await supabaseClient.from('users').delete().eq('username', target.username);
+        } catch(err) {}
+      }
+
       saveState();
       showToast("Usuário removido da equipe", "info");
       renderUsersManagement();
@@ -1498,17 +1519,14 @@
       lucide.createIcons();
     }
 
-    // --- 13. RELATÓRIOS & FECHAMENTO DE CAIXA POR USUÁRIO ---
     function renderReports() {
       document.getElementById('report-revenue').innerText = `R$ ${dailyRevenue.toFixed(2)}`;
       document.getElementById('report-rentals').innerText = dailyRentals;
 
-      // Por Pagamento
       document.getElementById('report-pay-pix').innerText = `R$ ${(dailyByPayment.pix || 0).toFixed(2)}`;
       document.getElementById('report-pay-money').innerText = `R$ ${(dailyByPayment.money || 0).toFixed(2)}`;
       document.getElementById('report-pay-card').innerText = `R$ ${(dailyByPayment.card || 0).toFixed(2)}`;
 
-      // Caixa e Produtividade por Membro da Equipe
       const usersBreakdownEl = document.getElementById('report-users-breakdown');
       usersBreakdownEl.innerHTML = users.map(u => {
         const stats = dailyByUser[u.name] || { rentals: 0, revenue: 0 };
@@ -1531,7 +1549,6 @@
         `;
       }).join('');
 
-      // Estatística por Carrinho
       const breakdown = document.getElementById('report-trikes-breakdown');
       breakdown.innerHTML = trikes.map(t => {
         const count = t.totalRentals || 0;
@@ -1547,7 +1564,6 @@
         `;
       }).join('');
 
-      // Histórico de fechamentos anteriores
       const histList = document.getElementById('report-history-list');
       if (registerHistory.length === 0) {
         histList.innerHTML = `<p class="text-xs text-slate-500 text-center py-3">Nenhum fechamento registrado ainda.</p>`;
@@ -1613,7 +1629,6 @@
       renderReports();
     }
 
-    // --- 14. INICIALIZAÇÃO ---
     window.onload = function() {
       lucide.createIcons();
 
@@ -1624,6 +1639,9 @@
         if (userInput) userInput.value = savedUser;
         if (rememberCheckbox) rememberCheckbox.checked = true;
       }
+
+      // Sincroniza dados com o Supabase
+      syncUsersFromSupabase();
 
       if (currentUser) {
         initApp();
