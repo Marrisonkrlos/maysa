@@ -15,7 +15,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Supabase JS Client (Pronto para sincronização) -->
+  <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <!-- Fonte Inter -->
@@ -42,7 +42,6 @@
   </script>
 
   <style>
-    /* Ocultar barra de rolagem mas permitir navegação suave no mobile */
     .no-scrollbar::-webkit-scrollbar {
       display: none;
     }
@@ -50,7 +49,6 @@
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
-    /* Feedback visual ao clicar */
     button:active, .clickable:active {
       transform: scale(0.97);
     }
@@ -58,9 +56,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans select-none pb-10">
 
-  <!-- ========================================== -->
-  <!-- CAIXA DE MENSAGENS / TOAST PERSONALIZADO   -->
-  <!-- ========================================== -->
+  <!-- TOAST PERSONALIZADO -->
   <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 pointer-events-none transform -translate-y-4">
     <div id="toast-content" class="bg-slate-900 border border-cyan-500 text-slate-100 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-semibold">
       <span id="toast-icon"></span>
@@ -68,9 +64,34 @@
     </div>
   </div>
 
-  <!-- ========================================== -->
-  <!-- 1. TELA DE LOGIN                           -->
-  <!-- ========================================== -->
+  <!-- MODAL: ALTERAR SENHA DE USUÁRIO -->
+  <div id="modal-password" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-base text-white flex items-center gap-2">
+          <i data-lucide="key" class="w-5 h-5 text-orange-400"></i> Alterar Senha
+        </h3>
+        <button onclick="closePasswordModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <p id="modal-password-user-desc" class="text-xs text-slate-400">Defina uma nova senha para o operador.</p>
+
+      <form onsubmit="handleSaveNewPassword(event)" class="space-y-3">
+        <input type="hidden" id="modal-password-user-id" value="" />
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nova Senha</label>
+          <input id="modal-new-password" type="password" required placeholder="Digite a nova senha" class="w-full bg-slate-950 border border-slate-700 px-4 py-2.5 rounded-xl text-sm focus:border-cyan-500 outline-none" />
+        </div>
+        <button type="submit" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded-xl uppercase tracking-wider text-xs shadow-lg transition-all">
+          Atualizar Senha
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 1. TELA DE LOGIN -->
   <div id="view-login" class="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
     <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-cyan-500/20 rounded-full blur-[128px]"></div>
     <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-orange-500/20 rounded-full blur-[128px]"></div>
@@ -109,21 +130,19 @@
           Entrar no Sistema
         </button>
 
-        <!-- Botão de Acesso Rápido para Facilitar Testes -->
-        <button type="button" onclick="quickLoginAdmin()" class="w-full bg-slate-800 hover:bg-slate-700 border border-cyan-500/40 text-cyan-400 font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 mt-2">
-          <i data-lucide="zap" class="w-4 h-4"></i> Entrar com 1 Clique (Admin Marrison)
+        <!-- Botão Acesso Rápido Marrison Carlos -->
+        <button type="button" onclick="quickLoginMarrison()" class="w-full bg-slate-800 hover:bg-slate-700 border border-cyan-500/40 text-cyan-400 font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 mt-2">
+          <i data-lucide="zap" class="w-4 h-4"></i> Entrar com 1 Clique (Marrison Carlos)
         </button>
       </form>
 
       <div class="mt-6 pt-4 border-t border-slate-800/80 text-center text-xs text-slate-500">
-        Acesso padrão: <strong class="text-cyan-400">admin</strong> / senha: <strong class="text-cyan-400">admin</strong>
+        Admin: <strong class="text-cyan-400">Marrison Carlos</strong> / senha: <strong class="text-cyan-400">Mkrlos@123</strong>
       </div>
     </div>
   </div>
 
-  <!-- ========================================== -->
-  <!-- 2. CABEÇALHO & MENU SUPERIOR (APROVADO)   -->
-  <!-- ========================================== -->
+  <!-- 2. CABEÇALHO & APP CONTAINER -->
   <div id="app-container" class="hidden flex-1 flex flex-col">
     <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 shadow-xl">
       <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between border-b border-slate-800/60">
@@ -145,7 +164,7 @@
         </div>
       </div>
 
-      <!-- Barra de Navegação Horizontal Estilo App Mobile -->
+      <!-- Menu Horizontal Mobile -->
       <nav class="w-full bg-slate-900 overflow-x-auto no-scrollbar py-2 px-3 border-t border-slate-800/40">
         <div class="max-w-5xl mx-auto flex items-center justify-start sm:justify-center gap-2 min-w-max">
           <button onclick="navigate('dashboard')" id="nav-dashboard" class="nav-item flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
@@ -164,14 +183,13 @@
             <span class="text-[10px] font-bold uppercase tracking-wider">Na Pista</span>
           </button>
 
-          <!-- Itens Exclusivos de Administrador -->
           <button onclick="navigate('fleet')" id="nav-fleet" class="nav-item admin-only flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
             <i data-lucide="car" class="w-5 h-5 mb-1"></i>
             <span class="text-[10px] font-bold uppercase tracking-wider">Frota</span>
           </button>
 
           <button onclick="navigate('users')" id="nav-users" class="nav-item admin-only flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
-            <i data-lucide="user-plus" class="w-5 h-5 mb-1"></i>
+            <i data-lucide="users" class="w-5 h-5 mb-1"></i>
             <span class="text-[10px] font-bold uppercase tracking-wider">Equipe</span>
           </button>
 
@@ -186,12 +204,9 @@
     <!-- ÁREA PRINCIPAL -->
     <main class="flex-1 max-w-5xl mx-auto w-full p-4">
 
-      <!-- ========================================== -->
-      <!-- TELA: DASHBOARD                            -->
-      <!-- ========================================== -->
+      <!-- DASHBOARD -->
       <section id="view-dashboard" class="app-view space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Ação Rápida: Alugar -->
           <div onclick="navigate('rental')" class="bg-gradient-to-br from-cyan-600 to-blue-700 p-6 rounded-3xl cursor-pointer hover:shadow-[0_0_25px_rgba(6,182,212,0.4)] transition-all relative overflow-hidden group">
             <div class="absolute -right-4 -bottom-4 opacity-20 group-hover:scale-110 transition-transform">
               <i data-lucide="play" class="w-36 h-36"></i>
@@ -201,7 +216,6 @@
             <p class="text-cyan-100 font-semibold text-sm">R$ 10,00 • 10 Minutos cada</p>
           </div>
 
-          <!-- Ação Rápida: Na Pista -->
           <div onclick="navigate('active')" class="bg-slate-900 border border-slate-800 hover:border-cyan-500/60 p-6 rounded-3xl cursor-pointer transition-all flex flex-col justify-between">
             <div class="flex items-start justify-between">
               <div>
@@ -219,7 +233,6 @@
           </div>
         </div>
 
-        <!-- Resumo da Frota -->
         <div>
           <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Status dos Drift Trikes</h3>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -262,39 +275,30 @@
           </div>
         </div>
 
-        <!-- Carrossel / Galeria Visual da Frota -->
         <div onclick="navigate('rental')" class="bg-slate-900/60 border border-slate-800 hover:border-cyan-500/60 p-4 sm:p-6 rounded-3xl cursor-pointer transition-all group">
           <div class="flex items-center justify-between mb-4">
             <h4 class="font-bold text-base text-slate-200 uppercase tracking-wider flex items-center gap-2 group-hover:text-cyan-400 transition-colors">
               <i data-lucide="car" class="w-5 h-5 text-cyan-400"></i> Visão da Garagem
             </h4>
           </div>
-          <div id="dash-fleet-preview" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <!-- Renderizado dinamicamente com as fotos -->
-          </div>
+          <div id="dash-fleet-preview" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
         </div>
       </section>
 
-      <!-- ========================================== -->
-      <!-- TELA: SELEÇÃO PARA ALUGAR (PASSO 1)        -->
-      <!-- ========================================== -->
+      <!-- SELEÇÃO PARA ALUGAR -->
       <section id="view-rental" class="app-view space-y-5 hidden">
         <div class="flex items-center justify-between">
           <div>
             <h2 class="text-xl font-black uppercase italic text-white">Selecione os Carrinhos</h2>
-            <p class="text-xs text-slate-400">Marque 1 ou mais carrinhos para a mesma pessoa/comanda</p>
+            <p class="text-xs text-slate-400">Marque 1 ou mais carrinhos para o mesmo cliente</p>
           </div>
           <span class="text-xs font-bold text-orange-400 bg-orange-500/10 border border-orange-500/30 px-3 py-1.5 rounded-full">
             R$ 10,00 = 10 Min
           </span>
         </div>
 
-        <!-- Grade de Carrinhos Disponíveis -->
-        <div id="rental-trikes-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          <!-- Renderizado via JS -->
-        </div>
+        <div id="rental-trikes-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5"></div>
 
-        <!-- Barra Inferior Fixa para Prosseguir ao PIX -->
         <div id="rental-bottom-bar" class="fixed bottom-3 left-0 w-full px-4 z-40 hidden">
           <div class="max-w-5xl mx-auto bg-slate-900/95 backdrop-blur-xl border-2 border-cyan-500/80 p-4 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.3)] flex items-center justify-between">
             <div>
@@ -309,9 +313,7 @@
         </div>
       </section>
 
-      <!-- ========================================== -->
-      <!-- TELA: PAGAMENTO PIX (FOTO 2 / CARTAZ)      -->
-      <!-- ========================================== -->
+      <!-- PAGAMENTO PIX & MÉTODOS -->
       <section id="view-payment" class="app-view hidden max-w-lg mx-auto space-y-4">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 text-center shadow-2xl relative overflow-hidden">
           <div class="absolute -top-10 -right-10 w-36 h-36 bg-orange-500/20 rounded-full blur-[70px]"></div>
@@ -328,7 +330,6 @@
           <h2 class="text-2xl font-black text-white italic uppercase">Cobrança da Locação</h2>
           <p id="payment-summary-text" class="text-sm text-slate-400 mt-1 mb-3">1 Carrinho • 10 Minutos</p>
 
-          <!-- Seletor de Método de Pagamento -->
           <div class="mb-4">
             <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Forma de Pagamento</label>
             <div class="grid grid-cols-3 gap-2 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
@@ -344,18 +345,13 @@
             </div>
           </div>
 
-          <!-- Valor Destaque -->
           <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl mb-4 flex items-center justify-between">
             <span class="text-xs text-slate-400 font-bold uppercase">Valor a Cobrar</span>
             <span id="payment-total-value" class="text-3xl font-black text-orange-400">R$ 10,00</span>
           </div>
 
-          <!-- Container do Cartaz PIX (Visível quando método for PIX) -->
           <div id="payment-pix-container" class="space-y-4">
-            <!-- Cartaz do QR Code Real (Renderizado diretamente / Alta Definição) -->
             <div class="bg-white p-3 sm:p-4 rounded-3xl shadow-2xl inline-block max-w-[320px] w-full border-4 border-orange-500 text-slate-900 select-none">
-              
-              <!-- Moldura do QR Code Real (Sem distorção de proporção) -->
               <div class="rounded-2xl bg-white shadow-inner mb-3 overflow-hidden flex flex-col items-center justify-center p-2 border border-slate-200">
                 <img 
                   id="pix-qr-image"
@@ -366,7 +362,6 @@
                 />
               </div>
 
-              <!-- Dados do Beneficiário -->
               <div class="text-left text-xs space-y-1.5 px-1 font-sans">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-1">
                   <span class="text-slate-400 font-semibold flex items-center gap-1"><i data-lucide="user" class="w-3.5 h-3.5 text-orange-500"></i> Nome</span>
@@ -382,7 +377,6 @@
                 </div>
               </div>
 
-              <!-- Botão para Carregar Foto da Galeria se Quiser Usar Arquivo Local -->
               <div class="mt-3 pt-2 border-t border-slate-100 text-center">
                 <label class="cursor-pointer text-[11px] text-orange-600 hover:text-orange-700 font-bold inline-flex items-center gap-1">
                   <i data-lucide="upload" class="w-3.5 h-3.5"></i> Usar Foto 2 da Minha Galeria
@@ -391,7 +385,6 @@
               </div>
             </div>
 
-            <!-- Chave Copia e Cola Oficial do Banco Central / Celular -->
             <div class="mt-4 bg-slate-950/80 border border-slate-800 p-3.5 rounded-2xl text-left text-xs space-y-2.5">
               <button onclick="copyPixCode()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md">
                 <i data-lucide="copy" class="w-4 h-4"></i>
@@ -408,7 +401,6 @@
             </div>
           </div>
 
-          <!-- Mensagem alternativa para Dinheiro ou Cartão -->
           <div id="payment-alt-container" class="hidden bg-slate-950 border border-slate-800 p-6 rounded-2xl text-center space-y-2">
             <div id="alt-payment-icon" class="w-12 h-12 rounded-2xl mx-auto flex items-center justify-center bg-cyan-500/10 text-cyan-400">
               <i data-lucide="banknote" class="w-6 h-6"></i>
@@ -417,7 +409,6 @@
             <p id="alt-payment-desc" class="text-xs text-slate-400">Receba a quantia em espécie com o cliente antes de liberar os carrinhos para a pista.</p>
           </div>
 
-          <!-- Botão de Liberação de Alta Prioridade -->
           <div class="mt-5 space-y-2.5">
             <button onclick="confirmPaymentAndRelease()" class="w-full bg-gradient-to-r from-green-600 via-emerald-500 to-green-600 hover:from-green-500 hover:to-emerald-400 text-white font-black py-4 rounded-2xl uppercase tracking-wider text-base flex items-center justify-center gap-2.5 shadow-[0_0_25px_rgba(34,197,94,0.4)] transition-all">
               <i data-lucide="check-circle" class="w-6 h-6"></i>
@@ -430,9 +421,7 @@
         </div>
       </section>
 
-      <!-- ========================================== -->
-      <!-- TELA: NA PISTA (CRONÔMETRO EM TEMPO REAL)  -->
-      <!-- ========================================== -->
+      <!-- NA PISTA (CRONÔMETRO) -->
       <section id="view-active" class="app-view hidden space-y-4">
         <div class="flex items-center justify-between">
           <div>
@@ -446,16 +435,11 @@
           </button>
         </div>
 
-        <div id="active-rentals-list" class="space-y-3">
-          <!-- Renderizado via JS -->
-        </div>
+        <div id="active-rentals-list" class="space-y-3"></div>
       </section>
 
-      <!-- ========================================== -->
-      <!-- TELA: GERENCIAR FROTA (CADASTRAR/EDITAR)   -->
-      <!-- ========================================== -->
+      <!-- GERENCIAR FROTA -->
       <section id="view-fleet" class="app-view hidden space-y-6">
-        <!-- Formulário Adicionar / Editar -->
         <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl relative" id="fleet-form-card">
           <div class="flex items-center justify-between mb-4">
             <h3 id="fleet-form-title" class="font-bold text-base text-slate-200 flex items-center gap-2">
@@ -470,7 +454,6 @@
             <input type="hidden" id="trike-edit-id" value="" />
 
             <div class="flex flex-col sm:flex-row items-center gap-4">
-              <!-- Upload / Foto do Carrinho -->
               <label class="cursor-pointer group flex-shrink-0 flex flex-col items-center">
                 <div class="w-24 h-24 rounded-2xl border-2 border-dashed border-slate-700 group-hover:border-cyan-400 bg-slate-950 flex items-center justify-center overflow-hidden relative shadow-inner">
                   <img id="trike-preview-img" src="" alt="Foto" class="hidden w-full h-full object-cover" />
@@ -483,7 +466,6 @@
                 <span class="text-[10px] text-cyan-400 mt-1 font-semibold">Tirar ou escolher foto</span>
               </label>
 
-              <!-- Nome / Identificação -->
               <div class="flex-1 w-full space-y-3">
                 <div>
                   <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nome e Cor do Carrinho</label>
@@ -504,22 +486,17 @@
           </form>
         </div>
 
-        <!-- Lista de Carrinhos Cadastrados -->
         <div>
           <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Carrinhos na Frota (<span id="fleet-total-badge">0</span>)</h3>
-          <div id="fleet-manage-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <!-- Renderizado via JS -->
-          </div>
+          <div id="fleet-manage-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
         </div>
       </section>
 
-      <!-- ========================================== -->
-      <!-- TELA: GERENCIAR EQUIPE (USUÁRIOS & ADM)   -->
-      <!-- ========================================== -->
+      <!-- GERENCIAR EQUIPE -->
       <section id="view-users" class="app-view hidden space-y-6">
         <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
           <h3 class="font-bold text-base text-slate-200 mb-4 flex items-center gap-2">
-            <i data-lucide="user-plus" class="w-5 h-5 text-purple-400"></i> Novo Vendedor ou Administrador
+            <i data-lucide="user-plus" class="w-5 h-5 text-purple-400"></i> Cadastrar Novo Operador / Admin
           </h3>
           <form onsubmit="handleCreateUser(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
@@ -537,8 +514,8 @@
             <div>
               <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nível de Acesso</label>
               <select id="new-user-role" class="w-full bg-slate-950 border border-slate-700 px-4 py-2.5 rounded-xl text-sm focus:border-purple-500 outline-none text-slate-200">
-                <option value="seller">Vendedor (Apenas Operar/Alugar)</option>
-                <option value="admin">Administrador (Controle Total)</option>
+                <option value="seller">Vendedor (Opera e Aluga)</option>
+                <option value="admin">Administrador (Acesso Total)</option>
               </select>
             </div>
             <div class="sm:col-span-2 pt-2">
@@ -551,15 +528,11 @@
 
         <div>
           <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Membros da Equipe</h3>
-          <div id="users-manage-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <!-- Renderizado via JS -->
-          </div>
+          <div id="users-manage-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
         </div>
       </section>
 
-      <!-- ========================================== -->
-      <!-- TELA: CAIXA / FECHAMENTO DO DIA            -->
-      <!-- ========================================== -->
+      <!-- CAIXA / RELATÓRIO DO EXPEDIENTE -->
       <section id="view-reports" class="app-view hidden space-y-6">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl relative overflow-hidden text-center shadow-xl">
@@ -577,7 +550,7 @@
           </div>
         </div>
 
-        <!-- Discriminação por Forma de Pagamento -->
+        <!-- Discriminação por Pagamento -->
         <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
           <h3 class="font-bold text-base text-slate-200 mb-4 flex items-center gap-2">
             <i data-lucide="wallet" class="w-5 h-5 text-orange-400"></i> Por Forma de Pagamento
@@ -598,34 +571,38 @@
           </div>
         </div>
 
+        <!-- Faturamento & Produtividade por Membro da Equipe -->
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
+          <h3 class="font-bold text-base text-slate-200 mb-4 flex items-center gap-2">
+            <i data-lucide="users" class="w-5 h-5 text-purple-400"></i> Faturamento & Produtividade por Membro
+          </h3>
+          <div id="report-users-breakdown" class="space-y-2"></div>
+        </div>
+
         <!-- Estatísticas por Carrinho -->
         <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
           <h3 class="font-bold text-base text-slate-200 mb-4 flex items-center gap-2">
             <i data-lucide="bar-chart-2" class="w-5 h-5 text-cyan-400"></i> Desempenho por Carrinho
           </h3>
-          <div id="report-trikes-breakdown" class="space-y-2">
-            <!-- Renderizado via JS -->
-          </div>
+          <div id="report-trikes-breakdown" class="space-y-2"></div>
         </div>
 
-        <!-- Histórico de Fechamentos Anteriores -->
+        <!-- Histórico de Caixas Anteriores -->
         <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
           <h3 class="font-bold text-base text-slate-200 mb-4 flex items-center gap-2">
             <i data-lucide="history" class="w-5 h-5 text-purple-400"></i> Histórico de Caixas Fechados
           </h3>
-          <div id="report-history-list" class="space-y-2.5 max-h-60 overflow-y-auto no-scrollbar">
-            <!-- Renderizado via JS -->
-          </div>
+          <div id="report-history-list" class="space-y-2.5 max-h-64 overflow-y-auto no-scrollbar"></div>
         </div>
 
-        <!-- Botão Fechar Caixa -->
+        <!-- Fechar Caixa do Turno -->
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl text-center space-y-3">
           <div class="w-12 h-12 bg-red-500/10 text-red-400 rounded-2xl flex items-center justify-center mx-auto">
             <i data-lucide="lock" class="w-6 h-6"></i>
           </div>
           <h4 class="font-black uppercase text-base text-white">Fechar Caixa do Expediente</h4>
           <p class="text-xs text-slate-400 max-w-sm mx-auto">
-            Gera o resumo final do turno, salva no histórico perpétuo e zera os contadores para o próximo expediente.
+            Gera o relatório com faturamento por membro e formas de pagamento, arquiva no histórico e zera contadores para o próximo turno.
           </p>
           <button onclick="handleCloseRegister()" class="bg-red-500/20 hover:bg-red-500 border border-red-500 text-red-400 hover:text-white font-black px-8 py-3.5 rounded-xl uppercase text-xs tracking-wider transition-all">
             Zerar e Salvar Fechamento
@@ -636,15 +613,11 @@
     </main>
   </div>
 
-  <!-- ========================================== -->
-  <!-- SCRIPT PRINCIPAL DO SISTEMA                -->
-  <!-- ========================================== -->
   <script>
-    // --- 1. CONFIGURAÇÃO SUPABASE & REGRAS ---
+    // --- 1. CONSTANTES & SUPABASE ---
     const SUPABASE_URL = "https://licwqwoqlfzfwbvugall.supabase.co";
     const SUPABASE_KEY = "sb_publishable_uY40Pc9DsLgxfBeIaGhS4g_Je4AfyxJ";
     
-    // Inicialização do Supabase Client para quando for conectar as tabelas reais
     let supabaseClient = null;
     try {
       if (window.supabase) {
@@ -658,85 +631,57 @@
     const RENTAL_MINUTES = 10;
     const RENTAL_MS = RENTAL_MINUTES * 60 * 1000;
 
-    // --- 2. DADOS PADRÃO (COM OS NOMES EXATOS DOS ARQUIVOS DA SUA PASTA) ---
+    // --- 2. DADOS PADRÃO ---
     const DEFAULT_TRIKES = [
-      { 
-        id: 1, 
-        name: "Carrinho 1 (Fogo & Gelo)", 
-        image: "carrinho (1).jpg", 
-        status: "available", 
-        endTime: null,
-        totalRentals: 0,
-        rentedBy: null
-      },
-      { 
-        id: 2, 
-        name: "Carrinho 2 (Vermelho Xtreme)", 
-        image: "carrinho (2).jpg", 
-        status: "available", 
-        endTime: null,
-        totalRentals: 0,
-        rentedBy: null 
-      },
-      { 
-        id: 3, 
-        name: "Carrinho 3 (Amarelo Graffiti)", 
-        image: "carrinho (3).jpg", 
-        status: "available", 
-        endTime: null,
-        totalRentals: 0,
-        rentedBy: null 
-      },
-      { 
-        id: 4, 
-        name: "Carrinho 4 (Azul Camuflado)", 
-        image: "carrinho (4).jpg", 
-        status: "available", 
-        endTime: null,
-        totalRentals: 0,
-        rentedBy: null 
-      }
+      { id: 1, name: "Carrinho 1 (Fogo & Gelo)", image: "carrinho (1).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
+      { id: 2, name: "Carrinho 2 (Vermelho Xtreme)", image: "carrinho (2).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
+      { id: 3, name: "Carrinho 3 (Amarelo Graffiti)", image: "carrinho (3).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
+      { id: 4, name: "Carrinho 4 (Azul Camuflado)", image: "carrinho (4).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null }
     ];
 
+    // Marrison Carlos assume integralmente a conta de Administrador mestre
     const DEFAULT_USERS = [
-      { id: 1, name: "Marrison Carlos (Dev/Admin)", username: "admin", password: "admin", role: "admin" },
+      { id: 1, name: "Marrison Carlos", username: "Marrison Carlos", password: "Mkrlos@123", role: "admin" },
       { id: 2, name: "Vendedor Pista", username: "vendedor", password: "123", role: "seller" }
     ];
 
-    // --- 3. CARREGAMENTO DO LOCALSTORAGE COM PERSISTÊNCIA ---
+    // --- 3. ESTADO COM MIGRAÇÃO AUTOMÁTICA ---
     let trikes = JSON.parse(localStorage.getItem('dt_trikes')) || DEFAULT_TRIKES;
-
-    // Atualiza caminhos antigos salvos em cache para bater exatamente com a foto da pasta
-    trikes = trikes.map(t => {
-      if (t.id === 1 && (!t.image || t.image.includes('image_'))) t.image = 'carrinho (1).jpg';
-      if (t.id === 2 && (!t.image || t.image.includes('image_'))) t.image = 'carrinho (2).jpg';
-      if (t.id === 3 && (!t.image || t.image.includes('image_'))) t.image = 'carrinho (3).jpg';
-      if (t.id === 4 && (!t.image || t.image.includes('image_'))) t.image = 'carrinho (4).jpg';
-      return t;
-    });
 
     let users = JSON.parse(localStorage.getItem('dt_users')) || DEFAULT_USERS;
 
-    // Atualiza nome se o usuário admin já estiver salvo em cache anterior
-    users = users.map(u => {
-      if (u.username === 'admin') {
-        return { ...u, name: 'Marrison Carlos (Dev/Admin)' };
-      }
-      return u;
-    });
+    // Migração: Exclui qualquer 'admin' antigo e garante Marrison Carlos como administrador mestre
+    users = users.filter(u => u.username.toLowerCase() !== 'admin');
+    const marrisonExists = users.some(u => u.username.toLowerCase() === 'marrison carlos');
+    if (!marrisonExists) {
+      users.unshift({ id: 1, name: "Marrison Carlos", username: "Marrison Carlos", password: "Mkrlos@123", role: "admin" });
+    } else {
+      users = users.map(u => {
+        if (u.username.toLowerCase() === 'marrison carlos') {
+          return { ...u, name: "Marrison Carlos", username: "Marrison Carlos", role: "admin" };
+        }
+        return u;
+      });
+    }
 
     let dailyRevenue = parseFloat(localStorage.getItem('dt_revenue')) || 0;
     let dailyRentals = parseInt(localStorage.getItem('dt_rentals')) || 0;
     let dailyByPayment = JSON.parse(localStorage.getItem('dt_by_payment')) || { pix: 0, money: 0, card: 0 };
+    // Rastreamento por usuário: { "Marrison Carlos": { rentals: 5, revenue: 50.0 } }
+    let dailyByUser = JSON.parse(localStorage.getItem('dt_by_user')) || {};
     let registerHistory = JSON.parse(localStorage.getItem('dt_reg_history')) || [];
     
     let currentPaymentMethod = 'pix';
     let customPixPoster = localStorage.getItem('dt_custom_pix') || null;
     let currentUser = JSON.parse(localStorage.getItem('dt_current_user')) || null;
-    if (currentUser && currentUser.username === 'admin') {
-      currentUser.name = 'Marrison Carlos (Dev/Admin)';
-      localStorage.setItem('dt_current_user', JSON.stringify(currentUser));
+
+    if (currentUser) {
+      if (currentUser.username.toLowerCase() === 'admin') {
+        currentUser = users.find(u => u.username === "Marrison Carlos");
+        localStorage.setItem('dt_current_user', JSON.stringify(currentUser));
+      }
     }
+
     let currentView = 'dashboard';
     let selectedTrikeIds = [];
     let tempTrikePhoto = null;
@@ -747,6 +692,7 @@
       localStorage.setItem('dt_revenue', dailyRevenue.toString());
       localStorage.setItem('dt_rentals', dailyRentals.toString());
       localStorage.setItem('dt_by_payment', JSON.stringify(dailyByPayment));
+      localStorage.setItem('dt_by_user', JSON.stringify(dailyByUser));
       localStorage.setItem('dt_reg_history', JSON.stringify(registerHistory));
       if (customPixPoster) {
         localStorage.setItem('dt_custom_pix', customPixPoster);
@@ -758,7 +704,7 @@
       }
     }
 
-    // --- 4. SISTEMA DE TOAST CUSTOMIZADO & ALERTAS ---
+    // --- 4. TOAST & ALERTAS ---
     function showToast(msg, type = 'info') {
       const toast = document.getElementById('toast');
       const msgEl = document.getElementById('toast-message');
@@ -780,9 +726,7 @@
       }, 3000);
     }
 
-    // Alerta sonoro nativo sintetizado (Web Audio API) + Vibração no celular
     function playBeepAlert(isCritical = false) {
-      // Vibração no celular do operador se suportado
       if (navigator.vibrate) {
         if (isCritical) {
           navigator.vibrate([200, 100, 200, 100, 400]);
@@ -805,35 +749,29 @@
         osc.start();
         osc.stop(audioCtx.currentTime + 0.35);
       } catch (e) {
-        console.log('Audio Context muted:', e);
+        console.log('Audio Context:', e);
       }
     }
 
-    // --- 5. NAVEGAÇÃO ENTRE TELAS ---
+    // --- 5. NAVEGAÇÃO ---
     function navigate(viewName) {
       currentView = viewName;
       
-      // Ocultar todas as seções
       document.querySelectorAll('.app-view').forEach(el => el.classList.add('hidden'));
-
-      // Desativar botões de navegação
       document.querySelectorAll('.nav-item').forEach(btn => {
         btn.classList.remove('text-cyan-400', 'bg-slate-800', 'shadow-inner');
         btn.classList.add('text-slate-400');
       });
 
-      // Ativar a tela correspondente
       const targetView = document.getElementById(`view-${viewName}`);
       if (targetView) targetView.classList.remove('hidden');
 
-      // Destacar o botão do menu
       const activeNav = document.getElementById(`nav-${viewName}`);
       if (activeNav) {
         activeNav.classList.remove('text-slate-400');
         activeNav.classList.add('text-cyan-400', 'bg-slate-800', 'shadow-inner');
       }
 
-      // Renderizar conteúdo específico da tela
       if (viewName === 'dashboard') renderDashboard();
       if (viewName === 'rental') renderRentalSelection();
       if (viewName === 'active') renderActiveRentals();
@@ -863,6 +801,14 @@
       }
     }
 
+    function quickLoginMarrison() {
+      const marrison = users.find(u => u.username === "Marrison Carlos") || DEFAULT_USERS[0];
+      currentUser = marrison;
+      saveState();
+      initApp();
+      showToast(`Bem-vindo, ${marrison.name}!`, 'success');
+    }
+
     function handleLogout() {
       currentUser = null;
       saveState();
@@ -877,11 +823,9 @@
       document.getElementById('view-login').classList.add('hidden');
       document.getElementById('app-container').classList.remove('hidden');
 
-      // Tag do usuário no cabeçalho
       const userTag = document.getElementById('header-user-tag');
       userTag.innerText = `${currentUser.name} (${currentUser.role === 'admin' ? 'ADMIN' : 'VENDEDOR'})`;
 
-      // Controle de privilégios: esconder abas restritas se for apenas vendedor
       const adminElements = document.querySelectorAll('.admin-only');
       adminElements.forEach(el => {
         if (currentUser.role === 'admin') {
@@ -905,7 +849,6 @@
       document.getElementById('dash-total-count').innerText = trikes.length;
       document.getElementById('dash-today-count').innerText = dailyRentals;
 
-      // Galeria visual expandida com fotos maiores e foco centralizado
       const previewCont = document.getElementById('dash-fleet-preview');
       previewCont.innerHTML = trikes.map(t => `
         <div class="bg-slate-950 border-2 ${t.status === 'in-use' ? 'border-orange-500/80 shadow-[0_0_15px_rgba(249,115,22,0.25)]' : 'border-slate-800 hover:border-slate-700'} rounded-2xl p-3 text-center overflow-hidden transition-all flex flex-col justify-between">
@@ -927,7 +870,7 @@
       lucide.createIcons();
     }
 
-    // --- 8. TELA: SELEÇÃO PARA ALUGUEL ---
+    // --- 8. SELEÇÃO PARA ALUGUEL ---
     function renderRentalSelection() {
       const availableTrikes = trikes.filter(t => t.status === 'available');
       const listEl = document.getElementById('rental-trikes-list');
@@ -966,7 +909,6 @@
         `;
       }).join('');
 
-      // Barra flutuante de total
       if (selectedTrikeIds.length > 0) {
         bottomBar.classList.remove('hidden');
         document.getElementById('rental-bar-total').innerText = `R$ ${(selectedTrikeIds.length * PRICE_PER_TRIKE).toFixed(2)}`;
@@ -987,15 +929,7 @@
       renderRentalSelection();
     }
 
-    function quickLoginAdmin() {
-      const admin = users.find(u => u.username === 'admin') || DEFAULT_USERS[0];
-      currentUser = admin;
-      saveState();
-      initApp();
-      showToast(`Bem-vindo, ${admin.name}!`, 'success');
-    }
-
-    // --- 9. TELA DE PAGAMENTO COM SELETOR DE MÉTODO ---
+    // --- 9. PAGAMENTO ---
     function selectPaymentMethod(method) {
       currentPaymentMethod = method;
       const pixBtn = document.getElementById('pay-method-pix');
@@ -1059,7 +993,7 @@
     function confirmPaymentAndRelease() {
       const now = Date.now();
       const end = now + RENTAL_MS;
-      const operatorName = currentUser ? currentUser.name : 'Operador';
+      const operatorName = currentUser ? currentUser.name : 'Marrison Carlos';
 
       trikes = trikes.map(t => {
         if (selectedTrikeIds.includes(t.id)) {
@@ -1079,16 +1013,25 @@
       dailyRentals += selectedTrikeIds.length;
       dailyByPayment[currentPaymentMethod] = (dailyByPayment[currentPaymentMethod] || 0) + amount;
       
+      // Atribuição de Caixa e Produtividade ao Operador Atual
+      if (!dailyByUser[operatorName]) {
+        dailyByUser[operatorName] = { rentals: 0, revenue: 0 };
+      }
+      dailyByUser[operatorName].rentals += selectedTrikeIds.length;
+      dailyByUser[operatorName].revenue += amount;
+
       saveState();
       playBeepAlert(false);
-      showToast(`${selectedTrikeIds.length} Carrinho(s) Liberado(s)! [${currentPaymentMethod.toUpperCase()}]`, 'success');
+      showToast(`${selectedTrikeIds.length} Carrinho(s) Liberado(s)! Operador: ${operatorName}`, 'success');
       
       selectedTrikeIds = [];
       navigate('active');
     }
 
-    // --- 10. CRONÔMETRO / MONITORAMENTO NA PISTA + EXTENSÕES ---
+    // --- 10. CRONÔMETRO NA PISTA ---
     function extendRentalTime(trikeId, extraMinutes, extraValue) {
+      const operatorName = currentUser ? currentUser.name : 'Marrison Carlos';
+
       trikes = trikes.map(t => {
         if (t.id === trikeId) {
           const now = Date.now();
@@ -1104,6 +1047,12 @@
 
       dailyRevenue += extraValue;
       dailyByPayment[currentPaymentMethod] = (dailyByPayment[currentPaymentMethod] || 0) + extraValue;
+      
+      if (!dailyByUser[operatorName]) {
+        dailyByUser[operatorName] = { rentals: 0, revenue: 0 };
+      }
+      dailyByUser[operatorName].revenue += extraValue;
+
       saveState();
       playBeepAlert(false);
       showToast(`+${extraMinutes} Min adicionados! (+R$ ${extraValue.toFixed(2)})`, "success");
@@ -1175,12 +1124,11 @@
               </div>
             </div>
 
-            <!-- Controles Rápidos: +Tempo e Devolver -->
             <div class="flex items-center gap-2 flex-wrap">
-              <button onclick="extendRentalTime(${t.id}, 5, 5.00)" class="bg-cyan-950/60 hover:bg-cyan-900 border border-cyan-700/60 text-cyan-300 font-bold py-2.5 px-3 rounded-xl text-xs uppercase flex items-center gap-1 transition-all" title="Adicionar 5 minutos (+ R$ 5,00)">
+              <button onclick="extendRentalTime(${t.id}, 5, 5.00)" class="bg-cyan-950/60 hover:bg-cyan-900 border border-cyan-700/60 text-cyan-300 font-bold py-2.5 px-3 rounded-xl text-xs uppercase flex items-center gap-1 transition-all">
                 <i data-lucide="plus" class="w-3.5 h-3.5"></i> 5 min
               </button>
-              <button onclick="extendRentalTime(${t.id}, 10, 10.00)" class="bg-orange-950/60 hover:bg-orange-900 border border-orange-700/60 text-orange-300 font-bold py-2.5 px-3 rounded-xl text-xs uppercase flex items-center gap-1 transition-all" title="Adicionar 10 minutos (+ R$ 10,00)">
+              <button onclick="extendRentalTime(${t.id}, 10, 10.00)" class="bg-orange-950/60 hover:bg-orange-900 border border-orange-700/60 text-orange-300 font-bold py-2.5 px-3 rounded-xl text-xs uppercase flex items-center gap-1 transition-all">
                 <i data-lucide="plus" class="w-3.5 h-3.5"></i> 10 min
               </button>
               <button onclick="stopRentalEarly(${t.id})" class="bg-slate-950 hover:bg-red-950/40 border border-slate-700 hover:border-red-500 text-slate-300 hover:text-red-400 font-bold py-2.5 px-3.5 rounded-xl text-xs uppercase flex items-center gap-1.5 transition-all">
@@ -1206,17 +1154,14 @@
       renderActiveRentals();
     }
 
-    // Loop global de atualização do tempo a cada segundo
     setInterval(() => {
       const inUse = trikes.filter(t => t.status === 'in-use');
-      if (inUse.length > 0) {
-        if (currentView === 'active') {
-          renderActiveRentals();
-        }
+      if (inUse.length > 0 && currentView === 'active') {
+        renderActiveRentals();
       }
     }, 1000);
 
-    // Payload Pix Padrão Banco Central (EMV/BRCode) oficial para chave celular +5582999900971 do Jonas André
+    // BACEN Pix EMV
     function getOfficialPixPayload(amount = 10.00) {
       const key = "+5582999900971";
       const name = "JONAS ANDRE";
@@ -1226,7 +1171,6 @@
       const partMerchant = `0014br.gov.bcb.pix01${String(key.length).padStart(2, '0')}${key}`;
       let raw = `00020126${String(partMerchant.length).padStart(2, '0')}${partMerchant}52040000530398654${String(formattedAmount.length).padStart(2, '0')}${formattedAmount}5802BR59${String(name.length).padStart(2, '0')}${name}60${String(city.length).padStart(2, '0')}${city}62070503***6304`;
       
-      // Cálculo do CRC16-CCITT oficial exigido pelo BACEN
       let crc = 0xFFFF;
       for (let i = 0; i < raw.length; i++) {
         crc ^= (raw.charCodeAt(i) << 8);
@@ -1238,8 +1182,7 @@
           }
         }
       }
-      const crcHex = crc.toString(16).toUpperCase().padStart(4, '0');
-      return raw + crcHex;
+      return raw + crc.toString(16).toUpperCase().padStart(4, '0');
     }
 
     function copyPixCode() {
@@ -1259,7 +1202,6 @@
         imgElement.src = customPixPoster;
         return;
       }
-      // Tenta carregar pix.png caso a extensão seja png em vez de jpg
       if (imgElement.src.endsWith('pix.jpg')) {
         imgElement.src = 'pix.png';
         return;
@@ -1269,7 +1211,6 @@
         return;
       }
       imgElement.onerror = null;
-      // Fallback: Gera QR Code com o Payload oficial do Banco Central formatado para o valor correto
       const totalAmount = selectedTrikeIds.length > 0 ? (selectedTrikeIds.length * PRICE_PER_TRIKE) : PRICE_PER_TRIKE;
       const pixPayload = encodeURIComponent(getOfficialPixPayload(totalAmount));
       imgElement.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=2&data=${pixPayload}`;
@@ -1290,7 +1231,7 @@
       }
     }
 
-    // --- 11. GERENCIAR FROTA (CADASTRAR/EDITAR CARRINHOS) ---
+    // --- 11. GERENCIAR FROTA ---
     function previewTrikePhoto(event) {
       const file = event.target.files[0];
       if (file) {
@@ -1315,7 +1256,6 @@
       if (!name) return;
 
       if (editId) {
-        // Atualização de carrinho existente
         trikes = trikes.map(t => {
           if (t.id === parseInt(editId, 10)) {
             return {
@@ -1328,7 +1268,6 @@
         });
         showToast("Carrinho atualizado!", "success");
       } else {
-        // Criação de novo carrinho
         const newId = trikes.length > 0 ? Math.max(...trikes.map(x => x.id)) + 1 : 1;
         trikes.push({
           id: newId,
@@ -1422,7 +1361,7 @@
       lucide.createIcons();
     }
 
-    // --- 12. GERENCIAR USUÁRIOS (EQUIPE & PRIVILÉGIOS) ---
+    // --- 12. GERENCIAR EQUIPE & TROCA DE SENHA ---
     function handleCreateUser(e) {
       e.preventDefault();
       const name = document.getElementById('new-user-name').value.trim();
@@ -1430,8 +1369,20 @@
       const pass = document.getElementById('new-user-password').value.trim();
       const role = document.getElementById('new-user-role').value;
 
+      const exists = users.some(u => u.username.toLowerCase() === user.toLowerCase());
+      if (exists) {
+        showToast("Já existe um membro com esse login!", "error");
+        return;
+      }
+
       const newId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
       users.push({ id: newId, name, username: user, password: pass, role });
+      
+      // Inicializa o caixa deste novo colaborador caso ainda não exista
+      if (!dailyByUser[name]) {
+        dailyByUser[name] = { rentals: 0, revenue: 0 };
+      }
+
       saveState();
 
       document.getElementById('new-user-name').value = '';
@@ -1440,6 +1391,44 @@
       
       showToast("Membro cadastrado com sucesso!", "success");
       renderUsersManagement();
+    }
+
+    function openPasswordModal(userId) {
+      const user = users.find(u => u.id === userId);
+      if (!user) return;
+
+      document.getElementById('modal-password-user-id').value = user.id;
+      document.getElementById('modal-password-user-desc').innerText = `Alterando senha do operador: ${user.name} (@${user.username})`;
+      document.getElementById('modal-new-password').value = '';
+      document.getElementById('modal-password').classList.remove('hidden');
+    }
+
+    function closePasswordModal() {
+      document.getElementById('modal-password').classList.add('hidden');
+      document.getElementById('modal-new-password').value = '';
+    }
+
+    function handleSaveNewPassword(e) {
+      e.preventDefault();
+      const userId = parseInt(document.getElementById('modal-password-user-id').value, 10);
+      const newPass = document.getElementById('modal-new-password').value.trim();
+
+      if (!newPass) return;
+
+      users = users.map(u => {
+        if (u.id === userId) {
+          return { ...u, password: newPass };
+        }
+        return u;
+      });
+
+      if (currentUser && currentUser.id === userId) {
+        currentUser.password = newPass;
+      }
+
+      saveState();
+      closePasswordModal();
+      showToast("Senha atualizada com sucesso!", "success");
     }
 
     function toggleUserPrivilege(id) {
@@ -1476,7 +1465,7 @@
         const isMe = currentUser && currentUser.id === u.id;
         const isAdmin = u.role === 'admin';
         return `
-          <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
+          <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-xl flex items-center justify-center ${isAdmin ? 'bg-purple-500/20 text-purple-400' : 'bg-cyan-500/20 text-cyan-400'}">
                 <i data-lucide="${isAdmin ? 'shield-check' : 'user'}" class="w-5 h-5"></i>
@@ -1487,16 +1476,20 @@
               </div>
             </div>
 
-            ${!isMe ? `
-              <div class="flex items-center gap-1.5">
+            <div class="flex items-center gap-1.5 self-end sm:self-auto">
+              <button onclick="openPasswordModal(${u.id})" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-orange-950 text-xs font-bold text-slate-300 hover:text-orange-400 transition-colors flex items-center gap-1" title="Mudar Senha">
+                <i data-lucide="key" class="w-3.5 h-3.5 text-orange-400"></i> Senha
+              </button>
+
+              ${!isMe ? `
                 <button onclick="toggleUserPrivilege(${u.id})" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 transition-colors" title="Mudar privilégio">
-                  ${isAdmin ? 'Tornar Vendedor' : 'Tornar Admin'}
+                  ${isAdmin ? 'Vendedor' : 'Admin'}
                 </button>
                 <button onclick="removeUser(${u.id})" class="p-2 rounded-lg bg-slate-800 hover:bg-red-950 text-slate-400 hover:text-red-400 transition-colors" title="Remover">
                   <i data-lucide="trash-2" class="w-4 h-4"></i>
                 </button>
-              </div>
-            ` : ''}
+              ` : ''}
+            </div>
           </div>
         `;
       }).join('');
@@ -1504,16 +1497,40 @@
       lucide.createIcons();
     }
 
-    // --- 13. RELATÓRIOS & FECHAMENTO DE CAIXA PERPÉTUO ---
+    // --- 13. RELATÓRIOS & FECHAMENTO DE CAIXA POR USUÁRIO ---
     function renderReports() {
       document.getElementById('report-revenue').innerText = `R$ ${dailyRevenue.toFixed(2)}`;
       document.getElementById('report-rentals').innerText = dailyRentals;
 
-      // Discriminação por Pagamento
+      // Por Pagamento
       document.getElementById('report-pay-pix').innerText = `R$ ${(dailyByPayment.pix || 0).toFixed(2)}`;
       document.getElementById('report-pay-money').innerText = `R$ ${(dailyByPayment.money || 0).toFixed(2)}`;
       document.getElementById('report-pay-card').innerText = `R$ ${(dailyByPayment.card || 0).toFixed(2)}`;
 
+      // Caixa e Produtividade por Membro da Equipe (Novo ou Já Cadastrado)
+      const usersBreakdownEl = document.getElementById('report-users-breakdown');
+      usersBreakdownEl.innerHTML = users.map(u => {
+        const stats = dailyByUser[u.name] || { rentals: 0, revenue: 0 };
+        return `
+          <div class="flex items-center justify-between p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
+                <i data-lucide="user-check" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <span class="text-xs font-bold text-slate-200 block">${u.name}</span>
+                <span class="text-[10px] uppercase font-semibold text-slate-500">${u.role === 'admin' ? 'Administrador' : 'Vendedor'}</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="text-xs font-black text-green-400 block">R$ ${(stats.revenue || 0).toFixed(2)}</span>
+              <span class="text-[10px] text-slate-400">${stats.rentals || 0} aluguel(is)</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Estatística por Carrinho
       const breakdown = document.getElementById('report-trikes-breakdown');
       breakdown.innerHTML = trikes.map(t => {
         const count = t.totalRentals || 0;
@@ -1529,24 +1546,37 @@
         `;
       }).join('');
 
-      // Histórico de fechamentos
+      // Histórico de fechamentos anteriores
       const histList = document.getElementById('report-history-list');
       if (registerHistory.length === 0) {
         histList.innerHTML = `<p class="text-xs text-slate-500 text-center py-3">Nenhum fechamento registrado ainda.</p>`;
       } else {
         histList.innerHTML = registerHistory.slice(-10).reverse().map(h => `
-          <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between text-xs">
-            <div>
-              <span class="font-bold text-slate-200">${h.date}</span>
-              <p class="text-[10px] text-slate-400">Fechado por: ${h.closedBy} • ${h.rentals} locações</p>
+          <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-1.5 text-xs">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="font-bold text-slate-200">${h.date}</span>
+                <p class="text-[10px] text-slate-400">Fechado por: <strong class="text-cyan-400">${h.closedBy}</strong> • ${h.rentals} corridas</p>
+              </div>
+              <div class="text-right">
+                <span class="font-black text-green-400 text-sm">R$ ${h.revenue.toFixed(2)}</span>
+                <p class="text-[10px] text-slate-500">PIX: R$ ${(h.pix || 0).toFixed(2)} | Din: R$ ${(h.money || 0).toFixed(2)}</p>
+              </div>
             </div>
-            <div class="text-right">
-              <span class="font-black text-green-400">R$ ${h.revenue.toFixed(2)}</span>
-              <p class="text-[10px] text-slate-500">PIX: R$ ${(h.pix || 0).toFixed(2)} | Din: R$ ${(h.money || 0).toFixed(2)}</p>
-            </div>
+            ${h.teamSummary ? `
+              <div class="text-[10px] text-slate-400 border-t border-slate-900 pt-1 flex flex-wrap gap-2">
+                ${Object.entries(h.teamSummary).map(([member, st]) => `
+                  <span class="bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                    ${member}: <strong>R$ ${Number(st.revenue).toFixed(2)}</strong> (${st.rentals}x)
+                  </span>
+                `).join('')}
+              </div>
+            ` : ''}
           </div>
         `).join('');
       }
+
+      lucide.createIcons();
     }
 
     function handleCloseRegister() {
@@ -1558,7 +1588,7 @@
       const now = new Date();
       const dateFormatted = `${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
 
-      // Salva no histórico perpétuo
+      // Arquiva fechamento com discriminativo individual por colaborador
       registerHistory.push({
         id: Date.now(),
         date: dateFormatted,
@@ -1567,21 +1597,24 @@
         pix: dailyByPayment.pix || 0,
         money: dailyByPayment.money || 0,
         card: dailyByPayment.card || 0,
+        teamSummary: { ...dailyByUser },
         closedBy: currentUser ? currentUser.name : 'Marrison Carlos'
       });
 
       showToast(`Caixa fechado! Total: R$ ${dailyRevenue.toFixed(2)} (${dailyRentals} corridas)`, "success");
       
+      // Zera contadores de turno
       dailyRevenue = 0;
       dailyRentals = 0;
       dailyByPayment = { pix: 0, money: 0, card: 0 };
+      dailyByUser = {};
       trikes = trikes.map(t => ({ ...t, totalRentals: 0 }));
       
       saveState();
       renderReports();
     }
 
-    // --- 14. INICIALIZAÇÃO AUTOMÁTICA ---
+    // --- 14. INICIALIZAÇÃO ---
     window.onload = function() {
       lucide.createIcons();
       if (currentUser) {
