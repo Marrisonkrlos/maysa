@@ -359,7 +359,7 @@
               <div class="rounded-2xl bg-white shadow-inner mb-3 overflow-hidden flex flex-col items-center justify-center p-2 border border-slate-200">
                 <img 
                   id="pix-qr-image"
-                  src="image_8929c9.jpg" 
+                  src="pix.jpg" 
                   alt="Cartaz QR Code PIX Jonas André" 
                   class="w-full h-auto max-h-[380px] object-contain block mx-auto rounded-xl"
                   onerror="handleQrCodeImageError(this)"
@@ -658,12 +658,12 @@
     const RENTAL_MINUTES = 10;
     const RENTAL_MS = RENTAL_MINUTES * 60 * 1000;
 
-    // --- 2. DADOS PADRÃO (COM OS CARRINHOS DA FOTO 1) ---
+    // --- 2. DADOS PADRÃO (COM OS NOMES EXATOS DOS ARQUIVOS DA SUA PASTA) ---
     const DEFAULT_TRIKES = [
       { 
         id: 1, 
-        name: "Carrinho 1 (Vermelho Xtreme)", 
-        image: "image_893169.jpg", // Foto 1 dos carrinhos
+        name: "Carrinho 1 (Fogo & Gelo)", 
+        image: "carrinho (1).jpg", 
         status: "available", 
         endTime: null,
         totalRentals: 0,
@@ -671,8 +671,8 @@
       },
       { 
         id: 2, 
-        name: "Carrinho 2 (Amarelo Graffiti)", 
-        image: "image_893169.jpg", 
+        name: "Carrinho 2 (Vermelho Xtreme)", 
+        image: "carrinho (2).jpg", 
         status: "available", 
         endTime: null,
         totalRentals: 0,
@@ -680,8 +680,8 @@
       },
       { 
         id: 3, 
-        name: "Carrinho 3 (Azul Camuflado)", 
-        image: "image_893169.jpg", 
+        name: "Carrinho 3 (Amarelo Graffiti)", 
+        image: "carrinho (3).jpg", 
         status: "available", 
         endTime: null,
         totalRentals: 0,
@@ -689,8 +689,8 @@
       },
       { 
         id: 4, 
-        name: "Carrinho 4 (Fogo & Gelo)", 
-        image: "image_893169.jpg", 
+        name: "Carrinho 4 (Azul Camuflado)", 
+        image: "carrinho (4).jpg", 
         status: "available", 
         endTime: null,
         totalRentals: 0,
@@ -705,6 +705,16 @@
 
     // --- 3. CARREGAMENTO DO LOCALSTORAGE COM PERSISTÊNCIA ---
     let trikes = JSON.parse(localStorage.getItem('dt_trikes')) || DEFAULT_TRIKES;
+
+    // Atualiza caminhos antigos salvos em cache para bater exatamente com a foto da pasta
+    trikes = trikes.map(t => {
+      if (t.id === 1 && (!t.image || t.image.includes('image_'))) t.image = 'carrinho (1).jpg';
+      if (t.id === 2 && (!t.image || t.image.includes('image_'))) t.image = 'carrinho (2).jpg';
+      if (t.id === 3 && (!t.image || t.image.includes('image_'))) t.image = 'carrinho (3).jpg';
+      if (t.id === 4 && (!t.image || t.image.includes('image_'))) t.image = 'carrinho (4).jpg';
+      return t;
+    });
+
     let users = JSON.parse(localStorage.getItem('dt_users')) || DEFAULT_USERS;
 
     // Atualiza nome se o usuário admin já estiver salvo em cache anterior
@@ -1249,8 +1259,17 @@
         imgElement.src = customPixPoster;
         return;
       }
+      // Tenta carregar pix.png caso a extensão seja png em vez de jpg
+      if (imgElement.src.endsWith('pix.jpg')) {
+        imgElement.src = 'pix.png';
+        return;
+      }
+      if (imgElement.src.endsWith('pix.png')) {
+        imgElement.src = 'pix.jpeg';
+        return;
+      }
       imgElement.onerror = null;
-      // Gera QR Code com o Payload oficial do Banco Central formatado para o valor correto
+      // Fallback: Gera QR Code com o Payload oficial do Banco Central formatado para o valor correto
       const totalAmount = selectedTrikeIds.length > 0 ? (selectedTrikeIds.length * PRICE_PER_TRIKE) : PRICE_PER_TRIKE;
       const pixPayload = encodeURIComponent(getOfficialPixPayload(totalAmount));
       imgElement.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=2&data=${pixPayload}`;
