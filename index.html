@@ -166,6 +166,7 @@
       <!-- Menu Horizontal Mobile -->
       <nav class="w-full bg-slate-900 overflow-x-auto no-scrollbar py-2 px-3 border-t border-slate-800/40">
         <div class="max-w-5xl mx-auto flex items-center justify-start sm:justify-center gap-2 min-w-max">
+          <!-- Acessíveis por Todos (Admin e Vendedor) -->
           <button onclick="navigate('dashboard')" id="nav-dashboard" class="nav-item flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
             <i data-lucide="layout-dashboard" class="w-5 h-5 mb-1"></i>
             <span class="text-[10px] font-bold uppercase tracking-wider">Início</span>
@@ -182,6 +183,7 @@
             <span class="text-[10px] font-bold uppercase tracking-wider">Na Pista</span>
           </button>
 
+          <!-- Itens Exclusivos de Administrador (Marrison Carlos) -->
           <button onclick="navigate('fleet')" id="nav-fleet" class="nav-item admin-only flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
             <i data-lucide="car" class="w-5 h-5 mb-1"></i>
             <span class="text-[10px] font-bold uppercase tracking-wider">Frota</span>
@@ -192,7 +194,8 @@
             <span class="text-[10px] font-bold uppercase tracking-wider">Equipe</span>
           </button>
 
-          <button onclick="navigate('reports')" id="nav-reports" class="nav-item admin-only flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
+          <!-- Caixa agora liberado para Vendedores e Administradores -->
+          <button onclick="navigate('reports')" id="nav-reports" class="nav-item flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
             <i data-lucide="bar-chart-3" class="w-5 h-5 mb-1"></i>
             <span class="text-[10px] font-bold uppercase tracking-wider">Caixa</span>
           </button>
@@ -437,7 +440,7 @@
         <div id="active-rentals-list" class="space-y-3"></div>
       </section>
 
-      <!-- GERENCIAR FROTA -->
+      <!-- GERENCIAR FROTA (EXCLUSIVO ADMIN) -->
       <section id="view-fleet" class="app-view hidden space-y-6">
         <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl relative" id="fleet-form-card">
           <div class="flex items-center justify-between mb-4">
@@ -491,7 +494,7 @@
         </div>
       </section>
 
-      <!-- GERENCIAR EQUIPE -->
+      <!-- GERENCIAR EQUIPE (EXCLUSIVO ADMIN) -->
       <section id="view-users" class="app-view hidden space-y-6">
         <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
           <h3 class="font-bold text-base text-slate-200 mb-4 flex items-center gap-2">
@@ -531,7 +534,7 @@
         </div>
       </section>
 
-      <!-- CAIXA / RELATÓRIO DO EXPEDIENTE -->
+      <!-- CAIXA / RELATÓRIO DO EXPEDIENTE (ADMIN E VENDEDOR) -->
       <section id="view-reports" class="app-view hidden space-y-6">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl relative overflow-hidden text-center shadow-xl">
@@ -790,7 +793,6 @@
       if (found) {
         currentUser = found;
         
-        // Gerenciamento do Lembrar de Mim
         if (remember) {
           localStorage.setItem('dt_remember_username', found.username);
         } else {
@@ -812,7 +814,6 @@
       document.getElementById('app-container').classList.add('hidden');
       document.getElementById('view-login').classList.remove('hidden');
       
-      // Preserva o login se lembrar de mim estiver ativo
       const savedUser = localStorage.getItem('dt_remember_username');
       document.getElementById('login-user').value = savedUser || '';
       document.getElementById('login-pass').value = '';
@@ -827,6 +828,7 @@
       const userTag = document.getElementById('header-user-tag');
       userTag.innerText = `${currentUser.name} (${currentUser.role === 'admin' ? 'ADMIN' : 'VENDEDOR'})`;
 
+      // Regra de permissões: esconde Frota e Equipe se for vendedor
       const adminElements = document.querySelectorAll('.admin-only');
       adminElements.forEach(el => {
         if (currentUser.role === 'admin') {
@@ -855,7 +857,7 @@
         <div class="bg-slate-950 border-2 ${t.status === 'in-use' ? 'border-orange-500/80 shadow-[0_0_15px_rgba(249,115,22,0.25)]' : 'border-slate-800 hover:border-slate-700'} rounded-2xl p-3 text-center overflow-hidden transition-all flex flex-col justify-between">
           <div class="h-44 sm:h-48 w-full rounded-xl overflow-hidden bg-slate-900 mb-3 relative group">
             <img 
-              src="${t.image || 'image_893169.jpg'}" 
+              src="${t.image || 'carrinho (1).jpg'}" 
               alt="${t.name}" 
               class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300" 
               onerror="this.onerror=null; this.src='https://placehold.co/400x300/020617/06b6d4?text=Trike';"
@@ -896,7 +898,7 @@
           <div onclick="toggleTrikeSelection(${t.id})" class="p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between ${isSelected ? 'bg-cyan-950/40 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]' : 'bg-slate-900 border-slate-800 hover:border-slate-700'}">
             <div class="flex items-center gap-3">
               <div class="w-16 h-16 rounded-xl overflow-hidden bg-slate-950 border border-slate-800 flex-shrink-0">
-                <img src="${t.image || 'image_893169.jpg'}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike';"/>
+                <img src="${t.image || 'carrinho (1).jpg'}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike';"/>
               </div>
               <div>
                 <h4 class="font-bold text-sm text-white">${t.name}</h4>
@@ -1108,7 +1110,7 @@
           <div class="p-4 rounded-2xl border-2 ${statusClass} flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg transition-all">
             <div class="flex items-center gap-3.5">
               <div class="w-16 h-16 rounded-xl overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-700/80">
-                <img src="${t.image || 'image_893169.jpg'}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike'"/>
+                <img src="${t.image || 'carrinho (1).jpg'}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike'"/>
               </div>
               <div>
                 <div class="flex items-center gap-2">
@@ -1615,7 +1617,6 @@
     window.onload = function() {
       lucide.createIcons();
 
-      // Recupera o usuário salvo caso a opção Lembrar de mim tenha sido marcada
       const savedUser = localStorage.getItem('dt_remember_username');
       if (savedUser) {
         const userInput = document.getElementById('login-user');
