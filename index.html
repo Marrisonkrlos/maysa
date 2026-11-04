@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Drift Trikes - Controle & Locação</title>
   
-  <!-- CONFIGURAÇÕES PWA TELA CHEIA -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Drift Trikes" />
@@ -38,7 +37,7 @@
     body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans select-none pb-12">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans select-none pb-14">
 
   <!-- TOAST NOTIFICAÇÃO -->
   <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 pointer-events-none transform -translate-y-4">
@@ -177,7 +176,7 @@
           <div>
             <div class="flex items-center gap-2">
               <h1 class="font-black text-lg tracking-wide uppercase italic leading-tight text-white">Drift Trikes</h1>
-              <span id="realtime-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" title="Conectado em Tempo Real"></span>
+              <span id="realtime-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" title="Conectado"></span>
             </div>
             <p id="header-user-tag" class="text-[10px] text-cyan-400 font-semibold uppercase tracking-wider">Operador</p>
           </div>
@@ -238,7 +237,7 @@
             </div>
             <span class="bg-cyan-900/60 text-cyan-200 text-xs font-black uppercase px-3 py-1 rounded-full border border-cyan-400/30">Locação Rápida</span>
             <h2 class="text-3xl font-black italic uppercase text-white mt-3 mb-1">Liberar<br>Carrinhos</h2>
-            <p class="text-cyan-100 font-semibold text-sm">R$ 10,00 • 10 Minutos cada</p>
+            <p class="text-cyan-100 font-semibold text-sm">Escolha o tempo e libere a corrida</p>
           </div>
 
           <div onclick="navigate('active')" class="bg-slate-900 border border-slate-800 hover:border-cyan-500/60 p-6 rounded-3xl cursor-pointer transition-all flex flex-col justify-between">
@@ -310,15 +309,15 @@
         </div>
       </section>
 
-      <!-- SELEÇÃO PARA ALUGAR -->
+      <!-- SELEÇÃO PARA ALUGAR (COM SELEÇÃO DE TEMPO) -->
       <section id="view-rental" class="app-view space-y-5 hidden">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-xl font-black uppercase italic text-white">Selecione os Carrinhos</h2>
-            <p class="text-xs text-slate-400">Marque 1 ou mais carrinhos para o mesmo cliente</p>
+            <h2 class="text-xl font-black uppercase italic text-white">Selecione os Carrinhos & Tempo</h2>
+            <p class="text-xs text-slate-400">Clique para marcar e defina 10, 20, 30 ou 40 minutos</p>
           </div>
-          <span class="text-xs font-bold text-orange-400 bg-orange-500/10 border border-orange-500/30 px-3 py-1.5 rounded-full">
-            R$ 10,00 = 10 Min
+          <span class="text-xs font-bold text-cyan-400 bg-cyan-950/60 border border-cyan-800/80 px-3 py-1.5 rounded-full">
+            R$ 1,00 / minuto
           </span>
         </div>
 
@@ -327,12 +326,12 @@
         <div id="rental-bottom-bar" class="fixed bottom-3 left-0 w-full px-4 z-40 hidden">
           <div class="max-w-5xl mx-auto bg-slate-900/95 backdrop-blur-xl border-2 border-cyan-500/80 p-4 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.3)] flex items-center justify-between">
             <div>
-              <p class="text-xs text-slate-400 font-bold uppercase">Total Selecionado</p>
+              <p class="text-xs text-slate-400 font-bold uppercase">Total a Cobrar</p>
               <p class="text-2xl font-black text-white" id="rental-bar-total">R$ 0,00</p>
               <span class="text-[11px] text-cyan-400 font-semibold" id="rental-bar-count">0 carrinho(s)</span>
             </div>
             <button onclick="goToPayment()" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black px-6 py-3.5 rounded-xl uppercase tracking-wider text-sm flex items-center gap-2 shadow-lg">
-              Cobrar PIX <i data-lucide="arrow-right" class="w-5 h-5"></i>
+              Cobrar Pagamento <i data-lucide="arrow-right" class="w-5 h-5"></i>
             </button>
           </div>
         </div>
@@ -353,7 +352,7 @@
           </div>
 
           <h2 class="text-2xl font-black text-white italic uppercase">Cobrança da Locação</h2>
-          <p id="payment-summary-text" class="text-sm text-slate-400 mt-1 mb-3">1 Carrinho • 10 Minutos</p>
+          <p id="payment-summary-text" class="text-sm text-slate-400 mt-1 mb-3">Detalhes do tempo</p>
 
           <div class="mb-4">
             <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Forma de Pagamento</label>
@@ -380,7 +379,7 @@
               <div class="rounded-2xl bg-white shadow-inner mb-3 overflow-hidden flex flex-col items-center justify-center p-2 border border-slate-200">
                 <img 
                   id="pix-qr-image"
-                  src="./pix.jpg" 
+                  src="pix.jpg" 
                   alt="Cartaz QR Code PIX Jonas André" 
                   class="w-full h-auto max-h-[380px] object-contain block mx-auto rounded-xl"
                   onerror="handleQrCodeImageError(this)"
@@ -400,13 +399,6 @@
                   <span class="text-slate-400 font-semibold flex items-center gap-1"><i data-lucide="building-2" class="w-3.5 h-3.5 text-orange-500"></i> Instituição</span>
                   <strong class="text-slate-800 font-black">Mercado Pago</strong>
                 </div>
-              </div>
-
-              <div class="mt-3 pt-2 border-t border-slate-100 text-center">
-                <label class="cursor-pointer text-[11px] text-orange-600 hover:text-orange-700 font-bold inline-flex items-center gap-1">
-                  <i data-lucide="upload" class="w-3.5 h-3.5"></i> Usar Foto 2 da Minha Galeria
-                  <input type="file" accept="image/*" class="hidden" onchange="uploadCustomPixPoster(event)">
-                </label>
               </div>
             </div>
 
@@ -431,7 +423,7 @@
               <i data-lucide="banknote" class="w-6 h-6"></i>
             </div>
             <h4 id="alt-payment-title" class="font-bold text-white text-base">Recebimento em Dinheiro</h4>
-            <p id="alt-payment-desc" class="text-xs text-slate-400">Receba a quantia em espécie com o cliente antes de liberar os carrinhos.</p>
+            <p id="alt-payment-desc" class="text-xs text-slate-400">Receba o valor com o cliente antes de liberar os carrinhos.</p>
           </div>
 
           <div class="mt-5 space-y-2.5">
@@ -453,7 +445,7 @@
             <h2 class="text-xl font-black uppercase italic text-white flex items-center gap-2">
               <i data-lucide="timer" class="w-6 h-6 text-cyan-400"></i> Monitoramento na Pista
             </h2>
-            <p class="text-xs text-slate-400">Tempo regressivo de 10 minutos por carrinho</p>
+            <p class="text-xs text-slate-400">Tempo regressivo individual por carrinho</p>
           </div>
           <button onclick="navigate('rental')" class="bg-cyan-600/20 border border-cyan-500/40 text-cyan-300 hover:bg-cyan-600/30 font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1">
             <i data-lucide="plus" class="w-4 h-4"></i> Mais Aluguel
@@ -515,7 +507,7 @@
           <div class="flex items-center justify-between mb-3">
             <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider">Carrinhos na Frota (<span id="fleet-total-badge">0</span>)</h3>
             <button onclick="restoreDefaultPhotos()" class="text-[11px] font-bold text-cyan-400 bg-cyan-950/60 border border-cyan-800 px-3 py-1 rounded-lg hover:bg-cyan-900 transition-colors">
-              Restaurar Fotos Padrão
+              Resetar Imagens
             </button>
           </div>
           <div id="fleet-manage-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
@@ -576,7 +568,7 @@
             <div class="absolute -top-6 -right-6 w-28 h-28 bg-cyan-500/10 rounded-full blur-[40px]"></div>
             <p class="text-xs font-bold uppercase text-slate-400 tracking-wider mb-1">Total de Locações</p>
             <h2 id="report-rentals" class="text-4xl font-black text-cyan-400">0</h2>
-            <span class="text-xs text-slate-500 mt-2 block">Ciclos de tempo liberados</span>
+            <span class="text-xs text-slate-500 mt-2 block">Ciclos liberados</span>
           </div>
         </div>
 
@@ -654,16 +646,15 @@
       console.warn("Supabase local fallback:", err);
     }
 
-    const PRICE_PER_TRIKE = 10.00;
-    const RENTAL_MINUTES = 10;
-    const RENTAL_MS = RENTAL_MINUTES * 60 * 1000;
-
-    // MAPEAMENTO EXATO COM OS NOMES E ARQUIVOS REAIS DAS FOTOS
+    // Configuração oficial de preços e tempos
+    const PRICE_PER_MINUTE = 1.00; // R$ 1,00 por minuto (10 min = R$ 10 / 20 min = R$ 20)
+    
+    // Mapeamento original das 4 fotos
     const DEFAULT_TRIKES = [
-      { id: 1, name: "Carrinho 1 (Vermelho Xtreme)", photoIndex: 2, image: "./carrinho%20(2).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
-      { id: 2, name: "Carrinho 2 (Amarelo Graffiti)", photoIndex: 3, image: "./carrinho%20(3).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
-      { id: 3, name: "Carrinho 3 (Azul Camuflado)", photoIndex: 4, image: "./carrinho%20(4).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
-      { id: 4, name: "Carrinho 4 (Fogo & Gelo)", photoIndex: 1, image: "./carrinho%20(1).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null }
+      { id: 1, name: "Carrinho 1 (Vermelho Xtreme)", photoNum: 2, image: "carrinho (2).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
+      { id: 2, name: "Carrinho 2 (Amarelo Graffiti)", photoNum: 3, image: "carrinho (3).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
+      { id: 3, name: "Carrinho 3 (Azul Camuflado)", photoNum: 4, image: "carrinho (4).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
+      { id: 4, name: "Carrinho 4 (Fogo & Gelo)", photoNum: 1, image: "carrinho (1).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null }
     ];
 
     const DEFAULT_USERS = [
@@ -674,58 +665,15 @@
 
     let trikes = JSON.parse(localStorage.getItem('dt_trikes')) || DEFAULT_TRIKES;
 
-    // LIMPEZA AUTOMÁTICA DE CACHE QUEBRADO NO CELULAR
-    let needsCacheFix = false;
+    // Normalização das fotos para corrigir problemas de cache
     trikes = trikes.map((t, idx) => {
-      const pIdx = t.photoIndex || ((idx + 1) === 1 ? 2 : (idx + 1) === 2 ? 3 : (idx + 1) === 3 ? 4 : 1);
-      // Se a imagem guardada for o SVG anterior ou nula, restaura a foto real
-      if (!t.image || t.image.includes('data:image/svg') || t.image.includes('placeholder')) {
-        needsCacheFix = true;
-        return {
-          ...t,
-          photoIndex: pIdx,
-          image: `./carrinho%20(${pIdx}).jpg`
-        };
+      const pNum = t.photoNum || (idx === 0 ? 2 : idx === 1 ? 3 : idx === 2 ? 4 : 1);
+      let img = t.image;
+      if (!img || img.includes('data:image/svg') || img.includes('undefined')) {
+        img = `carrinho (${pNum}).jpg`;
       }
-      return { ...t, photoIndex: pIdx };
+      return { ...t, photoNum: pNum, image: img };
     });
-
-    if (needsCacheFix || trikes.length === 0) {
-      localStorage.setItem('dt_trikes', JSON.stringify(trikes));
-    }
-
-    function restoreDefaultPhotos() {
-      trikes = JSON.parse(JSON.stringify(DEFAULT_TRIKES));
-      localStorage.setItem('dt_trikes', JSON.stringify(trikes));
-      refreshActiveView();
-      showToast("Fotos restauradas para o padrão!", "success");
-    }
-
-    // RESOLVE O CARREGAMENTO DA FOTO EM QUALQUER APARELHO (TESTA TODAS AS VARIAÇÕES DE NOME)
-    function handleTrikeImageError(imgEl, trikeId) {
-      const trike = trikes.find(x => x.id === trikeId);
-      const photoNum = trike && trike.photoIndex ? trike.photoIndex : trikeId;
-      const step = parseInt(imgEl.getAttribute('data-err-step') || '0', 10);
-      imgEl.setAttribute('data-err-step', step + 1);
-
-      const pathsToTry = [
-        `./carrinho%20(${photoNum}).jpg`,
-        `carrinho%20(${photoNum}).jpg`,
-        `/carrinho%20(${photoNum}).jpg`,
-        `./carrinho%20(${photoNum}).JPG`,
-        `carrinho%20(${photoNum}).JPG`,
-        `./Carrinho%20(${photoNum}).jpg`,
-        `./Carrinho%20(${photoNum}).JPG`,
-        `./carrinho (${photoNum}).jpg`,
-        `carrinho (${photoNum}).jpg`,
-        `./carrinho%20(${photoNum}).png`,
-        `./carrinho(${photoNum}).jpg`
-      ];
-
-      if (step < pathsToTry.length) {
-        imgEl.src = pathsToTry[step];
-      }
-    }
 
     let users = JSON.parse(localStorage.getItem('dt_users')) || DEFAULT_USERS;
 
@@ -752,9 +700,45 @@
     let currentUser = JSON.parse(localStorage.getItem('dt_current_user')) || null;
 
     let currentView = 'dashboard';
-    let selectedTrikeIds = [];
+
+    // Gerenciador de Seleção com Tempo Personalizado por Carrinho
+    // Formato: { trikeId: { minutes: 10, price: 10.00 } }
+    let selectedTrikesConfig = {};
     let tempTrikePhoto = null;
 
+    // Sistema avançado de resolução de imagens (tenta variações de URL sem quebrar)
+    function handleTrikeImageError(imgEl, trikeId) {
+      const trike = trikes.find(x => x.id === trikeId);
+      const photoNum = trike && trike.photoNum ? trike.photoNum : trikeId;
+      const step = parseInt(imgEl.getAttribute('data-err-step') || '0', 10);
+      imgEl.setAttribute('data-err-step', step + 1);
+
+      const candidateUrls = [
+        `carrinho (${photoNum}).jpg`,
+        `carrinho (${photoNum}).JPG`,
+        `./carrinho (${photoNum}).jpg`,
+        `./carrinho (${photoNum}).JPG`,
+        `carrinho%20(${photoNum}).jpg`,
+        `carrinho%20(${photoNum}).JPG`,
+        `./carrinho%20(${photoNum}).jpg`,
+        `./carrinho%20(${photoNum}).JPG`,
+        `carrinho(${photoNum}).jpg`,
+        `carrinho(${photoNum}).JPG`
+      ];
+
+      if (step < candidateUrls.length) {
+        imgEl.src = candidateUrls[step];
+      }
+    }
+
+    function restoreDefaultPhotos() {
+      trikes = JSON.parse(JSON.stringify(DEFAULT_TRIKES));
+      localStorage.setItem('dt_trikes', JSON.stringify(trikes));
+      refreshActiveView();
+      showToast("Fotos resetadas com sucesso!", "success");
+    }
+
+    // Configuração Supabase Realtime
     function setupSupabaseRealtime() {
       if (!supabaseClient) return;
 
@@ -787,10 +771,10 @@
             if (dot) {
               if (status === 'SUBSCRIBED') {
                 dot.className = "w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]";
-                dot.title = "Tempo Real: Conectado";
+                dot.title = "Tempo Real Conectado";
               } else {
                 dot.className = "w-2 h-2 rounded-full bg-amber-400";
-                dot.title = "Tempo Real: Reconectando...";
+                dot.title = "Reconectando...";
               }
             }
           });
@@ -1058,6 +1042,7 @@
       lucide.createIcons();
     }
 
+    // RENDERIZAÇÃO DA SELEÇÃO DE CARRINHOS COM OPÇÃO DE TEMPO DINÂMICA
     function renderRentalSelection() {
       const availableTrikes = trikes.filter(t => t.status === 'available');
       const listEl = document.getElementById('rental-trikes-list');
@@ -1077,34 +1062,65 @@
       }
 
       listEl.innerHTML = availableTrikes.map(t => {
-        const isSelected = selectedTrikeIds.includes(t.id);
+        const isSelected = !!selectedTrikesConfig[t.id];
+        const selectedMins = isSelected ? selectedTrikesConfig[t.id].minutes : 10;
+        const selectedVal = selectedMins * PRICE_MINUTE_OR_FIXED(selectedMins);
+
         return `
-          <div onclick="toggleTrikeSelection(${t.id})" class="p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between ${isSelected ? 'bg-cyan-950/40 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]' : 'bg-slate-900 border-slate-800 hover:border-slate-700'}">
-            <div class="flex items-center gap-3">
-              <div class="w-16 h-16 rounded-xl overflow-hidden bg-slate-950 border border-slate-800 flex-shrink-0">
-                <img 
-                  src="${t.image}" 
-                  alt="${t.name}" 
-                  class="w-full h-full object-cover" 
-                  onerror="handleTrikeImageError(this, ${t.id})"
-                />
+          <div class="p-3.5 rounded-2xl border-2 transition-all flex flex-col justify-between gap-3 ${isSelected ? 'bg-cyan-950/40 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]' : 'bg-slate-900 border-slate-800 hover:border-slate-700'}">
+            
+            <div onclick="toggleTrikeSelection(${t.id})" class="cursor-pointer flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-16 h-16 rounded-xl overflow-hidden bg-slate-950 border border-slate-800 flex-shrink-0">
+                  <img 
+                    src="${t.image}" 
+                    alt="${t.name}" 
+                    class="w-full h-full object-cover" 
+                    onerror="handleTrikeImageError(this, ${t.id})"
+                  />
+                </div>
+                <div>
+                  <h4 class="font-bold text-sm text-white">${t.name}</h4>
+                  <p class="text-xs font-semibold ${isSelected ? 'text-orange-400' : 'text-cyan-400'} mt-0.5">
+                    ${isSelected ? `${selectedMins} Minutos • R$ ${selectedVal.toFixed(2)}` : 'Toque para selecionar'}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h4 class="font-bold text-sm text-white">${t.name}</h4>
-                <p class="text-xs text-cyan-400 font-semibold mt-0.5">R$ 10,00 • 10 Min</p>
+              <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-cyan-500 border-cyan-400 text-slate-950' : 'border-slate-600 bg-slate-950'}">
+                ${isSelected ? '<i data-lucide="check" class="w-4 h-4 stroke-[3]"></i>' : ''}
               </div>
             </div>
-            <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-cyan-500 border-cyan-400 text-slate-950' : 'border-slate-600 bg-slate-950'}">
-              ${isSelected ? '<i data-lucide="check" class="w-4 h-4 stroke-[3]"></i>' : ''}
-            </div>
+
+            ${isSelected ? `
+              <div class="pt-2 border-t border-cyan-900/40">
+                <p class="text-[10px] font-bold uppercase text-slate-400 mb-1.5">Escolha o tempo deste carrinho:</p>
+                <div class="grid grid-cols-4 gap-1.5">
+                  <button type="button" onclick="setTrikeMinutes(${t.id}, 10)" class="py-1.5 rounded-lg text-xs font-bold uppercase transition-all ${selectedMins === 10 ? 'bg-cyan-500 text-slate-950 shadow-md' : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-700'}">
+                    10m • R$10
+                  </button>
+                  <button type="button" onclick="setTrikeMinutes(${t.id}, 20)" class="py-1.5 rounded-lg text-xs font-bold uppercase transition-all ${selectedMins === 20 ? 'bg-cyan-500 text-slate-950 shadow-md' : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-700'}">
+                    20m • R$20
+                  </button>
+                  <button type="button" onclick="setTrikeMinutes(${t.id}, 30)" class="py-1.5 rounded-lg text-xs font-bold uppercase transition-all ${selectedMins === 30 ? 'bg-cyan-500 text-slate-950 shadow-md' : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-700'}">
+                    30m • R$30
+                  </button>
+                  <button type="button" onclick="setTrikeMinutes(${t.id}, 40)" class="py-1.5 rounded-lg text-xs font-bold uppercase transition-all ${selectedMins === 40 ? 'bg-cyan-500 text-slate-950 shadow-md' : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-700'}">
+                    40m • R$40
+                  </button>
+                </div>
+              </div>
+            ` : ''}
+
           </div>
         `;
       }).join('');
 
-      if (selectedTrikeIds.length > 0) {
+      const selectedIds = Object.keys(selectedTrikesConfig);
+      if (selectedIds.length > 0) {
         bottomBar.classList.remove('hidden');
-        document.getElementById('rental-bar-total').innerText = `R$ ${(selectedTrikeIds.length * PRICE_PER_TRIKE).toFixed(2)}`;
-        document.getElementById('rental-bar-count').innerText = `${selectedTrikeIds.length} carrinho(s) selecionado(s)`;
+        const grandTotal = Object.values(selectedTrikesConfig).reduce((acc, curr) => acc + curr.price, 0);
+        document.getElementById('rental-bar-total').innerText = `R$ ${grandTotal.toFixed(2)}`;
+        document.getElementById('rental-bar-count').innerText = `${selectedIds.length} carrinho(s) configurado(s)`;
       } else {
         bottomBar.classList.add('hidden');
       }
@@ -1112,13 +1128,25 @@
       lucide.createIcons();
     }
 
+    function PRICE_MINUTE_OR_FIXED(mins) {
+      return 1.00; // 1 real por minuto padrão
+    }
+
     function toggleTrikeSelection(id) {
-      if (selectedTrikeIds.includes(id)) {
-        selectedTrikeIds = selectedTrikeIds.filter(x => x !== id);
+      if (selectedTrikesConfig[id]) {
+        delete selectedTrikesConfig[id];
       } else {
-        selectedTrikeIds.push(id);
+        selectedTrikesConfig[id] = { minutes: 10, price: 10.00 };
       }
       renderRentalSelection();
+    }
+
+    function setTrikeMinutes(id, mins) {
+      if (selectedTrikesConfig[id]) {
+        selectedTrikesConfig[id].minutes = mins;
+        selectedTrikesConfig[id].price = mins * 1.00;
+        renderRentalSelection();
+      }
     }
 
     function selectPaymentMethod(method) {
@@ -1160,13 +1188,21 @@
     }
 
     function goToPayment() {
-      if (selectedTrikeIds.length === 0) {
+      const selectedIds = Object.keys(selectedTrikesConfig);
+      if (selectedIds.length === 0) {
         showToast("Selecione ao menos 1 carrinho!", "error");
         return;
       }
-      const total = selectedTrikeIds.length * PRICE_PER_TRIKE;
-      document.getElementById('payment-total-value').innerText = `R$ ${total.toFixed(2)}`;
-      document.getElementById('payment-summary-text').innerText = `${selectedTrikeIds.length} Carrinho(s) • ${RENTAL_MINUTES} Minutos na Pista`;
+      
+      const grandTotal = Object.values(selectedTrikesConfig).reduce((acc, curr) => acc + curr.price, 0);
+      document.getElementById('payment-total-value').innerText = `R$ ${grandTotal.toFixed(2)}`;
+      
+      const summaryParts = selectedIds.map(id => {
+        const t = trikes.find(x => x.id === parseInt(id, 10));
+        return `${t ? t.name : 'Carrinho'}: ${selectedTrikesConfig[id].minutes}m`;
+      });
+      document.getElementById('payment-summary-text').innerText = summaryParts.join(' | ');
+
       selectPaymentMethod('pix');
       navigate('payment');
     }
@@ -1183,39 +1219,44 @@
 
     function confirmPaymentAndRelease() {
       const now = Date.now();
-      const end = now + RENTAL_MS;
       const operatorName = currentUser ? currentUser.name : 'Marrison Carlos';
+      const selectedIds = Object.keys(selectedTrikesConfig).map(id => parseInt(id, 10));
+
+      let totalAmount = 0;
 
       trikes = trikes.map(t => {
-        if (selectedTrikeIds.includes(t.id)) {
+        if (selectedIds.includes(t.id)) {
+          const cfg = selectedTrikesConfig[t.id];
+          const rentalMs = cfg.minutes * 60 * 1000;
+          totalAmount += cfg.price;
           return {
             ...t,
             status: 'in-use',
-            endTime: end,
+            endTime: now + rentalMs,
             totalRentals: (t.totalRentals || 0) + 1,
-            rentedBy: operatorName
+            rentedBy: operatorName,
+            initialMinutes: cfg.minutes
           };
         }
         return t;
       });
 
-      const amount = selectedTrikeIds.length * PRICE_PER_TRIKE;
-      dailyRevenue += amount;
-      dailyRentals += selectedTrikeIds.length;
-      dailyByPayment[currentPaymentMethod] = (dailyByPayment[currentPaymentMethod] || 0) + amount;
+      dailyRevenue += totalAmount;
+      dailyRentals += selectedIds.length;
+      dailyByPayment[currentPaymentMethod] = (dailyByPayment[currentPaymentMethod] || 0) + totalAmount;
       
       if (!dailyByUser[operatorName]) {
         dailyByUser[operatorName] = { rentals: 0, revenue: 0 };
       }
-      dailyByUser[operatorName].rentals += selectedTrikeIds.length;
-      dailyByUser[operatorName].revenue += amount;
+      dailyByUser[operatorName].rentals += selectedIds.length;
+      dailyByUser[operatorName].revenue += totalAmount;
 
       saveState();
       broadcastState('all');
       playBeepAlert(false);
-      showToast(`${selectedTrikeIds.length} Carrinho(s) Liberado(s)! Operador: ${operatorName}`, 'success');
+      showToast(`${selectedIds.length} Carrinho(s) Liberado(s)! Total: R$ ${totalAmount.toFixed(2)}`, 'success');
       
-      selectedTrikeIds = [];
+      selectedTrikesConfig = {};
       navigate('active');
     }
 
@@ -1266,7 +1307,7 @@
           <div class="bg-slate-900 border border-slate-800 p-10 rounded-3xl text-center">
             <i data-lucide="timer-off" class="w-12 h-12 text-slate-600 mx-auto mb-2"></i>
             <h4 class="text-base font-bold text-slate-300">Pista vazia no momento</h4>
-            <p class="text-xs text-slate-500 mt-1">Alugue carrinhos para iniciar os cronômetros de 10 minutos.</p>
+            <p class="text-xs text-slate-500 mt-1">Alugue carrinhos para iniciar as corridas.</p>
           </div>
         `;
         lucide.createIcons();
@@ -1382,8 +1423,8 @@
     }
 
     function copyPixCode() {
-      const totalAmount = selectedTrikeIds.length > 0 ? (selectedTrikeIds.length * PRICE_PER_TRIKE) : PRICE_PER_TRIKE;
-      const pixPayload = getOfficialPixPayload(totalAmount);
+      const grandTotal = Object.values(selectedTrikesConfig).reduce((acc, curr) => acc + curr.price, 0) || 10.00;
+      const pixPayload = getOfficialPixPayload(grandTotal);
       const tempInput = document.createElement("textarea");
       tempInput.value = pixPayload;
       document.body.appendChild(tempInput);
@@ -1393,34 +1434,15 @@
       showToast("Código Pix Copia e Cola copiado!", "success");
     }
 
-    function handleQrCodeImageError(imgElement) {
+    function handleQrCodeImageError(imgEl) {
       if (customPixPoster) {
-        imgElement.src = customPixPoster;
+        imgEl.src = customPixPoster;
         return;
       }
-      if (imgElement.src.endsWith('pix.jpg')) {
-        imgElement.src = './pix.png';
-        return;
-      }
-      imgElement.onerror = null;
-      const totalAmount = selectedTrikeIds.length > 0 ? (selectedTrikeIds.length * PRICE_PER_TRIKE) : PRICE_PER_TRIKE;
-      const pixPayload = encodeURIComponent(getOfficialPixPayload(totalAmount));
-      imgElement.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=2&data=${pixPayload}`;
-    }
-
-    function uploadCustomPixPoster(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          customPixPoster = e.target.result;
-          saveState();
-          const imgEl = document.getElementById('pix-qr-image');
-          if (imgEl) imgEl.src = customPixPoster;
-          showToast("Cartaz do QR Code atualizado!", "success");
-        };
-        reader.readAsDataURL(file);
-      }
+      const grandTotal = Object.values(selectedTrikesConfig).reduce((acc, curr) => acc + curr.price, 0) || 10.00;
+      const pixPayload = encodeURIComponent(getOfficialPixPayload(grandTotal));
+      imgEl.onerror = null;
+      imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=2&data=${pixPayload}`;
     }
 
     function previewTrikePhoto(event) {
@@ -1459,8 +1481,8 @@
         trikes.push({
           id: newId,
           name: name,
-          photoIndex: newId,
-          image: tempTrikePhoto || `./carrinho%20(${newId}).jpg`,
+          photoNum: newId,
+          image: tempTrikePhoto || `carrinho (${newId}).jpg`,
           status: 'available',
           endTime: null,
           totalRentals: 0
@@ -1724,7 +1746,6 @@
       lucide.createIcons();
     }
 
-    // MODAL DE HISTÓRICO E PRODUTIVIDADE
     function openHistoryModal() {
       renderModalHistoryAndBreakdown();
       document.getElementById('modal-history').classList.remove('hidden');
@@ -1828,7 +1849,7 @@
       const breakdown = document.getElementById('report-trikes-breakdown');
       breakdown.innerHTML = trikes.map(t => {
         const count = t.totalRentals || 0;
-        const total = count * PRICE_PER_TRIKE;
+        const total = count * 10.00;
         return `
           <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800">
             <span class="text-xs font-bold text-slate-200">${t.name}</span>
