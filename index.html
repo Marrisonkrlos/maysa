@@ -37,6 +37,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans select-none pb-10">
 
+  <!-- TOAST NOTIFICAÇÃO -->
   <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 pointer-events-none transform -translate-y-4">
     <div id="toast-content" class="bg-slate-900 border border-cyan-500 text-slate-100 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-semibold">
       <span id="toast-icon"></span>
@@ -44,6 +45,7 @@
     </div>
   </div>
 
+  <!-- MODAL ALTERAR SENHA -->
   <div id="modal-password" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl space-y-4">
       <div class="flex items-center justify-between">
@@ -67,6 +69,50 @@
           Atualizar Senha
         </button>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL HISTÓRICO DE CAIXAS & PRODUTIVIDADE -->
+  <div id="modal-history" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center">
+            <i data-lucide="history" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-white">Histórico & Desempenho</h3>
+            <p class="text-[11px] text-slate-400">Fechamentos anteriores e faturamento por membro</p>
+          </div>
+        </div>
+        <button onclick="closeHistoryModal()" class="text-slate-400 hover:text-white p-2 rounded-xl bg-slate-800/80">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto space-y-5 no-scrollbar pr-1">
+        <!-- Faturamento por Membro no Turno Atual -->
+        <div>
+          <h4 class="font-bold text-xs uppercase tracking-wider text-purple-400 mb-2 flex items-center gap-1.5">
+            <i data-lucide="users" class="w-4 h-4"></i> Produtividade Atual (Turno em Aberto)
+          </h4>
+          <div id="modal-users-breakdown" class="space-y-2"></div>
+        </div>
+
+        <!-- Lista de Caixas Fechados -->
+        <div>
+          <h4 class="font-bold text-xs uppercase tracking-wider text-cyan-400 mb-2 flex items-center gap-1.5">
+            <i data-lucide="archive" class="w-4 h-4"></i> Fechamentos Anteriores
+          </h4>
+          <div id="modal-history-list" class="space-y-2.5"></div>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-800 text-right">
+        <button onclick="closeHistoryModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider">
+          Fechar
+        </button>
+      </div>
     </div>
   </div>
 
@@ -545,11 +591,20 @@
           </div>
         </div>
 
-        <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
-          <h3 class="font-bold text-base text-slate-200 mb-4 flex items-center gap-2">
-            <i data-lucide="users" class="w-5 h-5 text-purple-400"></i> Faturamento & Produtividade por Membro
-          </h3>
-          <div id="report-users-breakdown" class="space-y-2"></div>
+        <!-- BOTÃO PARA ABRIR MODAL COM HISTÓRICO E PRODUTIVIDADE -->
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-3 text-left">
+            <div class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="file-text" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-base text-white">Relatórios & Histórico</h4>
+              <p class="text-xs text-slate-400">Consulte fechamentos passados e produtividade detalhada da equipe.</p>
+            </div>
+          </div>
+          <button onclick="openHistoryModal()" class="w-full sm:w-auto bg-purple-600 hover:bg-purple-500 text-white font-bold px-6 py-3.5 rounded-xl uppercase text-xs tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg">
+            <i data-lucide="history" class="w-4 h-4"></i> Ver Histórico & Detalhes
+          </button>
         </div>
 
         <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
@@ -557,13 +612,6 @@
             <i data-lucide="bar-chart-2" class="w-5 h-5 text-cyan-400"></i> Desempenho por Carrinho
           </h3>
           <div id="report-trikes-breakdown" class="space-y-2"></div>
-        </div>
-
-        <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
-          <h3 class="font-bold text-base text-slate-200 mb-4 flex items-center gap-2">
-            <i data-lucide="history" class="w-5 h-5 text-purple-400"></i> Histórico de Caixas Fechados
-          </h3>
-          <div id="report-history-list" class="space-y-2.5 max-h-64 overflow-y-auto no-scrollbar"></div>
         </div>
 
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl text-center space-y-3">
@@ -600,15 +648,31 @@
     const RENTAL_MINUTES = 10;
     const RENTAL_MS = RENTAL_MINUTES * 60 * 1000;
 
-    // Caminhos compatíveis com servidores Linux/GitHub Pages
+    // Gerador de imagem SVG elegante caso o arquivo não exista no repositório local
+    function getFallbackTrikeSvg(name = 'Trike', number = 1) {
+      const colors = ['#06b6d4', '#f97316', '#eab308', '#3b82f6', '#a855f7'];
+      const themeColor = colors[(number - 1) % colors.length];
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+          <rect width="400" height="300" fill="#020617"/>
+          <circle cx="200" cy="150" r="110" fill="${themeColor}" opacity="0.12"/>
+          <circle cx="200" cy="130" r="48" fill="${themeColor}" opacity="0.2"/>
+          <path d="M175 130 L225 130 M200 105 L200 155" stroke="${themeColor}" stroke-width="4" stroke-linecap="round"/>
+          <text x="200" y="215" fill="#f8fafc" font-size="20" font-family="sans-serif" font-weight="900" text-anchor="middle" letter-spacing="1">DRIFT TRIKE #${number}</text>
+          <text x="200" y="240" fill="${themeColor}" font-size="13" font-family="sans-serif" font-weight="700" text-anchor="middle">${name.replace(/</g, '')}</text>
+        </svg>
+      `;
+      return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+    }
+
+    // Caminhos compatíveis com GitHub Pages e Linux case-sensitive
     const DEFAULT_TRIKES = [
-      { id: 1, name: "Carrinho 1 (Fogo & Gelo)", image: "./carrinho%20(1).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
-      { id: 2, name: "Carrinho 2 (Vermelho Xtreme)", image: "./carrinho%20(2).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
-      { id: 3, name: "Carrinho 3 (Amarelo Graffiti)", image: "./carrinho%20(3).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
-      { id: 4, name: "Carrinho 4 (Azul Camuflado)", image: "./carrinho%20(4).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null }
+      { id: 1, name: "Carrinho 1 (Fogo & Gelo)", image: "carrinho (1).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
+      { id: 2, name: "Carrinho 2 (Vermelho Xtreme)", image: "carrinho (2).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
+      { id: 3, name: "Carrinho 3 (Amarelo Graffiti)", image: "carrinho (3).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
+      { id: 4, name: "Carrinho 4 (Azul Camuflado)", image: "carrinho (4).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null }
     ];
 
-    // Jonas e Maysa já incluídos no padrão local
     const DEFAULT_USERS = [
       { id: 1, name: "Marrison Carlos", username: "Marrison Carlos", password: "Mkrlos@123", role: "admin" },
       { id: 2, name: "Jonas", username: "jonas", password: "123", role: "seller" },
@@ -617,17 +681,15 @@
 
     let trikes = JSON.parse(localStorage.getItem('dt_trikes')) || DEFAULT_TRIKES;
 
-    // Normaliza links antigos com espaço para URL encoded no celular
-    trikes = trikes.map(t => {
-      if (t.image && t.image.includes(' ')) {
-        t.image = encodeURI(t.image);
-      }
-      return t;
+    // Normaliza os caminhos das fotos para evitar quebras no celular
+    trikes = trikes.map((t, idx) => {
+      let img = t.image || `carrinho (${t.id || idx + 1}).jpg`;
+      img = img.replace(/^\.\//, '');
+      return { ...t, image: img };
     });
 
     let users = JSON.parse(localStorage.getItem('dt_users')) || DEFAULT_USERS;
 
-    // Garante que Jonas e Maysa estejam presentes caso o celular tenha um cache desatualizado
     if (!users.some(u => u.username.toLowerCase() === 'jonas')) {
       users.push({ id: 2, name: "Jonas", username: "jonas", password: "123", role: "seller" });
     }
@@ -654,7 +716,27 @@
     let selectedTrikeIds = [];
     let tempTrikePhoto = null;
 
-    // Sincroniza usuários do Supabase no início
+    // Tratamento em cascata para carregar fotos sem falhar no celular
+    function handleTrikeImageError(imgEl, trikeId, trikeName) {
+      const step = parseInt(imgEl.getAttribute('data-error-step') || '0', 10);
+      imgEl.setAttribute('data-error-step', step + 1);
+
+      if (step === 0) {
+        // Tenta encode direto do espaço para %20
+        imgEl.src = `./carrinho%20(${trikeId}).jpg`;
+      } else if (step === 1) {
+        // Tenta sem ./
+        imgEl.src = `carrinho%20(${trikeId}).jpg`;
+      } else if (step === 2) {
+        // Tenta extensão em maiúsculo .JPG
+        imgEl.src = `carrinho%20(${trikeId}).JPG`;
+      } else {
+        // Fallback garantido: SVG estilizado nativo com tema do carrinho
+        imgEl.onerror = null;
+        imgEl.src = getFallbackTrikeSvg(trikeName, trikeId);
+      }
+    }
+
     async function syncUsersFromSupabase() {
       if (!supabaseClient) return;
       try {
@@ -780,7 +862,6 @@
 
       let found = users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
 
-      // Tenta login remoto via Supabase se não achar localmente
       if (!found && supabaseClient) {
         try {
           const { data } = await supabaseClient
@@ -860,7 +941,7 @@
               src="${t.image}" 
               alt="${t.name}" 
               class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300" 
-              onerror="this.onerror=null; this.src='https://placehold.co/400x300/020617/06b6d4?text=Trike';"
+              onerror="handleTrikeImageError(this, ${t.id}, '${t.name.replace(/'/g, "\\'")}')"
             />
             <span class="absolute top-2 right-2 text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${t.status === 'in-use' ? 'bg-orange-500 text-white' : 'bg-green-500 text-slate-950'}">
               ${t.status === 'in-use' ? 'NA PISTA' : 'LIVRE'}
@@ -897,7 +978,12 @@
           <div onclick="toggleTrikeSelection(${t.id})" class="p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between ${isSelected ? 'bg-cyan-950/40 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]' : 'bg-slate-900 border-slate-800 hover:border-slate-700'}">
             <div class="flex items-center gap-3">
               <div class="w-16 h-16 rounded-xl overflow-hidden bg-slate-950 border border-slate-800 flex-shrink-0">
-                <img src="${t.image}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike';"/>
+                <img 
+                  src="${t.image}" 
+                  alt="${t.name}" 
+                  class="w-full h-full object-cover" 
+                  onerror="handleTrikeImageError(this, ${t.id}, '${t.name.replace(/'/g, "\\'")}')"
+                />
               </div>
               <div>
                 <h4 class="font-bold text-sm text-white">${t.name}</h4>
@@ -1107,7 +1193,12 @@
           <div class="p-4 rounded-2xl border-2 ${statusClass} flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg transition-all">
             <div class="flex items-center gap-3.5">
               <div class="w-16 h-16 rounded-xl overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-700/80">
-                <img src="${t.image}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike'"/>
+                <img 
+                  src="${t.image}" 
+                  alt="${t.name}" 
+                  class="w-full h-full object-cover" 
+                  onerror="handleTrikeImageError(this, ${t.id}, '${t.name.replace(/'/g, "\\'")}')"
+                />
               </div>
               <div>
                 <div class="flex items-center gap-2">
@@ -1261,7 +1352,7 @@
         trikes.push({
           id: newId,
           name: name,
-          image: tempTrikePhoto || "./carrinho%20(1).jpg",
+          image: tempTrikePhoto || `carrinho (${newId}).jpg`,
           status: 'available',
           endTime: null,
           totalRentals: 0
@@ -1326,7 +1417,12 @@
         <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div class="w-14 h-14 rounded-xl overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-700">
-              <img src="${t.image}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike'"/>
+              <img 
+                src="${t.image}" 
+                alt="${t.name}" 
+                class="w-full h-full object-cover" 
+                onerror="handleTrikeImageError(this, ${t.id}, '${t.name.replace(/'/g, "\\'")}')"
+              />
             </div>
             <div>
               <h4 class="font-bold text-sm text-white">${t.name}</h4>
@@ -1371,7 +1467,6 @@
         dailyByUser[name] = { rentals: 0, revenue: 0 };
       }
 
-      // Sincroniza criação no Supabase
       if (supabaseClient) {
         try {
           await supabaseClient.from('users').insert([{ name, username: user, password: pass, role }]);
@@ -1519,16 +1614,21 @@
       lucide.createIcons();
     }
 
-    function renderReports() {
-      document.getElementById('report-revenue').innerText = `R$ ${dailyRevenue.toFixed(2)}`;
-      document.getElementById('report-rentals').innerText = dailyRentals;
+    // CONTROLE DO MODAL DE HISTÓRICO E PRODUTIVIDADE
+    function openHistoryModal() {
+      renderModalHistoryAndBreakdown();
+      document.getElementById('modal-history').classList.remove('hidden');
+      lucide.createIcons();
+    }
 
-      document.getElementById('report-pay-pix').innerText = `R$ ${(dailyByPayment.pix || 0).toFixed(2)}`;
-      document.getElementById('report-pay-money').innerText = `R$ ${(dailyByPayment.money || 0).toFixed(2)}`;
-      document.getElementById('report-pay-card').innerText = `R$ ${(dailyByPayment.card || 0).toFixed(2)}`;
+    function closeHistoryModal() {
+      document.getElementById('modal-history').classList.add('hidden');
+    }
 
-      const usersBreakdownEl = document.getElementById('report-users-breakdown');
-      usersBreakdownEl.innerHTML = users.map(u => {
+    function renderModalHistoryAndBreakdown() {
+      // 1. Produtividade por Membro no modal
+      const modalUsersEl = document.getElementById('modal-users-breakdown');
+      modalUsersEl.innerHTML = users.map(u => {
         const stats = dailyByUser[u.name] || { rentals: 0, revenue: 0 };
         return `
           <div class="flex items-center justify-between p-3.5 rounded-xl bg-slate-950 border border-slate-800">
@@ -1549,6 +1649,73 @@
         `;
       }).join('');
 
+      // 2. Histórico de Caixas Fechados com Exclusão exclusiva para Marrison Carlos
+      const isMarrisonAdmin = currentUser && (currentUser.name.toLowerCase().includes('marrison') || currentUser.username.toLowerCase().includes('marrison'));
+      const histList = document.getElementById('modal-history-list');
+
+      if (registerHistory.length === 0) {
+        histList.innerHTML = `<p class="text-xs text-slate-500 text-center py-6 bg-slate-950/60 rounded-xl border border-slate-800">Nenhum fechamento registrado ainda.</p>`;
+      } else {
+        histList.innerHTML = registerHistory.slice().reverse().map(h => `
+          <div class="p-3.5 bg-slate-950 border border-slate-800 rounded-2xl space-y-2 text-xs relative group">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <span class="font-bold text-slate-200 text-sm">${h.date}</span>
+                <p class="text-[11px] text-slate-400 mt-0.5">Fechado por: <strong class="text-cyan-400">${h.closedBy}</strong> • ${h.rentals} corridas</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="text-right">
+                  <span class="font-black text-green-400 text-base">R$ ${h.revenue.toFixed(2)}</span>
+                  <p class="text-[10px] text-slate-500">PIX: R$ ${(h.pix || 0).toFixed(2)} | Din: R$ ${(h.money || 0).toFixed(2)}</p>
+                </div>
+                ${isMarrisonAdmin ? `
+                  <button onclick="deleteHistoryRecord(${h.id})" class="p-2 rounded-xl bg-slate-900 hover:bg-red-950 border border-slate-800 hover:border-red-500 text-slate-400 hover:text-red-400 transition-colors" title="Excluir este fechamento">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+            ${h.teamSummary && Object.keys(h.teamSummary).length > 0 ? `
+              <div class="text-[10px] text-slate-400 border-t border-slate-900 pt-2 flex flex-wrap gap-1.5">
+                ${Object.entries(h.teamSummary).map(([member, st]) => `
+                  <span class="bg-slate-900 px-2 py-1 rounded-lg border border-slate-800">
+                    ${member}: <strong class="text-slate-200">R$ ${Number(st.revenue).toFixed(2)}</strong> (${st.rentals}x)
+                  </span>
+                `).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `).join('');
+      }
+
+      lucide.createIcons();
+    }
+
+    function deleteHistoryRecord(recordId) {
+      const isMarrisonAdmin = currentUser && (currentUser.name.toLowerCase().includes('marrison') || currentUser.username.toLowerCase().includes('marrison'));
+      if (!isMarrisonAdmin) {
+        showToast("Apenas Marrison Carlos tem permissão para excluir registros!", "error");
+        return;
+      }
+
+      if (!confirm("Tem certeza que deseja apagar este histórico de fechamento?")) {
+        return;
+      }
+
+      registerHistory = registerHistory.filter(h => h.id !== recordId);
+      saveState();
+      renderModalHistoryAndBreakdown();
+      showToast("Registro de caixa excluído com sucesso!", "info");
+    }
+
+    function renderReports() {
+      document.getElementById('report-revenue').innerText = `R$ ${dailyRevenue.toFixed(2)}`;
+      document.getElementById('report-rentals').innerText = dailyRentals;
+
+      document.getElementById('report-pay-pix').innerText = `R$ ${(dailyByPayment.pix || 0).toFixed(2)}`;
+      document.getElementById('report-pay-money').innerText = `R$ ${(dailyByPayment.money || 0).toFixed(2)}`;
+      document.getElementById('report-pay-card').innerText = `R$ ${(dailyByPayment.card || 0).toFixed(2)}`;
+
       const breakdown = document.getElementById('report-trikes-breakdown');
       breakdown.innerHTML = trikes.map(t => {
         const count = t.totalRentals || 0;
@@ -1563,35 +1730,6 @@
           </div>
         `;
       }).join('');
-
-      const histList = document.getElementById('report-history-list');
-      if (registerHistory.length === 0) {
-        histList.innerHTML = `<p class="text-xs text-slate-500 text-center py-3">Nenhum fechamento registrado ainda.</p>`;
-      } else {
-        histList.innerHTML = registerHistory.slice(-10).reverse().map(h => `
-          <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-1.5 text-xs">
-            <div class="flex items-center justify-between">
-              <div>
-                <span class="font-bold text-slate-200">${h.date}</span>
-                <p class="text-[10px] text-slate-400">Fechado por: <strong class="text-cyan-400">${h.closedBy}</strong> • ${h.rentals} corridas</p>
-              </div>
-              <div class="text-right">
-                <span class="font-black text-green-400 text-sm">R$ ${h.revenue.toFixed(2)}</span>
-                <p class="text-[10px] text-slate-500">PIX: R$ ${(h.pix || 0).toFixed(2)} | Din: R$ ${(h.money || 0).toFixed(2)}</p>
-              </div>
-            </div>
-            ${h.teamSummary ? `
-              <div class="text-[10px] text-slate-400 border-t border-slate-900 pt-1 flex flex-wrap gap-2">
-                ${Object.entries(h.teamSummary).map(([member, st]) => `
-                  <span class="bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
-                    ${member}: <strong>R$ ${Number(st.revenue).toFixed(2)}</strong> (${st.rentals}x)
-                  </span>
-                `).join('')}
-              </div>
-            ` : ''}
-          </div>
-        `).join('');
-      }
 
       lucide.createIcons();
     }
@@ -1640,7 +1778,6 @@
         if (rememberCheckbox) rememberCheckbox.checked = true;
       }
 
-      // Sincroniza dados com o Supabase
       syncUsersFromSupabase();
 
       if (currentUser) {
