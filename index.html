@@ -5,17 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Drift Trikes - Controle & Locação</title>
   
-  <!-- CONFIGURAÇÕES DE PWA (TELA CHEIA E INSTALAÇÃO) -->
+  <!-- CONFIGURAÇÕES PWA TELA CHEIA -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Drift Trikes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#020617" />
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='25' fill='%23020617'/><circle cx='50' cy='50' r='38' fill='%2306b6d4' opacity='0.2'/><path d='M30 65 L50 25 L70 65 Z' fill='%2306b6d4'/></svg>" />
-  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='25' fill='%23020617'/><circle cx='50' cy='50' r='38' fill='%2306b6d4' opacity='0.2'/><path d='M30 65 L50 25 L70 65 Z' fill='%2306b6d4'/></svg>" />
-  
-  <!-- MANIFEST INLINE PARA PWA NATIVO -->
-  <link rel="manifest" href="data:application/manifest+json;utf-8,%7B%22name%22%3A%22Drift%20Trikes%22%2C%22short_name%22%3A%22Trikes%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23020617%22%2C%22theme_color%22%3A%22%23020617%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20100%20100'%3E%3Crect%20width%3D'100'%20height%3D'100'%20rx%3D'25'%20fill%3D'%23020617'%2F%3E%3Ccircle%20cx%3D'50'%20cy%3D'50'%20r%3D'38'%20fill%3D'%2306b6d4'%20opacity%3D'0.2'%2F%3E%3Cpath%20d%3D'M30%2065%20L50%2025%20L70%2065%20Z'%20fill%3D'%2306b6d4'%2F%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -40,7 +35,6 @@
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     button:active, .clickable:active { transform: scale(0.97); }
-    /* Ajuste para entalhe e barras de navegação em tela cheia PWA */
     body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
   </style>
 </head>
@@ -100,7 +94,6 @@
       </div>
 
       <div class="flex-1 overflow-y-auto space-y-5 no-scrollbar pr-1">
-        <!-- Faturamento por Membro no Turno Atual -->
         <div>
           <h4 class="font-bold text-xs uppercase tracking-wider text-purple-400 mb-2 flex items-center gap-1.5">
             <i data-lucide="users" class="w-4 h-4"></i> Produtividade Atual (Turno em Aberto)
@@ -108,7 +101,6 @@
           <div id="modal-users-breakdown" class="space-y-2"></div>
         </div>
 
-        <!-- Lista de Caixas Fechados -->
         <div>
           <h4 class="font-bold text-xs uppercase tracking-wider text-cyan-400 mb-2 flex items-center gap-1.5">
             <i data-lucide="archive" class="w-4 h-4"></i> Fechamentos Anteriores
@@ -520,7 +512,12 @@
         </div>
 
         <div>
-          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Carrinhos na Frota (<span id="fleet-total-badge">0</span>)</h3>
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider">Carrinhos na Frota (<span id="fleet-total-badge">0</span>)</h3>
+            <button onclick="restoreDefaultPhotos()" class="text-[11px] font-bold text-cyan-400 bg-cyan-950/60 border border-cyan-800 px-3 py-1 rounded-lg hover:bg-cyan-900 transition-colors">
+              Restaurar Fotos Padrão
+            </button>
+          </div>
           <div id="fleet-manage-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
         </div>
       </section>
@@ -603,7 +600,6 @@
           </div>
         </div>
 
-        <!-- BOTÃO PARA ABRIR MODAL COM HISTÓRICO E PRODUTIVIDADE -->
         <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
           <div class="flex items-center gap-3 text-left">
             <div class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center flex-shrink-0">
@@ -662,28 +658,12 @@
     const RENTAL_MINUTES = 10;
     const RENTAL_MS = RENTAL_MINUTES * 60 * 1000;
 
-    // Gerador de imagem SVG elegante caso o arquivo não exista no repositório
-    function getFallbackTrikeSvg(name = 'Trike', number = 1) {
-      const colors = ['#06b6d4', '#f97316', '#eab308', '#3b82f6', '#a855f7'];
-      const themeColor = colors[(number - 1) % colors.length];
-      const svg = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
-          <rect width="400" height="300" fill="#020617"/>
-          <circle cx="200" cy="150" r="110" fill="${themeColor}" opacity="0.12"/>
-          <circle cx="200" cy="130" r="48" fill="${themeColor}" opacity="0.2"/>
-          <path d="M175 130 L225 130 M200 105 L200 155" stroke="${themeColor}" stroke-width="4" stroke-linecap="round"/>
-          <text x="200" y="215" fill="#f8fafc" font-size="20" font-family="sans-serif" font-weight="900" text-anchor="middle" letter-spacing="1">DRIFT TRIKE #${number}</text>
-          <text x="200" y="240" fill="${themeColor}" font-size="13" font-family="sans-serif" font-weight="700" text-anchor="middle">${name.replace(/</g, '')}</text>
-        </svg>
-      `;
-      return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-    }
-
+    // MAPEAMENTO EXATO COM OS NOMES E ARQUIVOS REAIS DAS FOTOS
     const DEFAULT_TRIKES = [
-      { id: 1, name: "Carrinho 1 (Fogo & Gelo)", image: "carrinho (1).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
-      { id: 2, name: "Carrinho 2 (Vermelho Xtreme)", image: "carrinho (2).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
-      { id: 3, name: "Carrinho 3 (Amarelo Graffiti)", image: "carrinho (3).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
-      { id: 4, name: "Carrinho 4 (Azul Camuflado)", image: "carrinho (4).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null }
+      { id: 1, name: "Carrinho 1 (Vermelho Xtreme)", photoIndex: 2, image: "./carrinho%20(2).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
+      { id: 2, name: "Carrinho 2 (Amarelo Graffiti)", photoIndex: 3, image: "./carrinho%20(3).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
+      { id: 3, name: "Carrinho 3 (Azul Camuflado)", photoIndex: 4, image: "./carrinho%20(4).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
+      { id: 4, name: "Carrinho 4 (Fogo & Gelo)", photoIndex: 1, image: "./carrinho%20(1).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null }
     ];
 
     const DEFAULT_USERS = [
@@ -694,11 +674,58 @@
 
     let trikes = JSON.parse(localStorage.getItem('dt_trikes')) || DEFAULT_TRIKES;
 
+    // LIMPEZA AUTOMÁTICA DE CACHE QUEBRADO NO CELULAR
+    let needsCacheFix = false;
     trikes = trikes.map((t, idx) => {
-      let img = t.image || `carrinho (${t.id || idx + 1}).jpg`;
-      img = img.replace(/^\.\//, '');
-      return { ...t, image: img };
+      const pIdx = t.photoIndex || ((idx + 1) === 1 ? 2 : (idx + 1) === 2 ? 3 : (idx + 1) === 3 ? 4 : 1);
+      // Se a imagem guardada for o SVG anterior ou nula, restaura a foto real
+      if (!t.image || t.image.includes('data:image/svg') || t.image.includes('placeholder')) {
+        needsCacheFix = true;
+        return {
+          ...t,
+          photoIndex: pIdx,
+          image: `./carrinho%20(${pIdx}).jpg`
+        };
+      }
+      return { ...t, photoIndex: pIdx };
     });
+
+    if (needsCacheFix || trikes.length === 0) {
+      localStorage.setItem('dt_trikes', JSON.stringify(trikes));
+    }
+
+    function restoreDefaultPhotos() {
+      trikes = JSON.parse(JSON.stringify(DEFAULT_TRIKES));
+      localStorage.setItem('dt_trikes', JSON.stringify(trikes));
+      refreshActiveView();
+      showToast("Fotos restauradas para o padrão!", "success");
+    }
+
+    // RESOLVE O CARREGAMENTO DA FOTO EM QUALQUER APARELHO (TESTA TODAS AS VARIAÇÕES DE NOME)
+    function handleTrikeImageError(imgEl, trikeId) {
+      const trike = trikes.find(x => x.id === trikeId);
+      const photoNum = trike && trike.photoIndex ? trike.photoIndex : trikeId;
+      const step = parseInt(imgEl.getAttribute('data-err-step') || '0', 10);
+      imgEl.setAttribute('data-err-step', step + 1);
+
+      const pathsToTry = [
+        `./carrinho%20(${photoNum}).jpg`,
+        `carrinho%20(${photoNum}).jpg`,
+        `/carrinho%20(${photoNum}).jpg`,
+        `./carrinho%20(${photoNum}).JPG`,
+        `carrinho%20(${photoNum}).JPG`,
+        `./Carrinho%20(${photoNum}).jpg`,
+        `./Carrinho%20(${photoNum}).JPG`,
+        `./carrinho (${photoNum}).jpg`,
+        `carrinho (${photoNum}).jpg`,
+        `./carrinho%20(${photoNum}).png`,
+        `./carrinho(${photoNum}).jpg`
+      ];
+
+      if (step < pathsToTry.length) {
+        imgEl.src = pathsToTry[step];
+      }
+    }
 
     let users = JSON.parse(localStorage.getItem('dt_users')) || DEFAULT_USERS;
 
@@ -728,7 +755,6 @@
     let selectedTrikeIds = [];
     let tempTrikePhoto = null;
 
-    // CONFIGURAÇÃO DO SUPABASE REALTIME (SINCRONIZAÇÃO EM TEMPO REAL)
     function setupSupabaseRealtime() {
       if (!supabaseClient) return;
 
@@ -805,47 +831,13 @@
       if (currentView === 'dashboard') renderDashboard();
       if (currentView === 'rental') renderRentalSelection();
       if (currentView === 'active') renderActiveRentals();
+      if (currentView === 'fleet') renderFleetManagement();
       if (currentView === 'reports') renderReports();
       const modalHist = document.getElementById('modal-history');
       if (modalHist && !modalHist.classList.contains('hidden')) {
         renderModalHistoryAndBreakdown();
       }
       lucide.createIcons();
-    }
-
-    // REGISTRO DE SERVICE WORKER PARA SUPORTE TOTAL A PWA OFFLINE/STANDALONE
-    function registerPwaServiceWorker() {
-      if ('serviceWorker' in navigator) {
-        const swScript = `
-          const CACHE_NAME = 'trikes-pwa-v1';
-          self.addEventListener('install', (e) => { self.skipWaiting(); });
-          self.addEventListener('activate', (e) => { e.waitUntil(clients.claim()); });
-          self.addEventListener('fetch', (e) => {
-            e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
-          });
-        `;
-        const blob = new Blob([swScript], { type: 'application/javascript' });
-        const swUrl = URL.createObjectURL(blob);
-        navigator.serviceWorker.register(swUrl).catch((err) => {
-          console.log('SW registration note:', err);
-        });
-      }
-    }
-
-    function handleTrikeImageError(imgEl, trikeId, trikeName) {
-      const step = parseInt(imgEl.getAttribute('data-error-step') || '0', 10);
-      imgEl.setAttribute('data-error-step', step + 1);
-
-      if (step === 0) {
-        imgEl.src = `./carrinho%20(${trikeId}).jpg`;
-      } else if (step === 1) {
-        imgEl.src = `carrinho%20(${trikeId}).jpg`;
-      } else if (step === 2) {
-        imgEl.src = `carrinho%20(${trikeId}).JPG`;
-      } else {
-        imgEl.onerror = null;
-        imgEl.src = getFallbackTrikeSvg(trikeName, trikeId);
-      }
     }
 
     async function syncUsersFromSupabase() {
@@ -1053,7 +1045,7 @@
               src="${t.image}" 
               alt="${t.name}" 
               class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300" 
-              onerror="handleTrikeImageError(this, ${t.id}, '${t.name.replace(/'/g, "\\'")}')"
+              onerror="handleTrikeImageError(this, ${t.id})"
             />
             <span class="absolute top-2 right-2 text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${t.status === 'in-use' ? 'bg-orange-500 text-white' : 'bg-green-500 text-slate-950'}">
               ${t.status === 'in-use' ? 'NA PISTA' : 'LIVRE'}
@@ -1094,7 +1086,7 @@
                   src="${t.image}" 
                   alt="${t.name}" 
                   class="w-full h-full object-cover" 
-                  onerror="handleTrikeImageError(this, ${t.id}, '${t.name.replace(/'/g, "\\'")}')"
+                  onerror="handleTrikeImageError(this, ${t.id})"
                 />
               </div>
               <div>
@@ -1311,7 +1303,7 @@
                   src="${t.image}" 
                   alt="${t.name}" 
                   class="w-full h-full object-cover" 
-                  onerror="handleTrikeImageError(this, ${t.id}, '${t.name.replace(/'/g, "\\'")}')"
+                  onerror="handleTrikeImageError(this, ${t.id})"
                 />
               </div>
               <div>
@@ -1467,7 +1459,8 @@
         trikes.push({
           id: newId,
           name: name,
-          image: tempTrikePhoto || `carrinho (${newId}).jpg`,
+          photoIndex: newId,
+          image: tempTrikePhoto || `./carrinho%20(${newId}).jpg`,
           status: 'available',
           endTime: null,
           totalRentals: 0
@@ -1538,7 +1531,7 @@
                 src="${t.image}" 
                 alt="${t.name}" 
                 class="w-full h-full object-cover" 
-                onerror="handleTrikeImageError(this, ${t.id}, '${t.name.replace(/'/g, "\\'")}')"
+                onerror="handleTrikeImageError(this, ${t.id})"
               />
             </div>
             <div>
@@ -1886,7 +1879,6 @@
 
     window.onload = function() {
       lucide.createIcons();
-      registerPwaServiceWorker();
 
       const savedUser = localStorage.getItem('dt_remember_username');
       if (savedUser) {
