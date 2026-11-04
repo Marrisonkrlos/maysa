@@ -5,10 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Drift Trikes - Controle & Locação</title>
   
+  <!-- CONFIGURAÇÕES DE PWA (TELA CHEIA E INSTALAÇÃO) -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Drift Trikes" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#020617" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='25' fill='%23020617'/><circle cx='50' cy='50' r='38' fill='%2306b6d4' opacity='0.2'/><path d='M30 65 L50 25 L70 65 Z' fill='%2306b6d4'/></svg>" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='25' fill='%23020617'/><circle cx='50' cy='50' r='38' fill='%2306b6d4' opacity='0.2'/><path d='M30 65 L50 25 L70 65 Z' fill='%2306b6d4'/></svg>" />
+  
+  <!-- MANIFEST INLINE PARA PWA NATIVO -->
+  <link rel="manifest" href="data:application/manifest+json;utf-8,%7B%22name%22%3A%22Drift%20Trikes%22%2C%22short_name%22%3A%22Trikes%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23020617%22%2C%22theme_color%22%3A%22%23020617%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20100%20100'%3E%3Crect%20width%3D'100'%20height%3D'100'%20rx%3D'25'%20fill%3D'%23020617'%2F%3E%3Ccircle%20cx%3D'50'%20cy%3D'50'%20r%3D'38'%20fill%3D'%2306b6d4'%20opacity%3D'0.2'%2F%3E%3Cpath%20d%3D'M30%2065%20L50%2025%20L70%2065%20Z'%20fill%3D'%2306b6d4'%2F%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -33,9 +40,11 @@
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     button:active, .clickable:active { transform: scale(0.97); }
+    /* Ajuste para entalhe e barras de navegação em tela cheia PWA */
+    body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans select-none pb-10">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans select-none pb-12">
 
   <!-- TOAST NOTIFICAÇÃO -->
   <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 pointer-events-none transform -translate-y-4">
@@ -174,7 +183,10 @@
             <i data-lucide="zap" class="w-5 h-5 text-cyan-400"></i>
           </div>
           <div>
-            <h1 class="font-black text-lg tracking-wide uppercase italic leading-tight text-white">Drift Trikes</h1>
+            <div class="flex items-center gap-2">
+              <h1 class="font-black text-lg tracking-wide uppercase italic leading-tight text-white">Drift Trikes</h1>
+              <span id="realtime-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" title="Conectado em Tempo Real"></span>
+            </div>
             <p id="header-user-tag" class="text-[10px] text-cyan-400 font-semibold uppercase tracking-wider">Operador</p>
           </div>
         </div>
@@ -636,19 +648,21 @@
     const SUPABASE_KEY = "sb_publishable_uY40Pc9DsLgxfBeIaGhS4g_Je4AfyxJ";
     
     let supabaseClient = null;
+    let realtimeChannel = null;
+
     try {
       if (window.supabase) {
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       }
     } catch(err) {
-      console.warn("Supabase local mode fallback:", err);
+      console.warn("Supabase local fallback:", err);
     }
 
     const PRICE_PER_TRIKE = 10.00;
     const RENTAL_MINUTES = 10;
     const RENTAL_MS = RENTAL_MINUTES * 60 * 1000;
 
-    // Gerador de imagem SVG elegante caso o arquivo não exista no repositório local
+    // Gerador de imagem SVG elegante caso o arquivo não exista no repositório
     function getFallbackTrikeSvg(name = 'Trike', number = 1) {
       const colors = ['#06b6d4', '#f97316', '#eab308', '#3b82f6', '#a855f7'];
       const themeColor = colors[(number - 1) % colors.length];
@@ -665,7 +679,6 @@
       return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
     }
 
-    // Caminhos compatíveis com GitHub Pages e Linux case-sensitive
     const DEFAULT_TRIKES = [
       { id: 1, name: "Carrinho 1 (Fogo & Gelo)", image: "carrinho (1).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
       { id: 2, name: "Carrinho 2 (Vermelho Xtreme)", image: "carrinho (2).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
@@ -681,7 +694,6 @@
 
     let trikes = JSON.parse(localStorage.getItem('dt_trikes')) || DEFAULT_TRIKES;
 
-    // Normaliza os caminhos das fotos para evitar quebras no celular
     trikes = trikes.map((t, idx) => {
       let img = t.image || `carrinho (${t.id || idx + 1}).jpg`;
       img = img.replace(/^\.\//, '');
@@ -716,22 +728,121 @@
     let selectedTrikeIds = [];
     let tempTrikePhoto = null;
 
-    // Tratamento em cascata para carregar fotos sem falhar no celular
+    // CONFIGURAÇÃO DO SUPABASE REALTIME (SINCRONIZAÇÃO EM TEMPO REAL)
+    function setupSupabaseRealtime() {
+      if (!supabaseClient) return;
+
+      try {
+        realtimeChannel = supabaseClient.channel('dt_realtime_sync', {
+          config: { broadcast: { self: false } }
+        });
+
+        realtimeChannel
+          .on('broadcast', { event: 'trikes_state' }, ({ payload }) => {
+            if (payload && payload.trikes) {
+              trikes = payload.trikes;
+              localStorage.setItem('dt_trikes', JSON.stringify(trikes));
+              refreshActiveView();
+            }
+          })
+          .on('broadcast', { event: 'financial_state' }, ({ payload }) => {
+            if (payload) {
+              dailyRevenue = payload.dailyRevenue ?? dailyRevenue;
+              dailyRentals = payload.dailyRentals ?? dailyRentals;
+              dailyByPayment = payload.dailyByPayment ?? dailyByPayment;
+              dailyByUser = payload.dailyByUser ?? dailyByUser;
+              if (payload.registerHistory) registerHistory = payload.registerHistory;
+              saveState();
+              refreshActiveView();
+            }
+          })
+          .subscribe((status) => {
+            const dot = document.getElementById('realtime-status-dot');
+            if (dot) {
+              if (status === 'SUBSCRIBED') {
+                dot.className = "w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]";
+                dot.title = "Tempo Real: Conectado";
+              } else {
+                dot.className = "w-2 h-2 rounded-full bg-amber-400";
+                dot.title = "Tempo Real: Reconectando...";
+              }
+            }
+          });
+      } catch (err) {
+        console.warn("Supabase Realtime Channel:", err);
+      }
+    }
+
+    function broadcastState(eventType = 'all') {
+      if (!realtimeChannel) return;
+      try {
+        if (eventType === 'trikes' || eventType === 'all') {
+          realtimeChannel.send({
+            type: 'broadcast',
+            event: 'trikes_state',
+            payload: { trikes }
+          });
+        }
+        if (eventType === 'financial' || eventType === 'all') {
+          realtimeChannel.send({
+            type: 'broadcast',
+            event: 'financial_state',
+            payload: {
+              dailyRevenue,
+              dailyRentals,
+              dailyByPayment,
+              dailyByUser,
+              registerHistory
+            }
+          });
+        }
+      } catch(e) {
+        console.warn("Broadcast Error:", e);
+      }
+    }
+
+    function refreshActiveView() {
+      if (currentView === 'dashboard') renderDashboard();
+      if (currentView === 'rental') renderRentalSelection();
+      if (currentView === 'active') renderActiveRentals();
+      if (currentView === 'reports') renderReports();
+      const modalHist = document.getElementById('modal-history');
+      if (modalHist && !modalHist.classList.contains('hidden')) {
+        renderModalHistoryAndBreakdown();
+      }
+      lucide.createIcons();
+    }
+
+    // REGISTRO DE SERVICE WORKER PARA SUPORTE TOTAL A PWA OFFLINE/STANDALONE
+    function registerPwaServiceWorker() {
+      if ('serviceWorker' in navigator) {
+        const swScript = `
+          const CACHE_NAME = 'trikes-pwa-v1';
+          self.addEventListener('install', (e) => { self.skipWaiting(); });
+          self.addEventListener('activate', (e) => { e.waitUntil(clients.claim()); });
+          self.addEventListener('fetch', (e) => {
+            e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+          });
+        `;
+        const blob = new Blob([swScript], { type: 'application/javascript' });
+        const swUrl = URL.createObjectURL(blob);
+        navigator.serviceWorker.register(swUrl).catch((err) => {
+          console.log('SW registration note:', err);
+        });
+      }
+    }
+
     function handleTrikeImageError(imgEl, trikeId, trikeName) {
       const step = parseInt(imgEl.getAttribute('data-error-step') || '0', 10);
       imgEl.setAttribute('data-error-step', step + 1);
 
       if (step === 0) {
-        // Tenta encode direto do espaço para %20
         imgEl.src = `./carrinho%20(${trikeId}).jpg`;
       } else if (step === 1) {
-        // Tenta sem ./
         imgEl.src = `carrinho%20(${trikeId}).jpg`;
       } else if (step === 2) {
-        // Tenta extensão em maiúsculo .JPG
         imgEl.src = `carrinho%20(${trikeId}).JPG`;
       } else {
-        // Fallback garantido: SVG estilizado nativo com tema do carrinho
         imgEl.onerror = null;
         imgEl.src = getFallbackTrikeSvg(trikeName, trikeId);
       }
@@ -920,6 +1031,7 @@
         }
       });
 
+      setupSupabaseRealtime();
       navigate('dashboard');
     }
 
@@ -1107,6 +1219,7 @@
       dailyByUser[operatorName].revenue += amount;
 
       saveState();
+      broadcastState('all');
       playBeepAlert(false);
       showToast(`${selectedTrikeIds.length} Carrinho(s) Liberado(s)! Operador: ${operatorName}`, 'success');
       
@@ -1139,6 +1252,7 @@
       dailyByUser[operatorName].revenue += extraValue;
 
       saveState();
+      broadcastState('all');
       playBeepAlert(false);
       showToast(`+${extraMinutes} Min adicionados! (+R$ ${extraValue.toFixed(2)})`, "success");
       renderActiveRentals();
@@ -1240,6 +1354,7 @@
         return t;
       });
       saveState();
+      broadcastState('trikes');
       showToast("Carrinho devolvido e liberado!", "info");
       renderActiveRentals();
     }
@@ -1361,6 +1476,7 @@
       }
 
       saveState();
+      broadcastState('trikes');
       cancelTrikeEdit();
       renderFleetManagement();
     }
@@ -1405,6 +1521,7 @@
     function removeTrike(id) {
       trikes = trikes.filter(t => t.id !== id);
       saveState();
+      broadcastState('trikes');
       showToast("Carrinho removido da frota", "info");
       renderFleetManagement();
     }
@@ -1614,7 +1731,7 @@
       lucide.createIcons();
     }
 
-    // CONTROLE DO MODAL DE HISTÓRICO E PRODUTIVIDADE
+    // MODAL DE HISTÓRICO E PRODUTIVIDADE
     function openHistoryModal() {
       renderModalHistoryAndBreakdown();
       document.getElementById('modal-history').classList.remove('hidden');
@@ -1626,7 +1743,6 @@
     }
 
     function renderModalHistoryAndBreakdown() {
-      // 1. Produtividade por Membro no modal
       const modalUsersEl = document.getElementById('modal-users-breakdown');
       modalUsersEl.innerHTML = users.map(u => {
         const stats = dailyByUser[u.name] || { rentals: 0, revenue: 0 };
@@ -1649,7 +1765,6 @@
         `;
       }).join('');
 
-      // 2. Histórico de Caixas Fechados com Exclusão exclusiva para Marrison Carlos
       const isMarrisonAdmin = currentUser && (currentUser.name.toLowerCase().includes('marrison') || currentUser.username.toLowerCase().includes('marrison'));
       const histList = document.getElementById('modal-history-list');
 
@@ -1704,6 +1819,7 @@
 
       registerHistory = registerHistory.filter(h => h.id !== recordId);
       saveState();
+      broadcastState('financial');
       renderModalHistoryAndBreakdown();
       showToast("Registro de caixa excluído com sucesso!", "info");
     }
@@ -1764,11 +1880,13 @@
       trikes = trikes.map(t => ({ ...t, totalRentals: 0 }));
       
       saveState();
+      broadcastState('all');
       renderReports();
     }
 
     window.onload = function() {
       lucide.createIcons();
+      registerPwaServiceWorker();
 
       const savedUser = localStorage.getItem('dt_remember_username');
       if (savedUser) {
