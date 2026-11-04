@@ -309,12 +309,12 @@
         </div>
       </section>
 
-      <!-- SELEÇÃO PARA ALUGAR (COM SELEÇÃO DE TEMPO) -->
+      <!-- SELEÇÃO PARA ALUGAR -->
       <section id="view-rental" class="app-view space-y-5 hidden">
         <div class="flex items-center justify-between">
           <div>
             <h2 class="text-xl font-black uppercase italic text-white">Selecione os Carrinhos & Tempo</h2>
-            <p class="text-xs text-slate-400">Clique para marcar e defina 10, 20, 30 ou 40 minutos</p>
+            <p class="text-xs text-slate-400">Marque o carrinho e escolha 10, 20, 30 ou 40 minutos</p>
           </div>
           <span class="text-xs font-bold text-cyan-400 bg-cyan-950/60 border border-cyan-800/80 px-3 py-1.5 rounded-full">
             R$ 1,00 / minuto
@@ -379,7 +379,7 @@
               <div class="rounded-2xl bg-white shadow-inner mb-3 overflow-hidden flex flex-col items-center justify-center p-2 border border-slate-200">
                 <img 
                   id="pix-qr-image"
-                  src="pix.jpg" 
+                  src="image_8929c9.jpg.jpeg" 
                   alt="Cartaz QR Code PIX Jonas André" 
                   class="w-full h-auto max-h-[380px] object-contain block mx-auto rounded-xl"
                   onerror="handleQrCodeImageError(this)"
@@ -646,15 +646,12 @@
       console.warn("Supabase local fallback:", err);
     }
 
-    // Configuração oficial de preços e tempos
-    const PRICE_PER_MINUTE = 1.00; // R$ 1,00 por minuto (10 min = R$ 10 / 20 min = R$ 20)
-    
-    // Mapeamento original das 4 fotos
+    // LISTA ORIGINAL COM OS NOMES EXATOS QUE ESTÃO NO SEU REPOSITÓRIO GITHUB
     const DEFAULT_TRIKES = [
-      { id: 1, name: "Carrinho 1 (Vermelho Xtreme)", photoNum: 2, image: "carrinho (2).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
-      { id: 2, name: "Carrinho 2 (Amarelo Graffiti)", photoNum: 3, image: "carrinho (3).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
-      { id: 3, name: "Carrinho 3 (Azul Camuflado)", photoNum: 4, image: "carrinho (4).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
-      { id: 4, name: "Carrinho 4 (Fogo & Gelo)", photoNum: 1, image: "carrinho (1).jpg", status: "available", endTime: null, totalRentals: 0, rentedBy: null }
+      { id: 1, name: "Carrinho 1 (Vermelho Xtreme)", photoNum: 2, image: "carrinho (2)", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
+      { id: 2, name: "Carrinho 2 (Amarelo Graffiti)", photoNum: 3, image: "carrinho (3)", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
+      { id: 3, name: "Carrinho 3 (Azul Camuflado)", photoNum: 4, image: "carrinho (4)", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
+      { id: 4, name: "Carrinho 4 (Fogo & Gelo)", photoNum: 1, image: "carrinho (1)", status: "available", endTime: null, totalRentals: 0, rentedBy: null }
     ];
 
     const DEFAULT_USERS = [
@@ -665,15 +662,12 @@
 
     let trikes = JSON.parse(localStorage.getItem('dt_trikes')) || DEFAULT_TRIKES;
 
-    // Normalização das fotos para corrigir problemas de cache
+    // Remove referências antigas do cache do celular
     trikes = trikes.map((t, idx) => {
       const pNum = t.photoNum || (idx === 0 ? 2 : idx === 1 ? 3 : idx === 2 ? 4 : 1);
-      let img = t.image;
-      if (!img || img.includes('data:image/svg') || img.includes('undefined')) {
-        img = `carrinho (${pNum}).jpg`;
-      }
-      return { ...t, photoNum: pNum, image: img };
+      return { ...t, photoNum: pNum, image: `carrinho (${pNum})` };
     });
+    localStorage.setItem('dt_trikes', JSON.stringify(trikes));
 
     let users = JSON.parse(localStorage.getItem('dt_users')) || DEFAULT_USERS;
 
@@ -700,13 +694,10 @@
     let currentUser = JSON.parse(localStorage.getItem('dt_current_user')) || null;
 
     let currentView = 'dashboard';
-
-    // Gerenciador de Seleção com Tempo Personalizado por Carrinho
-    // Formato: { trikeId: { minutes: 10, price: 10.00 } }
     let selectedTrikesConfig = {};
     let tempTrikePhoto = null;
 
-    // Sistema avançado de resolução de imagens (tenta variações de URL sem quebrar)
+    // Função de Fallback que testa o nome sem extensão e com as extensões comuns
     function handleTrikeImageError(imgEl, trikeId) {
       const trike = trikes.find(x => x.id === trikeId);
       const photoNum = trike && trike.photoNum ? trike.photoNum : trikeId;
@@ -714,16 +705,14 @@
       imgEl.setAttribute('data-err-step', step + 1);
 
       const candidateUrls = [
+        `carrinho (${photoNum})`,
+        `./carrinho (${photoNum})`,
+        `carrinho%20(${photoNum})`,
         `carrinho (${photoNum}).jpg`,
+        `carrinho (${photoNum}).jpeg`,
+        `carrinho (${photoNum}).png`,
         `carrinho (${photoNum}).JPG`,
-        `./carrinho (${photoNum}).jpg`,
-        `./carrinho (${photoNum}).JPG`,
-        `carrinho%20(${photoNum}).jpg`,
-        `carrinho%20(${photoNum}).JPG`,
-        `./carrinho%20(${photoNum}).jpg`,
-        `./carrinho%20(${photoNum}).JPG`,
-        `carrinho(${photoNum}).jpg`,
-        `carrinho(${photoNum}).JPG`
+        `./carrinho%20(${photoNum}).jpg`
       ];
 
       if (step < candidateUrls.length) {
@@ -735,10 +724,9 @@
       trikes = JSON.parse(JSON.stringify(DEFAULT_TRIKES));
       localStorage.setItem('dt_trikes', JSON.stringify(trikes));
       refreshActiveView();
-      showToast("Fotos resetadas com sucesso!", "success");
+      showToast("Fotos restauradas com sucesso!", "success");
     }
 
-    // Configuração Supabase Realtime
     function setupSupabaseRealtime() {
       if (!supabaseClient) return;
 
@@ -1042,7 +1030,6 @@
       lucide.createIcons();
     }
 
-    // RENDERIZAÇÃO DA SELEÇÃO DE CARRINHOS COM OPÇÃO DE TEMPO DINÂMICA
     function renderRentalSelection() {
       const availableTrikes = trikes.filter(t => t.status === 'available');
       const listEl = document.getElementById('rental-trikes-list');
@@ -1064,7 +1051,7 @@
       listEl.innerHTML = availableTrikes.map(t => {
         const isSelected = !!selectedTrikesConfig[t.id];
         const selectedMins = isSelected ? selectedTrikesConfig[t.id].minutes : 10;
-        const selectedVal = selectedMins * PRICE_MINUTE_OR_FIXED(selectedMins);
+        const selectedVal = selectedMins * 1.00;
 
         return `
           <div class="p-3.5 rounded-2xl border-2 transition-all flex flex-col justify-between gap-3 ${isSelected ? 'bg-cyan-950/40 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]' : 'bg-slate-900 border-slate-800 hover:border-slate-700'}">
@@ -1126,10 +1113,6 @@
       }
 
       lucide.createIcons();
-    }
-
-    function PRICE_MINUTE_OR_FIXED(mins) {
-      return 1.00; // 1 real por minuto padrão
     }
 
     function toggleTrikeSelection(id) {
@@ -1482,7 +1465,7 @@
           id: newId,
           name: name,
           photoNum: newId,
-          image: tempTrikePhoto || `carrinho (${newId}).jpg`,
+          image: tempTrikePhoto || `carrinho (${newId})`,
           status: 'available',
           endTime: null,
           totalRentals: 0
