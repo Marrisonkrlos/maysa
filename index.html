@@ -75,7 +75,7 @@
     </div>
   </div>
 
-  <!-- MODAL HISTÓRICO & PRODUTIVIDADE (AQUI FICA O FATURAMENTO POR MEMBRO) -->
+  <!-- MODAL HISTÓRICO & PRODUTIVIDADE (APENAS RELATÓRIO E FECHAMENTOS) -->
   <div id="modal-history" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md hidden flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl space-y-4">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
@@ -85,7 +85,7 @@
           </div>
           <div>
             <h3 class="font-bold text-base text-white">Histórico & Desempenho</h3>
-            <p class="text-[11px] text-slate-400">Fechamentos anteriores e faturamento por operador</p>
+            <p class="text-[11px] text-slate-400">Fechamentos anteriores e total acumulado por operador</p>
           </div>
         </div>
         <button onclick="closeHistoryModal()" class="text-slate-400 hover:text-white p-2 rounded-xl bg-slate-800/80">
@@ -94,14 +94,10 @@
       </div>
 
       <div class="flex-1 overflow-y-auto space-y-5 no-scrollbar pr-1">
-        <!-- BLOCO DA FOTO 2: FATURAMENTO & PRODUTIVIDADE POR MEMBRO DENTRO DE RELATÓRIO E HISTÓRICO -->
         <div>
-          <div class="flex items-center justify-between mb-2">
-            <h4 class="font-bold text-xs uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
-              <i data-lucide="users" class="w-4 h-4"></i> Faturamento & Produtividade por Membro
-            </h4>
-            <span class="text-[10px] font-bold text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">Turno Ativo</span>
-          </div>
+          <h4 class="font-bold text-xs uppercase tracking-wider text-purple-400 mb-2 flex items-center gap-1.5">
+            <i data-lucide="users" class="w-4 h-4"></i> Faturamento & Produtividade por Membro
+          </h4>
           <div id="modal-users-breakdown" class="space-y-2"></div>
         </div>
 
@@ -170,7 +166,7 @@
     </div>
   </div>
 
-  <!-- CABEÇALHO & NAVEGAÇÃO -->
+  <!-- CABEÇALHO & APP CONTAINER -->
   <div id="app-container" class="hidden flex-1 flex flex-col">
     <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 shadow-xl">
       <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between border-b border-slate-800/60">
@@ -218,7 +214,7 @@
             <span class="text-[10px] font-bold uppercase tracking-wider">Frota</span>
           </button>
 
-          <!-- ABA EQUIPE RESTAURADA NO MENU -->
+          <!-- ABA EQUIPE NA BARRA SUPERIOR (EXCLUSIVA ADMIN) -->
           <button onclick="navigate('users')" id="nav-users" class="nav-item admin-only flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
             <i data-lucide="users" class="w-5 h-5 mb-1"></i>
             <span class="text-[10px] font-bold uppercase tracking-wider">Equipe</span>
@@ -520,7 +516,7 @@
         </div>
       </section>
 
-      <!-- GERENCIAR EQUIPE (RESTAURADA COMO ABA PRINCIPAL) -->
+      <!-- GERENCIAR EQUIPE (EXCLUSIVA DE MARRISON CARLOS / ADMIN) -->
       <section id="view-users" class="app-view hidden space-y-6">
         <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
           <h3 class="font-bold text-base text-slate-200 mb-4 flex items-center gap-2">
@@ -598,7 +594,7 @@
           </div>
         </div>
 
-        <!-- ACESSO AO MODAL HISTÓRICO E PRODUTIVIDADE -->
+        <!-- ACESSO AO MODAL HISTÓRICO E DETALHES -->
         <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
           <div class="flex items-center gap-3 text-left">
             <div class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center flex-shrink-0">
@@ -606,7 +602,7 @@
             </div>
             <div>
               <h4 class="font-bold text-base text-white">Relatórios & Histórico</h4>
-              <p class="text-xs text-slate-400">Consulte fechamentos passados e o faturamento detalhado por operador.</p>
+              <p class="text-xs text-slate-400">Consulte fechamentos passados e produtividade detalhada da equipe.</p>
             </div>
           </div>
           <button onclick="openHistoryModal()" class="w-full sm:w-auto bg-purple-600 hover:bg-purple-500 text-white font-bold px-6 py-3.5 rounded-xl uppercase text-xs tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg">
@@ -1688,7 +1684,6 @@
       
       showToast("Membro cadastrado com sucesso!", "success");
       renderUsersManagement();
-      renderModalHistoryAndBreakdown();
     }
 
     function openPasswordModal(userId) {
@@ -1761,7 +1756,6 @@
       saveState();
       showToast("Privilégio atualizado com sucesso!", "success");
       renderUsersManagement();
-      renderModalHistoryAndBreakdown();
     }
 
     async function removeUser(id) {
@@ -1781,10 +1775,9 @@
       saveState();
       showToast("Usuário removido da equipe", "info");
       renderUsersManagement();
-      renderModalHistoryAndBreakdown();
     }
 
-    // RENDERIZAÇÃO DA ABA EQUIPE RESTAURADA
+    // RENDERIZA A LISTA DE EQUIPE NA ABA "EQUIPE" EXCLUSIVA DE MARRISON CARLOS
     function renderUsersManagement() {
       users = ensureDefaultUsers(users);
       const list = document.getElementById('users-manage-list');
@@ -1812,7 +1805,7 @@
 
               ${!isMe ? `
                 <button onclick="toggleUserPrivilege(${u.id})" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 transition-colors" title="Mudar privilégio">
-                  ${isAdmin ? 'Tornar Vendedor' : 'Tornar Admin'}
+                  ${isAdmin ? 'Vendedor' : 'Admin'}
                 </button>
                 <button onclick="removeUser(${u.id})" class="p-2 rounded-lg bg-slate-800 hover:bg-red-950 text-slate-400 hover:text-red-400 transition-colors" title="Remover">
                   <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -1837,7 +1830,7 @@
       document.getElementById('modal-history').classList.add('hidden');
     }
 
-    // EXIBE AS LOCAÇÕES DE CADA OPERADOR NO MODAL DE RELATÓRIO E HISTÓRICO (FOTO 2)
+    // EXIBE AS LOCAÇÕES DE TODOS OS USUÁRIOS NO MODAL
     function renderModalHistoryAndBreakdown() {
       users = ensureDefaultUsers(users);
 
