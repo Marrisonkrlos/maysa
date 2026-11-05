@@ -14,7 +14,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Chart.js para o gráfico moderno de desempenho -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -76,17 +75,17 @@
     </div>
   </div>
 
-  <!-- MODAL HISTÓRICO DE CAIXAS & PRODUTIVIDADE -->
-  <div id="modal-history" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl space-y-4">
+  <!-- MODAL HISTÓRICO, PRODUTIVIDADE & GESTÃO DE EQUIPE -->
+  <div id="modal-history" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 w-full max-w-3xl max-h-[92vh] flex flex-col shadow-2xl space-y-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center">
-            <i data-lucide="history" class="w-4 h-4"></i>
+          <div class="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center">
+            <i data-lucide="history" class="w-5 h-5"></i>
           </div>
           <div>
-            <h3 class="font-bold text-base text-white">Histórico & Desempenho</h3>
-            <p class="text-[11px] text-slate-400">Fechamentos anteriores e total acumulado por operador</p>
+            <h3 class="font-bold text-base text-white">Relatórios, Histórico & Equipe</h3>
+            <p class="text-[11px] text-slate-400">Fechamentos anteriores, produtividade e gerenciamento de membros</p>
           </div>
         </div>
         <button onclick="closeHistoryModal()" class="text-slate-400 hover:text-white p-2 rounded-xl bg-slate-800/80">
@@ -94,20 +93,66 @@
         </button>
       </div>
 
-      <div class="flex-1 overflow-y-auto space-y-5 no-scrollbar pr-1">
+      <div class="flex-1 overflow-y-auto space-y-6 no-scrollbar pr-1">
+        
+        <!-- PRODUTIVIDADE DO TURNO ATUAL -->
         <div>
-          <h4 class="font-bold text-xs uppercase tracking-wider text-purple-400 mb-2 flex items-center gap-1.5">
+          <h4 class="font-bold text-xs uppercase tracking-wider text-purple-400 mb-2.5 flex items-center gap-1.5">
             <i data-lucide="users" class="w-4 h-4"></i> Produtividade do Turno Atual
           </h4>
           <div id="modal-users-breakdown" class="space-y-2"></div>
         </div>
 
+        <!-- CADASTRO E GERENCIAMENTO DE OPERADORES (ADMIN) -->
+        <div id="modal-team-management-card" class="bg-slate-950/80 border border-slate-800 p-4 sm:p-5 rounded-2xl space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
+            <h4 class="font-bold text-xs uppercase tracking-wider text-purple-300 flex items-center gap-1.5">
+              <i data-lucide="user-plus" class="w-4 h-4 text-purple-400"></i> Cadastrar Novo Operador / Admin
+            </h4>
+            <span class="text-[10px] text-slate-500 font-bold uppercase">Acesso Gerencial</span>
+          </div>
+
+          <form onsubmit="handleCreateUser(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Nome Completo</label>
+              <input id="new-user-name" type="text" required placeholder="Ex: Carlos Silva" class="w-full bg-slate-900 border border-slate-700 px-3.5 py-2.5 rounded-xl text-xs focus:border-purple-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Login (Usuário)</label>
+              <input id="new-user-username" type="text" required placeholder="carlos" class="w-full bg-slate-900 border border-slate-700 px-3.5 py-2.5 rounded-xl text-xs focus:border-purple-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Senha de Acesso</label>
+              <input id="new-user-password" type="password" required placeholder="••••••" class="w-full bg-slate-900 border border-slate-700 px-3.5 py-2.5 rounded-xl text-xs focus:border-purple-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Nível de Acesso</label>
+              <select id="new-user-role" class="w-full bg-slate-900 border border-slate-700 px-3.5 py-2.5 rounded-xl text-xs focus:border-purple-500 outline-none text-slate-200">
+                <option value="seller">Vendedor (Opera e Aluga)</option>
+                <option value="admin">Administrador (Acesso Total)</option>
+              </select>
+            </div>
+            <div class="sm:col-span-2 pt-1">
+              <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 rounded-xl uppercase tracking-wider text-xs shadow-lg transition-all">
+                Cadastrar Colaborador
+              </button>
+            </div>
+          </form>
+
+          <div class="pt-3 border-t border-slate-800">
+            <h5 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5">Membros da Equipe Cadastrados</h5>
+            <div id="users-manage-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+          </div>
+        </div>
+
+        <!-- FECHAMENTOS ANTERIORES -->
         <div>
-          <h4 class="font-bold text-xs uppercase tracking-wider text-cyan-400 mb-2 flex items-center gap-1.5">
+          <h4 class="font-bold text-xs uppercase tracking-wider text-cyan-400 mb-2.5 flex items-center gap-1.5">
             <i data-lucide="archive" class="w-4 h-4"></i> Fechamentos Anteriores (Geral da Equipe)
           </h4>
           <div id="modal-history-list" class="space-y-2.5"></div>
         </div>
+
       </div>
 
       <div class="pt-3 border-t border-slate-800 text-right">
@@ -213,11 +258,6 @@
           <button onclick="navigate('fleet')" id="nav-fleet" class="nav-item admin-only flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
             <i data-lucide="car" class="w-5 h-5 mb-1"></i>
             <span class="text-[10px] font-bold uppercase tracking-wider">Frota</span>
-          </button>
-
-          <button onclick="navigate('users')" id="nav-users" class="nav-item admin-only flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
-            <i data-lucide="users" class="w-5 h-5 mb-1"></i>
-            <span class="text-[10px] font-bold uppercase tracking-wider">Equipe</span>
           </button>
 
           <button onclick="navigate('reports')" id="nav-reports" class="nav-item flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
@@ -516,46 +556,6 @@
         </div>
       </section>
 
-      <!-- GERENCIAR EQUIPE (EXCLUSIVO ADMIN) -->
-      <section id="view-users" class="app-view hidden space-y-6">
-        <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
-          <h3 class="font-bold text-base text-slate-200 mb-4 flex items-center gap-2">
-            <i data-lucide="user-plus" class="w-5 h-5 text-purple-400"></i> Cadastrar Novo Operador / Admin
-          </h3>
-          <form onsubmit="handleCreateUser(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nome Completo</label>
-              <input id="new-user-name" type="text" required placeholder="Ex: Carlos Silva" class="w-full bg-slate-950 border border-slate-700 px-4 py-2.5 rounded-xl text-sm focus:border-purple-500 outline-none" />
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Login (Usuário)</label>
-              <input id="new-user-username" type="text" required placeholder="carlos" class="w-full bg-slate-950 border border-slate-700 px-4 py-2.5 rounded-xl text-sm focus:border-purple-500 outline-none" />
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Senha de Acesso</label>
-              <input id="new-user-password" type="password" required placeholder="••••••" class="w-full bg-slate-950 border border-slate-700 px-4 py-2.5 rounded-xl text-sm focus:border-purple-500 outline-none" />
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nível de Acesso</label>
-              <select id="new-user-role" class="w-full bg-slate-950 border border-slate-700 px-4 py-2.5 rounded-xl text-sm focus:border-purple-500 outline-none text-slate-200">
-                <option value="seller">Vendedor (Opera e Aluga)</option>
-                <option value="admin">Administrador (Acesso Total)</option>
-              </select>
-            </div>
-            <div class="sm:col-span-2 pt-2">
-              <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl uppercase tracking-wider text-xs shadow-lg transition-all">
-                Cadastrar Colaborador
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <div>
-          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Membros da Equipe</h3>
-          <div id="users-manage-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
-        </div>
-      </section>
-
       <!-- CAIXA / RELATÓRIO DO EXPEDIENTE -->
       <section id="view-reports" class="app-view hidden space-y-6">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -594,6 +594,7 @@
           </div>
         </div>
 
+        <!-- FATURAMENTO & PRODUTIVIDADE POR MEMBRO (COM MARRISON, MAYSA E JONAS) -->
         <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
           <div class="flex items-center justify-between mb-4">
             <h3 class="font-bold text-base text-slate-200 flex items-center gap-2">
@@ -604,22 +605,23 @@
           <div id="report-users-breakdown-inline" class="space-y-2"></div>
         </div>
 
+        <!-- ACESSO AO MODAL HISTÓRICO, RELATÓRIO E GERENCIAMENTO DE EQUIPE -->
         <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
           <div class="flex items-center gap-3 text-left">
             <div class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center flex-shrink-0">
               <i data-lucide="file-text" class="w-6 h-6"></i>
             </div>
             <div>
-              <h4 class="font-bold text-base text-white">Relatórios & Histórico</h4>
-              <p class="text-xs text-slate-400">Consulte fechamentos passados e produtividade detalhada da equipe.</p>
+              <h4 class="font-bold text-base text-white">Relatórios, Histórico & Equipe</h4>
+              <p class="text-xs text-slate-400">Consulte fechamentos passados, produtividade e cadastre novos operadores.</p>
             </div>
           </div>
           <button onclick="openHistoryModal()" class="w-full sm:w-auto bg-purple-600 hover:bg-purple-500 text-white font-bold px-6 py-3.5 rounded-xl uppercase text-xs tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg">
-            <i data-lucide="history" class="w-4 h-4"></i> Ver Histórico & Detalhes
+            <i data-lucide="history" class="w-4 h-4"></i> Ver Histórico & Equipe
           </button>
         </div>
 
-        <!-- SEÇÃO REDESENHADA: DESEMPENHO POR CARRINHO COM GRÁFICO E MÉTRICAS -->
+        <!-- DESEMPENHO DOS CARRINHOS COM GRÁFICO E CARDS -->
         <div class="bg-slate-900 border border-slate-800 p-5 sm:p-6 rounded-3xl shadow-xl space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-800">
             <div>
@@ -638,14 +640,12 @@
             </div>
           </div>
 
-          <!-- ÁREA DO GRÁFICO MODERNO -->
           <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800/80 shadow-inner">
             <div class="h-64 sm:h-72 w-full relative">
               <canvas id="trikesPerformanceChart"></canvas>
             </div>
           </div>
 
-          <!-- CARDS DETALHADOS POR CARRINHO -->
           <div id="report-trikes-breakdown" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2"></div>
         </div>
 
@@ -695,6 +695,23 @@
       { id: 3, name: "Maysa", username: "maysa", password: "123", role: "seller" }
     ];
 
+    // SEGURANÇA: GARANTE QUE OS USUÁRIOS PADRÃO NUNCA DESAPAREÇAM
+    function ensureDefaultUsers(existingList) {
+      let list = Array.isArray(existingList) ? [...existingList] : [];
+      list = list.filter(u => u && u.username && u.username.toLowerCase() !== 'admin');
+
+      if (!list.some(u => u.username && u.username.toLowerCase() === 'marrison carlos')) {
+        list.unshift({ id: 1, name: "Marrison Carlos", username: "Marrison Carlos", password: "Mkrlos@123", role: "admin" });
+      }
+      if (!list.some(u => u.username && u.username.toLowerCase() === 'jonas')) {
+        list.push({ id: 2, name: "Jonas", username: "jonas", password: "123", role: "seller" });
+      }
+      if (!list.some(u => u.username && u.username.toLowerCase() === 'maysa')) {
+        list.push({ id: 3, name: "Maysa", username: "maysa", password: "123", role: "seller" });
+      }
+      return list;
+    }
+
     let trikes = JSON.parse(localStorage.getItem('dt_trikes')) || DEFAULT_TRIKES;
     trikes = trikes.map((t, idx) => {
       const pNum = t.photoNum || (idx === 0 ? 2 : idx === 1 ? 3 : idx === 2 ? 4 : 1);
@@ -707,17 +724,8 @@
       };
     });
 
-    let users = JSON.parse(localStorage.getItem('dt_users')) || DEFAULT_USERS;
-    if (!users.some(u => u.username.toLowerCase() === 'jonas')) {
-      users.push({ id: 2, name: "Jonas", username: "jonas", password: "123", role: "seller" });
-    }
-    if (!users.some(u => u.username.toLowerCase() === 'maysa')) {
-      users.push({ id: 3, name: "Maysa", username: "maysa", password: "123", role: "seller" });
-    }
-    users = users.filter(u => u.username.toLowerCase() !== 'admin');
-    if (!users.some(u => u.username.toLowerCase() === 'marrison carlos')) {
-      users.unshift({ id: 1, name: "Marrison Carlos", username: "Marrison Carlos", password: "Mkrlos@123", role: "admin" });
-    }
+    let users = ensureDefaultUsers(JSON.parse(localStorage.getItem('dt_users')));
+    localStorage.setItem('dt_users', JSON.stringify(users));
 
     let dailyRevenue = parseFloat(localStorage.getItem('dt_revenue')) || 0;
     let dailyRentals = parseInt(localStorage.getItem('dt_rentals')) || 0;
@@ -897,8 +905,9 @@
       if (!supabaseClient) return;
       try {
         const { data, error } = await supabaseClient.from('users').select('*');
-        if (!error && data && data.length > 0) {
+        if (!error && Array.isArray(data) && data.length > 0) {
           data.forEach(remoteUser => {
+            if (!remoteUser || !remoteUser.username) return;
             const idx = users.findIndex(u => u.username.toLowerCase() === remoteUser.username.toLowerCase());
             if (idx >= 0) {
               users[idx] = { ...users[idx], ...remoteUser };
@@ -906,12 +915,13 @@
               users.push(remoteUser);
             }
           });
-          saveState();
-          if (currentView === 'users') renderUsersManagement();
-          if (currentView === 'reports') renderReports();
         }
       } catch(e) {
         console.warn("Falha ao sincronizar usuários com Supabase:", e);
+      } finally {
+        users = ensureDefaultUsers(users);
+        saveState();
+        renderReports();
       }
     }
 
@@ -1655,7 +1665,7 @@
       const pass = document.getElementById('new-user-password').value.trim();
       const role = document.getElementById('new-user-role').value;
 
-      const exists = users.some(u => u.username.toLowerCase() === user.toLowerCase());
+      const exists = users.some(u => u.username && u.username.toLowerCase() === user.toLowerCase());
       if (exists) {
         showToast("Já existe um membro com esse login!", "error");
         return;
@@ -1684,7 +1694,8 @@
       document.getElementById('new-user-password').value = '';
       
       showToast("Membro cadastrado com sucesso!", "success");
-      renderUsersManagement();
+      renderModalHistoryAndBreakdown();
+      renderReports();
     }
 
     function openPasswordModal(userId) {
@@ -1756,7 +1767,8 @@
 
       saveState();
       showToast("Privilégio atualizado com sucesso!", "success");
-      renderUsersManagement();
+      renderModalHistoryAndBreakdown();
+      renderReports();
     }
 
     async function removeUser(id) {
@@ -1775,45 +1787,8 @@
 
       saveState();
       showToast("Usuário removido da equipe", "info");
-      renderUsersManagement();
-    }
-
-    function renderUsersManagement() {
-      const list = document.getElementById('users-manage-list');
-      list.innerHTML = users.map(u => {
-        const isMe = currentUser && currentUser.id === u.id;
-        const isAdmin = u.role === 'admin';
-        return `
-          <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl flex items-center justify-center ${isAdmin ? 'bg-purple-500/20 text-purple-400' : 'bg-cyan-500/20 text-cyan-400'}">
-                <i data-lucide="${isAdmin ? 'shield-check' : 'user'}" class="w-5 h-5"></i>
-              </div>
-              <div>
-                <p class="font-bold text-sm text-white">${u.name} ${isMe ? '<span class="text-xs text-cyan-400">(Você)</span>' : ''}</p>
-                <p class="text-xs text-slate-500">@${u.username} • <span class="uppercase font-semibold ${isAdmin ? 'text-purple-400' : 'text-slate-400'}">${isAdmin ? 'Administrador' : 'Vendedor'}</span></p>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-1.5 self-end sm:self-auto">
-              <button onclick="openPasswordModal(${u.id})" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-orange-950 text-xs font-bold text-slate-300 hover:text-orange-400 transition-colors flex items-center gap-1" title="Mudar Senha">
-                <i data-lucide="key" class="w-3.5 h-3.5 text-orange-400"></i> Senha
-              </button>
-
-              ${!isMe ? `
-                <button onclick="toggleUserPrivilege(${u.id})" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 transition-colors" title="Mudar privilégio">
-                  ${isAdmin ? 'Vendedor' : 'Admin'}
-                </button>
-                <button onclick="removeUser(${u.id})" class="p-2 rounded-lg bg-slate-800 hover:bg-red-950 text-slate-400 hover:text-red-400 transition-colors" title="Remover">
-                  <i data-lucide="trash-2" class="w-4 h-4"></i>
-                </button>
-              ` : ''}
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      lucide.createIcons();
+      renderModalHistoryAndBreakdown();
+      renderReports();
     }
 
     async function openHistoryModal() {
@@ -1827,7 +1802,10 @@
       document.getElementById('modal-history').classList.add('hidden');
     }
 
+    // EXIBE AS LOCAÇÕES, CARDS DE OPERADORES E CONTROLE DE EQUIPE NO MODAL
     function renderModalHistoryAndBreakdown() {
+      users = ensureDefaultUsers(users);
+
       const modalUsersEl = document.getElementById('modal-users-breakdown');
       modalUsersEl.innerHTML = users.map(u => {
         const stats = dailyByUser[u.name] || { rentals: 0, revenue: 0 };
@@ -1849,6 +1827,43 @@
           </div>
         `;
       }).join('');
+
+      // RENDERIZA A LISTAGEM DA EQUIPE PARA O ADMIN NO MODAL
+      const teamList = document.getElementById('users-manage-list');
+      if (teamList) {
+        teamList.innerHTML = users.map(u => {
+          const isMe = currentUser && currentUser.id === u.id;
+          const isAdmin = u.role === 'admin';
+          return `
+            <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center ${isAdmin ? 'bg-purple-500/20 text-purple-400' : 'bg-cyan-500/20 text-cyan-400'}">
+                  <i data-lucide="${isAdmin ? 'shield-check' : 'user'}" class="w-4 h-4"></i>
+                </div>
+                <div class="truncate">
+                  <p class="font-bold text-xs text-white truncate">${u.name} ${isMe ? '<span class="text-[10px] text-cyan-400">(Você)</span>' : ''}</p>
+                  <p class="text-[10px] text-slate-500 truncate">@${u.username} • <span class="uppercase font-semibold ${isAdmin ? 'text-purple-400' : 'text-slate-400'}">${isAdmin ? 'Admin' : 'Vendedor'}</span></p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-1 flex-shrink-0">
+                <button onclick="openPasswordModal(${u.id})" class="p-1.5 rounded-lg bg-slate-800 hover:bg-orange-950 text-slate-300 hover:text-orange-400 transition-colors" title="Mudar Senha">
+                  <i data-lucide="key" class="w-3.5 h-3.5 text-orange-400"></i>
+                </button>
+
+                ${!isMe ? `
+                  <button onclick="toggleUserPrivilege(${u.id})" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] font-bold text-slate-300 transition-colors">
+                    ${isAdmin ? 'Vendedor' : 'Admin'}
+                  </button>
+                  <button onclick="removeUser(${u.id})" class="p-1.5 rounded-lg bg-slate-800 hover:bg-red-950 text-slate-400 hover:text-red-400 transition-colors" title="Remover">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
 
       const isMarrisonAdmin = currentUser && (currentUser.name.toLowerCase().includes('marrison') || currentUser.username.toLowerCase().includes('marrison'));
       const histList = document.getElementById('modal-history-list');
@@ -1910,8 +1925,9 @@
       showToast("Registro de caixa excluído com sucesso!", "info");
     }
 
-    // RENDERIZAÇÃO DO RELATÓRIO COM O NOVO GRÁFICO E CARDS COMPLETOS
     function renderReports() {
+      users = ensureDefaultUsers(users);
+
       document.getElementById('report-revenue').innerText = `R$ ${dailyRevenue.toFixed(2)}`;
       document.getElementById('report-rentals').innerText = dailyRentals;
 
@@ -1943,7 +1959,6 @@
         }).join('');
       }
 
-      // Renderiza os Cards Visuais de Desempenho por Carrinho
       const breakdown = document.getElementById('report-trikes-breakdown');
       const maxTrikeRevenue = Math.max(...trikes.map(t => t.totalRevenue || (t.totalRentals ? t.totalRentals * 10 : 0)), 1);
 
@@ -1971,7 +1986,6 @@
               </div>
             </div>
 
-            <!-- Grid de Indicadores -->
             <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800/60">
               <div class="bg-slate-900/80 border border-slate-800 px-3 py-2 rounded-xl">
                 <span class="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1">
@@ -1988,7 +2002,6 @@
               </div>
             </div>
 
-            <!-- Mini Barra de Desempenho Visual -->
             <div class="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden mt-1">
               <div class="h-full bg-gradient-to-r from-cyan-500 to-emerald-400 rounded-full transition-all duration-500" style="width: ${percent}%;"></div>
             </div>
@@ -1996,13 +2009,10 @@
         `;
       }).join('');
 
-      // Desenhar / Atualizar o Gráfico com Chart.js
       renderTrikesChart();
-
       lucide.createIcons();
     }
 
-    // FUNÇÃO QUE CONSTRÓI O GRÁFICO MULTI-EIXO (VALOR, MINUTOS E QUANTIDADE)
     function renderTrikesChart() {
       const canvas = document.getElementById('trikesPerformanceChart');
       if (!canvas) return;
