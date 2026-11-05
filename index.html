@@ -14,6 +14,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Chart.js para o gráfico moderno de desempenho -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -617,11 +619,34 @@
           </button>
         </div>
 
-        <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
-          <h3 class="font-bold text-base text-slate-200 mb-4 flex items-center gap-2">
-            <i data-lucide="bar-chart-2" class="w-5 h-5 text-cyan-400"></i> Desempenho por Carrinho
-          </h3>
-          <div id="report-trikes-breakdown" class="space-y-2"></div>
+        <!-- SEÇÃO REDESENHADA: DESEMPENHO POR CARRINHO COM GRÁFICO E MÉTRICAS -->
+        <div class="bg-slate-900 border border-slate-800 p-5 sm:p-6 rounded-3xl shadow-xl space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-800">
+            <div>
+              <h3 class="font-black text-lg text-white uppercase italic tracking-wide flex items-center gap-2">
+                <i data-lucide="bar-chart-2" class="w-5 h-5 text-cyan-400"></i> Desempenho dos Carrinhos
+              </h3>
+              <p class="text-xs text-slate-400 mt-0.5">Tempo em pista, arrecadação total e contagem de locações</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span> Faturamento
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-orange-500/10 text-orange-400 border border-orange-500/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-orange-400"></span> Tempo (Min)
+              </span>
+            </div>
+          </div>
+
+          <!-- ÁREA DO GRÁFICO MODERNO -->
+          <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800/80 shadow-inner">
+            <div class="h-64 sm:h-72 w-full relative">
+              <canvas id="trikesPerformanceChart"></canvas>
+            </div>
+          </div>
+
+          <!-- CARDS DETALHADOS POR CARRINHO -->
+          <div id="report-trikes-breakdown" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2"></div>
         </div>
 
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl text-center space-y-3">
@@ -647,6 +672,7 @@
     
     let supabaseClient = null;
     let realtimeChannel = null;
+    let trikesChartInstance = null;
 
     try {
       if (window.supabase) {
@@ -657,10 +683,10 @@
     }
 
     const DEFAULT_TRIKES = [
-      { id: 1, name: "Carrinho 1 (Vermelho Xtreme)", photoNum: 2, image: "carrinho (2)", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
-      { id: 2, name: "Carrinho 2 (Amarelo Graffiti)", photoNum: 3, image: "carrinho (3)", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
-      { id: 3, name: "Carrinho 3 (Azul Camuflado)", photoNum: 4, image: "carrinho (4)", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
-      { id: 4, name: "Carrinho 4 (Fogo & Gelo)", photoNum: 1, image: "carrinho (1)", status: "available", endTime: null, totalRentals: 0, rentedBy: null }
+      { id: 1, name: "Carrinho 1 (Vermelho Xtreme)", photoNum: 2, image: "carrinho (2)", status: "available", endTime: null, totalRentals: 0, totalMinutes: 0, totalRevenue: 0, rentedBy: null },
+      { id: 2, name: "Carrinho 2 (Amarelo Graffiti)", photoNum: 3, image: "carrinho (3)", status: "available", endTime: null, totalRentals: 0, totalMinutes: 0, totalRevenue: 0, rentedBy: null },
+      { id: 3, name: "Carrinho 3 (Azul Camuflado)", photoNum: 4, image: "carrinho (4)", status: "available", endTime: null, totalRentals: 0, totalMinutes: 0, totalRevenue: 0, rentedBy: null },
+      { id: 4, name: "Carrinho 4 (Fogo & Gelo)", photoNum: 1, image: "carrinho (1)", status: "available", endTime: null, totalRentals: 0, totalMinutes: 0, totalRevenue: 0, rentedBy: null }
     ];
 
     const DEFAULT_USERS = [
@@ -672,7 +698,13 @@
     let trikes = JSON.parse(localStorage.getItem('dt_trikes')) || DEFAULT_TRIKES;
     trikes = trikes.map((t, idx) => {
       const pNum = t.photoNum || (idx === 0 ? 2 : idx === 1 ? 3 : idx === 2 ? 4 : 1);
-      return { ...t, photoNum: pNum, image: t.image || `carrinho (${pNum})` };
+      return { 
+        ...t, 
+        photoNum: pNum, 
+        image: t.image || `carrinho (${pNum})`,
+        totalMinutes: t.totalMinutes || (t.totalRentals ? t.totalRentals * 10 : 0),
+        totalRevenue: t.totalRevenue || (t.totalRentals ? t.totalRentals * 10.00 : 0)
+      };
     });
 
     let users = JSON.parse(localStorage.getItem('dt_users')) || DEFAULT_USERS;
@@ -732,7 +764,6 @@
       showToast("Fotos restauradas com sucesso!", "success");
     }
 
-    // PERSISTÊNCIA REMOTA NO SUPABASE
     async function syncStateToSupabase() {
       if (!supabaseClient) return;
       try {
@@ -1262,6 +1293,8 @@
             status: 'in-use',
             endTime: now + rentalMs,
             totalRentals: (t.totalRentals || 0) + 1,
+            totalMinutes: (t.totalMinutes || 0) + cfg.minutes,
+            totalRevenue: (t.totalRevenue || 0) + cfg.price,
             rentedBy: operatorName,
             initialMinutes: cfg.minutes
           };
@@ -1299,7 +1332,9 @@
           return {
             ...t,
             status: 'in-use',
-            endTime: baseTime + (extraMinutes * 60 * 1000)
+            endTime: baseTime + (extraMinutes * 60 * 1000),
+            totalMinutes: (t.totalMinutes || 0) + extraMinutes,
+            totalRevenue: (t.totalRevenue || 0) + extraValue
           };
         }
         return t;
@@ -1516,7 +1551,9 @@
           image: tempTrikePhoto || `carrinho (${newId})`,
           status: 'available',
           endTime: null,
-          totalRentals: 0
+          totalRentals: 0,
+          totalMinutes: 0,
+          totalRevenue: 0
         });
         showToast("Novo carrinho cadastrado!", "success");
       }
@@ -1873,6 +1910,7 @@
       showToast("Registro de caixa excluído com sucesso!", "info");
     }
 
+    // RENDERIZAÇÃO DO RELATÓRIO COM O NOVO GRÁFICO E CARDS COMPLETOS
     function renderReports() {
       document.getElementById('report-revenue').innerText = `R$ ${dailyRevenue.toFixed(2)}`;
       document.getElementById('report-rentals').innerText = dailyRentals;
@@ -1905,22 +1943,184 @@
         }).join('');
       }
 
+      // Renderiza os Cards Visuais de Desempenho por Carrinho
       const breakdown = document.getElementById('report-trikes-breakdown');
+      const maxTrikeRevenue = Math.max(...trikes.map(t => t.totalRevenue || (t.totalRentals ? t.totalRentals * 10 : 0)), 1);
+
       breakdown.innerHTML = trikes.map(t => {
         const count = t.totalRentals || 0;
-        const total = count * 10.00;
+        const totalMinutes = t.totalMinutes || (count * 10);
+        const totalRev = t.totalRevenue !== undefined ? t.totalRevenue : (count * 10.00);
+        const percent = Math.min(100, Math.round((totalRev / maxTrikeRevenue) * 100));
+
         return `
-          <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800">
-            <span class="text-xs font-bold text-slate-200">${t.name}</span>
-            <div class="text-right">
-              <span class="text-xs font-black text-cyan-400">${count} locações</span>
-              <span class="text-[11px] text-slate-400 block">R$ ${total.toFixed(2)}</span>
+          <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800/90 shadow-lg flex flex-col justify-between gap-3 relative overflow-hidden group hover:border-cyan-500/40 transition-all">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-slate-900 border border-slate-700/80 overflow-hidden flex-shrink-0">
+                  <img src="${t.image}" alt="${t.name}" class="w-full h-full object-cover" onerror="handleTrikeImageError(this, ${t.id})">
+                </div>
+                <div>
+                  <h4 class="text-sm font-black text-white group-hover:text-cyan-400 transition-colors">${t.name}</h4>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Status: ${t.status === 'in-use' ? '<span class="text-orange-400">Na Pista</span>' : '<span class="text-emerald-400">Livre</span>'}</span>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-base font-black text-emerald-400 block">R$ ${totalRev.toFixed(2)}</span>
+                <span class="text-[10px] font-bold text-slate-400 uppercase">Faturado</span>
+              </div>
+            </div>
+
+            <!-- Grid de Indicadores -->
+            <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800/60">
+              <div class="bg-slate-900/80 border border-slate-800 px-3 py-2 rounded-xl">
+                <span class="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1">
+                  <i data-lucide="timer" class="w-3.5 h-3.5 text-orange-400"></i> Tempo de Uso
+                </span>
+                <p class="text-sm font-black text-orange-400 mt-0.5">${totalMinutes} min</p>
+              </div>
+
+              <div class="bg-slate-900/80 border border-slate-800 px-3 py-2 rounded-xl">
+                <span class="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1">
+                  <i data-lucide="repeat" class="w-3.5 h-3.5 text-cyan-400"></i> Locações
+                </span>
+                <p class="text-sm font-black text-cyan-400 mt-0.5">${count} vez(es)</p>
+              </div>
+            </div>
+
+            <!-- Mini Barra de Desempenho Visual -->
+            <div class="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden mt-1">
+              <div class="h-full bg-gradient-to-r from-cyan-500 to-emerald-400 rounded-full transition-all duration-500" style="width: ${percent}%;"></div>
             </div>
           </div>
         `;
       }).join('');
 
+      // Desenhar / Atualizar o Gráfico com Chart.js
+      renderTrikesChart();
+
       lucide.createIcons();
+    }
+
+    // FUNÇÃO QUE CONSTRÓI O GRÁFICO MULTI-EIXO (VALOR, MINUTOS E QUANTIDADE)
+    function renderTrikesChart() {
+      const canvas = document.getElementById('trikesPerformanceChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      const labels = trikes.map(t => {
+        const match = t.name.match(/\((.*?)\)/);
+        return match ? match[1] : t.name;
+      });
+
+      const dataRevenue = trikes.map(t => (t.totalRevenue !== undefined ? t.totalRevenue : ((t.totalRentals || 0) * 10)));
+      const dataMinutes = trikes.map(t => (t.totalMinutes !== undefined ? t.totalMinutes : ((t.totalRentals || 0) * 10)));
+      const dataRentals = trikes.map(t => t.totalRentals || 0);
+
+      if (trikesChartInstance) {
+        trikesChartInstance.destroy();
+      }
+
+      trikesChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Faturamento (R$)',
+              data: dataRevenue,
+              backgroundColor: 'rgba(6, 182, 212, 0.85)',
+              borderColor: '#06b6d4',
+              borderWidth: 1.5,
+              borderRadius: 8,
+              yAxisID: 'y'
+            },
+            {
+              label: 'Tempo de Uso (Min)',
+              data: dataMinutes,
+              backgroundColor: 'rgba(249, 115, 22, 0.85)',
+              borderColor: '#f97316',
+              borderWidth: 1.5,
+              borderRadius: 8,
+              yAxisID: 'y'
+            },
+            {
+              label: 'Qtd de Locações',
+              data: dataRentals,
+              type: 'line',
+              borderColor: '#22c55e',
+              backgroundColor: '#22c55e',
+              borderWidth: 3,
+              tension: 0.35,
+              pointRadius: 5,
+              pointHoverRadius: 7,
+              pointBackgroundColor: '#22c55e',
+              yAxisID: 'y1'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false,
+          },
+          plugins: {
+            legend: {
+              labels: {
+                color: '#cbd5e1',
+                font: { family: 'Inter', size: 11, weight: 'bold' },
+                boxWidth: 12,
+                boxHeight: 12,
+                useBorderRadius: true,
+                borderRadius: 4
+              }
+            },
+            tooltip: {
+              backgroundColor: '#0f172a',
+              titleColor: '#f8fafc',
+              bodyColor: '#cbd5e1',
+              borderColor: '#334155',
+              borderWidth: 1,
+              padding: 10,
+              displayColors: true,
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label.includes('Faturamento')) {
+                    return ` ${label}: R$ ${Number(context.raw).toFixed(2)}`;
+                  } else if (label.includes('Tempo')) {
+                    return ` ${label}: ${context.raw} minutos`;
+                  } else {
+                    return ` ${label}: ${context.raw} locações`;
+                  }
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(51, 65, 85, 0.3)' },
+              ticks: { color: '#94a3b8', font: { family: 'Inter', size: 11, weight: 'bold' } }
+            },
+            y: {
+              type: 'linear',
+              display: true,
+              position: 'left',
+              grid: { color: 'rgba(51, 65, 85, 0.4)' },
+              ticks: { color: '#06b6d4', font: { family: 'Inter', size: 10 } }
+            },
+            y1: {
+              type: 'linear',
+              display: true,
+              position: 'right',
+              grid: { drawOnChartArea: false },
+              ticks: { color: '#22c55e', stepSize: 1, font: { family: 'Inter', size: 10 } }
+            }
+          }
+        }
+      });
     }
 
     async function handleCloseRegister() {
@@ -1950,7 +2150,12 @@
       dailyRentals = 0;
       dailyByPayment = { pix: 0, money: 0, card: 0 };
       dailyByUser = {};
-      trikes = trikes.map(t => ({ ...t, totalRentals: 0 }));
+      trikes = trikes.map(t => ({ 
+        ...t, 
+        totalRentals: 0,
+        totalMinutes: 0,
+        totalRevenue: 0
+      }));
       
       saveState();
       broadcastState('all');
@@ -1958,7 +2163,6 @@
       renderReports();
     }
 
-    // SINCRONIZAÇÃO AUTOMÁTICA AO VOLTAR PARA A ABA
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible' && currentUser) {
         syncStateFromSupabase();
