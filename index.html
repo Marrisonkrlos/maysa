@@ -95,14 +95,14 @@
       <div class="flex-1 overflow-y-auto space-y-5 no-scrollbar pr-1">
         <div>
           <h4 class="font-bold text-xs uppercase tracking-wider text-purple-400 mb-2 flex items-center gap-1.5">
-            <i data-lucide="users" class="w-4 h-4"></i> Produtividade do Turno Atual (Não zera ao deslogar)
+            <i data-lucide="users" class="w-4 h-4"></i> Produtividade do Turno Atual
           </h4>
           <div id="modal-users-breakdown" class="space-y-2"></div>
         </div>
 
         <div>
           <h4 class="font-bold text-xs uppercase tracking-wider text-cyan-400 mb-2 flex items-center gap-1.5">
-            <i data-lucide="archive" class="w-4 h-4"></i> Fechamentos Anteriores
+            <i data-lucide="archive" class="w-4 h-4"></i> Fechamentos Anteriores (Geral da Equipe)
           </h4>
           <div id="modal-history-list" class="space-y-2.5"></div>
         </div>
@@ -630,7 +630,7 @@
           </div>
           <h4 class="font-black uppercase text-base text-white">Fechar Caixa do Expediente</h4>
           <p class="text-xs text-slate-400 max-w-sm mx-auto">
-            Gera o relatório com o faturamento de todos os membros e formas de pagamento, arquiva no histórico e zera os contadores para o próximo turno.
+            Gera o relatório com o faturamento de todos os membros e formas de pagamento, arquiva no histórico na nuvem e zera os contadores para o próximo turno.
           </p>
           <button onclick="handleCloseRegister()" class="bg-red-500/20 hover:bg-red-500 border border-red-500 text-red-400 hover:text-white font-black px-8 py-3.5 rounded-xl uppercase text-xs tracking-wider transition-all">
             Zerar e Salvar Fechamento
@@ -656,7 +656,6 @@
       console.warn("Supabase local fallback:", err);
     }
 
-    // LISTA ORIGINAL COM OS NOMES EXATOS QUE ESTÃO NO SEU REPOSITÓRIO GITHUB
     const DEFAULT_TRIKES = [
       { id: 1, name: "Carrinho 1 (Vermelho Xtreme)", photoNum: 2, image: "carrinho (2)", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
       { id: 2, name: "Carrinho 2 (Amarelo Graffiti)", photoNum: 3, image: "carrinho (3)", status: "available", endTime: null, totalRentals: 0, rentedBy: null },
@@ -671,28 +670,23 @@
     ];
 
     let trikes = JSON.parse(localStorage.getItem('dt_trikes')) || DEFAULT_TRIKES;
-
     trikes = trikes.map((t, idx) => {
       const pNum = t.photoNum || (idx === 0 ? 2 : idx === 1 ? 3 : idx === 2 ? 4 : 1);
-      return { ...t, photoNum: pNum, image: `carrinho (${pNum})` };
+      return { ...t, photoNum: pNum, image: t.image || `carrinho (${pNum})` };
     });
-    localStorage.setItem('dt_trikes', JSON.stringify(trikes));
 
     let users = JSON.parse(localStorage.getItem('dt_users')) || DEFAULT_USERS;
-
     if (!users.some(u => u.username.toLowerCase() === 'jonas')) {
       users.push({ id: 2, name: "Jonas", username: "jonas", password: "123", role: "seller" });
     }
     if (!users.some(u => u.username.toLowerCase() === 'maysa')) {
       users.push({ id: 3, name: "Maysa", username: "maysa", password: "123", role: "seller" });
     }
-
     users = users.filter(u => u.username.toLowerCase() !== 'admin');
     if (!users.some(u => u.username.toLowerCase() === 'marrison carlos')) {
       users.unshift({ id: 1, name: "Marrison Carlos", username: "Marrison Carlos", password: "Mkrlos@123", role: "admin" });
     }
 
-    // VARIÁVEIS DE CAIXA GLOBAIS - NUNCA ZERAM AO DESLOGAR, APENAS AO FECHAR CAIXA
     let dailyRevenue = parseFloat(localStorage.getItem('dt_revenue')) || 0;
     let dailyRentals = parseInt(localStorage.getItem('dt_rentals')) || 0;
     let dailyByPayment = JSON.parse(localStorage.getItem('dt_by_payment')) || { pix: 0, money: 0, card: 0 };
@@ -731,9 +725,56 @@
 
     function restoreDefaultPhotos() {
       trikes = JSON.parse(JSON.stringify(DEFAULT_TRIKES));
-      localStorage.setItem('dt_trikes', JSON.stringify(trikes));
+      saveState();
+      syncStateToSupabase();
+      broadcastState('trikes');
       refreshActiveView();
       showToast("Fotos restauradas com sucesso!", "success");
+    }
+
+    // PERSISTÊNCIA REMOTA NO SUPABASE
+    async function syncStateToSupabase() {
+      if (!supabaseClient) return;
+      try {
+        const payload = {
+          id: 'current_live_state',
+          trikes,
+          dailyRevenue,
+          dailyRentals,
+          dailyByPayment,
+          dailyByUser,
+          registerHistory,
+          updated_at: new Date().toISOString()
+        };
+        await supabaseClient.from('app_state').upsert(payload);
+      } catch(e) {
+        console.warn("Aviso ao salvar app_state no Supabase:", e);
+      }
+    }
+
+    async function syncStateFromSupabase() {
+      if (!supabaseClient) return;
+      try {
+        const { data, error } = await supabaseClient
+          .from('app_state')
+          .select('*')
+          .eq('id', 'current_live_state')
+          .single();
+
+        if (!error && data) {
+          if (Array.isArray(data.trikes) && data.trikes.length > 0) trikes = data.trikes;
+          if (data.dailyRevenue !== undefined) dailyRevenue = data.dailyRevenue;
+          if (data.dailyRentals !== undefined) dailyRentals = data.dailyRentals;
+          if (data.dailyByPayment) dailyByPayment = data.dailyByPayment;
+          if (data.dailyByUser) dailyByUser = data.dailyByUser;
+          if (Array.isArray(data.registerHistory)) registerHistory = data.registerHistory;
+
+          saveState();
+          refreshActiveView();
+        }
+      } catch(e) {
+        console.warn("Aviso ao carregar app_state do Supabase:", e);
+      }
     }
 
     function setupSupabaseRealtime() {
@@ -748,7 +789,7 @@
           .on('broadcast', { event: 'trikes_state' }, ({ payload }) => {
             if (payload && payload.trikes) {
               trikes = payload.trikes;
-              localStorage.setItem('dt_trikes', JSON.stringify(trikes));
+              saveState();
               refreshActiveView();
             }
           })
@@ -839,7 +880,7 @@
           if (currentView === 'reports') renderReports();
         }
       } catch(e) {
-        console.warn("Falha ao sincronizar com Supabase:", e);
+        console.warn("Falha ao sincronizar usuários com Supabase:", e);
       }
     }
 
@@ -927,13 +968,7 @@
         activeNav.classList.add('text-cyan-400', 'bg-slate-800', 'shadow-inner');
       }
 
-      if (viewName === 'dashboard') renderDashboard();
-      if (viewName === 'rental') renderRentalSelection();
-      if (viewName === 'active') renderActiveRentals();
-      if (viewName === 'fleet') renderFleetManagement();
-      if (viewName === 'users') renderUsersManagement();
-      if (viewName === 'reports') renderReports();
-
+      refreshActiveView();
       lucide.createIcons();
     }
 
@@ -975,10 +1010,9 @@
       }
     }
 
-    // SAIR DO OPERADOR NÃO ZERA O CAIXA, MANTÉM OS REGISTROS ACUMULADOS
     function handleLogout() {
       currentUser = null;
-      saveState(); // Mantém dailyRevenue, dailyRentals, dailyByUser intactos
+      saveState();
       document.getElementById('app-container').classList.add('hidden');
       document.getElementById('view-login').classList.remove('hidden');
       
@@ -989,7 +1023,7 @@
       document.getElementById('login-error').classList.add('hidden');
     }
 
-    function initApp() {
+    async function initApp() {
       document.getElementById('view-login').classList.add('hidden');
       document.getElementById('app-container').classList.remove('hidden');
 
@@ -1006,6 +1040,7 @@
       });
 
       setupSupabaseRealtime();
+      await syncStateFromSupabase();
       navigate('dashboard');
     }
 
@@ -1210,8 +1245,7 @@
       showToast("Chave PIX copiada!", "success");
     }
 
-    // CONFIRMA A LOCAÇÃO E SOMA AO USUÁRIO ATUAL SEM APAGAR OS DEMAIS
-    function confirmPaymentAndRelease() {
+    async function confirmPaymentAndRelease() {
       const now = Date.now();
       const operatorName = currentUser ? currentUser.name : 'Marrison Carlos';
       const selectedIds = Object.keys(selectedTrikesConfig).map(id => parseInt(id, 10));
@@ -1239,7 +1273,6 @@
       dailyRentals += selectedIds.length;
       dailyByPayment[currentPaymentMethod] = (dailyByPayment[currentPaymentMethod] || 0) + totalAmount;
       
-      // Salva acumulado pelo nome do operador atual
       if (!dailyByUser[operatorName]) {
         dailyByUser[operatorName] = { rentals: 0, revenue: 0 };
       }
@@ -1248,6 +1281,7 @@
 
       saveState();
       broadcastState('all');
+      await syncStateToSupabase();
       playBeepAlert(false);
       showToast(`${selectedIds.length} Carrinho(s) Liberado(s)! Operador: ${operatorName}`, 'success');
       
@@ -1255,7 +1289,7 @@
       navigate('active');
     }
 
-    function extendRentalTime(trikeId, extraMinutes, extraValue) {
+    async function extendRentalTime(trikeId, extraMinutes, extraValue) {
       const operatorName = currentUser ? currentUser.name : 'Marrison Carlos';
 
       trikes = trikes.map(t => {
@@ -1281,6 +1315,7 @@
 
       saveState();
       broadcastState('all');
+      await syncStateToSupabase();
       playBeepAlert(false);
       showToast(`+${extraMinutes} Min adicionados! (+R$ ${extraValue.toFixed(2)})`, "success");
       renderActiveRentals();
@@ -1374,7 +1409,7 @@
       lucide.createIcons();
     }
 
-    function stopRentalEarly(trikeId) {
+    async function stopRentalEarly(trikeId) {
       trikes = trikes.map(t => {
         if (t.id === trikeId) {
           return { ...t, status: 'available', endTime: null, rentedBy: null };
@@ -1383,6 +1418,7 @@
       });
       saveState();
       broadcastState('trikes');
+      await syncStateToSupabase();
       showToast("Carrinho devolvido e liberado!", "info");
       renderActiveRentals();
     }
@@ -1456,7 +1492,7 @@
       }
     }
 
-    function handleSaveTrike(e) {
+    async function handleSaveTrike(e) {
       e.preventDefault();
       const editId = document.getElementById('trike-edit-id').value;
       const name = document.getElementById('trike-name-input').value.trim();
@@ -1487,6 +1523,7 @@
 
       saveState();
       broadcastState('trikes');
+      await syncStateToSupabase();
       cancelTrikeEdit();
       renderFleetManagement();
     }
@@ -1528,10 +1565,11 @@
       lucide.createIcons();
     }
 
-    function removeTrike(id) {
+    async function removeTrike(id) {
       trikes = trikes.filter(t => t.id !== id);
       saveState();
       broadcastState('trikes');
+      await syncStateToSupabase();
       showToast("Carrinho removido da frota", "info");
       renderFleetManagement();
     }
@@ -1741,7 +1779,8 @@
       lucide.createIcons();
     }
 
-    function openHistoryModal() {
+    async function openHistoryModal() {
+      await syncStateFromSupabase();
       renderModalHistoryAndBreakdown();
       document.getElementById('modal-history').classList.remove('hidden');
       lucide.createIcons();
@@ -1751,7 +1790,6 @@
       document.getElementById('modal-history').classList.add('hidden');
     }
 
-    // EXIBE AS LOCAÇÕES DE TODOS OS USUÁRIOS NO MODAL
     function renderModalHistoryAndBreakdown() {
       const modalUsersEl = document.getElementById('modal-users-breakdown');
       modalUsersEl.innerHTML = users.map(u => {
@@ -1816,7 +1854,7 @@
       lucide.createIcons();
     }
 
-    function deleteHistoryRecord(recordId) {
+    async function deleteHistoryRecord(recordId) {
       const isMarrisonAdmin = currentUser && (currentUser.name.toLowerCase().includes('marrison') || currentUser.username.toLowerCase().includes('marrison'));
       if (!isMarrisonAdmin) {
         showToast("Apenas Marrison Carlos tem permissão para excluir registros!", "error");
@@ -1830,11 +1868,11 @@
       registerHistory = registerHistory.filter(h => h.id !== recordId);
       saveState();
       broadcastState('financial');
+      await syncStateToSupabase();
       renderModalHistoryAndBreakdown();
       showToast("Registro de caixa excluído com sucesso!", "info");
     }
 
-    // EXIBE AS LOCAÇÕES DE TODOS OS OPERADORES DIRETAMENTE NA ABA DE CAIXA
     function renderReports() {
       document.getElementById('report-revenue').innerText = `R$ ${dailyRevenue.toFixed(2)}`;
       document.getElementById('report-rentals').innerText = dailyRentals;
@@ -1885,8 +1923,7 @@
       lucide.createIcons();
     }
 
-    // FECHAMENTO OFICIAL DO CAIXA: CONSOLIDA TODOS OS OPERADORES E ZERA O TURNO
-    function handleCloseRegister() {
+    async function handleCloseRegister() {
       if (dailyRevenue === 0 && dailyRentals === 0) {
         showToast("O caixa atual já está zerado!", "info");
         return;
@@ -1895,7 +1932,6 @@
       const now = new Date();
       const dateFormatted = `${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
 
-      // Arquiva os dados com o resumo detalhado de cada membro da equipe
       registerHistory.push({
         id: Date.now(),
         date: dateFormatted,
@@ -1910,7 +1946,6 @@
 
       showToast(`Caixa fechado! Total: R$ ${dailyRevenue.toFixed(2)} (${dailyRentals} corridas totais)`, "success");
       
-      // Zera o caixa somente nesta ação
       dailyRevenue = 0;
       dailyRentals = 0;
       dailyByPayment = { pix: 0, money: 0, card: 0 };
@@ -1919,10 +1954,18 @@
       
       saveState();
       broadcastState('all');
+      await syncStateToSupabase();
       renderReports();
     }
 
-    window.onload = function() {
+    // SINCRONIZAÇÃO AUTOMÁTICA AO VOLTAR PARA A ABA
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && currentUser) {
+        syncStateFromSupabase();
+      }
+    });
+
+    window.onload = async function() {
       lucide.createIcons();
 
       const savedUser = localStorage.getItem('dt_remember_username');
@@ -1933,7 +1976,8 @@
         if (rememberCheckbox) rememberCheckbox.checked = true;
       }
 
-      syncUsersFromSupabase();
+      await syncUsersFromSupabase();
+      await syncStateFromSupabase();
 
       if (currentUser) {
         initApp();
