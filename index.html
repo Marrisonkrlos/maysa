@@ -1,266 +1,1059 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
+
 <head>
+
   <meta charset="UTF-8" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
   <title>Drift Trikes - Controle & Locação</title>
+
   
-  <!-- Configurações para rodar como App Nativo (PWA) -->
-  <link rel="manifest" href="manifest.json">
+
   <meta name="apple-mobile-web-app-capable" content="yes" />
+
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
   <meta name="apple-mobile-web-app-title" content="Drift Trikes" />
+
   <meta name="mobile-web-app-capable" content="yes" />
+
   <meta name="theme-color" content="#020617" />
-  <link rel="apple-touch-icon" href="icon-192x192.png">
+
+
 
   <script src="https://cdn.tailwindcss.com"></script>
+
   <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
+
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
+
+
   <script>
+
     tailwind.config = {
+
       theme: {
+
         extend: {
+
           fontFamily: { sans: ['Inter', 'sans-serif'] },
+
           colors: { brand: { cyan: '#06b6d4', orange: '#f97316' } }
+
         }
+
       }
+
     }
+
   </script>
+
+
 
   <style>
+
     .no-scrollbar::-webkit-scrollbar { display: none; }
+
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
     button:active, .clickable:active { transform: scale(0.97); }
+
     body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
-    /* Esconde elementos admin por padrão */
-    .admin-only { display: none !important; }
-    /* Mostra elementos admin quando o body tiver a classe is-admin */
-    body.is-admin .admin-only { display: flex !important; }
+
   </style>
+
 </head>
+
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans select-none pb-14">
 
+
+
   <!-- TOAST NOTIFICAÇÃO -->
+
   <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 pointer-events-none transform -translate-y-4">
-    <div class="bg-slate-900 border border-cyan-500 text-slate-100 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-semibold">
+
+    <div id="toast-content" class="bg-slate-900 border border-cyan-500 text-slate-100 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-semibold">
+
+      <span id="toast-icon"></span>
+
       <span id="toast-message">Mensagem</span>
+
     </div>
+
   </div>
+
+
+
+  <!-- MODAL ALTERAR SENHA -->
+
+  <div id="modal-password" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl space-y-4">
+
+      <div class="flex items-center justify-between">
+
+        <h3 class="font-bold text-base text-white flex items-center gap-2">
+
+          <i data-lucide="key" class="w-5 h-5 text-orange-400"></i> Alterar Senha
+
+        </h3>
+
+        <button onclick="closePasswordModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+
+          <i data-lucide="x" class="w-5 h-5"></i>
+
+        </button>
+
+      </div>
+
+
+
+      <p id="modal-password-user-desc" class="text-xs text-slate-400">Defina uma nova senha para o operador.</p>
+
+
+
+      <form onsubmit="handleSaveNewPassword(event)" class="space-y-3">
+
+        <input type="hidden" id="modal-password-user-id" value="" />
+
+        <div>
+
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nova Senha</label>
+
+          <input id="modal-new-password" type="password" required placeholder="Digite a nova senha" class="w-full bg-slate-950 border border-slate-700 px-4 py-2.5 rounded-xl text-sm focus:border-cyan-500 outline-none" />
+
+        </div>
+
+        <button type="submit" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded-xl uppercase tracking-wider text-xs shadow-lg transition-all">
+
+          Atualizar Senha
+
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- MODAL HISTÓRICO & PRODUTIVIDADE (APENAS RELATÓRIO E FECHAMENTOS) -->
+
+  <div id="modal-history" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl space-y-4">
+
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+
+        <div class="flex items-center gap-2">
+
+          <div class="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center">
+
+            <i data-lucide="history" class="w-4 h-4"></i>
+
+          </div>
+
+          <div>
+
+            <h3 class="font-bold text-base text-white">Histórico & Desempenho</h3>
+
+            <p class="text-[11px] text-slate-400">Fechamentos anteriores e total acumulado por operador</p>
+
+          </div>
+
+        </div>
+
+        <button onclick="closeHistoryModal()" class="text-slate-400 hover:text-white p-2 rounded-xl bg-slate-800/80">
+
+          <i data-lucide="x" class="w-5 h-5"></i>
+
+        </button>
+
+      </div>
+
+
+
+      <div class="flex-1 overflow-y-auto space-y-5 no-scrollbar pr-1">
+
+        <div>
+
+          <h4 class="font-bold text-xs uppercase tracking-wider text-purple-400 mb-2 flex items-center gap-1.5">
+
+            <i data-lucide="users" class="w-4 h-4"></i> Faturamento & Produtividade por Membro
+
+          </h4>
+
+          <div id="modal-users-breakdown" class="space-y-2"></div>
+
+        </div>
+
+
+
+        <div>
+
+          <h4 class="font-bold text-xs uppercase tracking-wider text-cyan-400 mb-2 flex items-center gap-1.5">
+
+            <i data-lucide="archive" class="w-4 h-4"></i> Fechamentos Anteriores
+
+          </h4>
+
+          <div id="modal-history-list" class="space-y-2.5"></div>
+
+        </div>
+
+      </div>
+
+
+
+      <div class="pt-3 border-t border-slate-800 text-right">
+
+        <button onclick="closeHistoryModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider">
+
+          Fechar
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
 
   <!-- TELA DE LOGIN -->
+
   <div id="view-login" class="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
+
     <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-cyan-500/20 rounded-full blur-[128px]"></div>
+
+    <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-orange-500/20 rounded-full blur-[128px]"></div>
+
+    
+
     <div class="bg-slate-900/90 backdrop-blur-xl border border-slate-800 p-8 rounded-3xl w-full max-w-md shadow-2xl z-10">
+
       <div class="text-center mb-6">
+
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-slate-800 border-2 border-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.4)] mb-4">
+
+          <i data-lucide="zap" class="w-10 h-10 text-cyan-400"></i>
+
+        </div>
+
         <h1 class="text-3xl font-black italic uppercase tracking-wider bg-gradient-to-r from-cyan-400 via-blue-400 to-orange-400 bg-clip-text text-transparent">
+
           Drift Trikes
+
         </h1>
-        <p class="text-slate-400 text-xs mt-1 uppercase font-bold tracking-widest">Painel Operacional</p>
+
+        <p class="text-slate-400 text-xs mt-1 uppercase font-bold tracking-widest">Painel Operacional & PIX</p>
+
       </div>
+
+
 
       <form id="form-login" class="space-y-4" onsubmit="handleLogin(event)">
+
         <div id="login-error" class="hidden bg-red-500/10 border border-red-500/50 text-red-400 p-3 rounded-xl text-xs font-semibold text-center"></div>
+
+        
+
         <div>
+
           <label class="block text-slate-400 text-xs font-bold mb-1.5 uppercase">Usuário</label>
-          <input id="login-user" type="text" required placeholder="marrison, jonas ou maysa" class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-500 text-slate-100 px-4 py-3 rounded-xl text-sm outline-none" />
+
+          <div class="relative">
+
+            <i data-lucide="user" class="w-5 h-5 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+
+            <input id="login-user" type="text" required placeholder="Digite o usuário" class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-500 text-slate-100 pl-11 pr-4 py-3 rounded-xl text-sm focus:outline-none transition-colors" />
+
+          </div>
+
         </div>
+
+
+
         <div>
+
           <label class="block text-slate-400 text-xs font-bold mb-1.5 uppercase">Senha</label>
-          <input id="login-pass" type="password" required placeholder="Digite a senha" class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-500 text-slate-100 px-4 py-3 rounded-xl text-sm outline-none" />
+
+          <div class="relative">
+
+            <i data-lucide="lock" class="w-5 h-5 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+
+            <input id="login-pass" type="password" required placeholder="Digite a senha" class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-500 text-slate-100 pl-11 pr-4 py-3 rounded-xl text-sm focus:outline-none transition-colors" />
+
+          </div>
+
         </div>
-        <button type="submit" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-black py-3.5 rounded-xl uppercase tracking-wider text-sm transition-all mt-2">
+
+
+
+        <div class="flex items-center justify-between text-xs pt-1">
+
+          <label class="flex items-center gap-2 text-slate-400 hover:text-slate-200 cursor-pointer select-none">
+
+            <input id="login-remember" type="checkbox" class="w-4 h-4 rounded bg-slate-950 border-slate-700 text-cyan-500 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-cyan-500" />
+
+            <span>Lembrar de mim</span>
+
+          </label>
+
+        </div>
+
+
+
+        <button type="submit" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-black py-3.5 rounded-xl uppercase tracking-wider text-sm transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] mt-2">
+
           Entrar no Sistema
+
         </button>
+
       </form>
+
     </div>
+
   </div>
+
+
 
   <!-- CABEÇALHO & APP CONTAINER -->
+
   <div id="app-container" class="hidden flex-1 flex flex-col">
+
     <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 shadow-xl">
+
       <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between border-b border-slate-800/60">
-        <div>
-          <h1 class="font-black text-lg tracking-wide uppercase italic leading-tight text-white">Drift Trikes</h1>
-          <p id="header-user-tag" class="text-[10px] text-cyan-400 font-semibold uppercase tracking-wider">Operador</p>
+
+        <div class="flex items-center gap-2">
+
+          <div class="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/40 flex items-center justify-center">
+
+            <i data-lucide="zap" class="w-5 h-5 text-cyan-400"></i>
+
+          </div>
+
+          <div>
+
+            <div class="flex items-center gap-2">
+
+              <h1 class="font-black text-lg tracking-wide uppercase italic leading-tight text-white">Drift Trikes</h1>
+
+              <span id="realtime-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" title="Conectado"></span>
+
+            </div>
+
+            <p id="header-user-tag" class="text-[10px] text-cyan-400 font-semibold uppercase tracking-wider">Operador</p>
+
+          </div>
+
         </div>
-        <button onclick="handleLogout()" class="text-slate-400 hover:text-red-400 bg-slate-800 p-2.5 rounded-xl text-xs font-bold">
-          Sair
-        </button>
+
+
+
+        <div class="flex items-center gap-2">
+
+          <button onclick="handleLogout()" class="text-slate-400 hover:text-red-400 bg-slate-800/80 hover:bg-red-950/40 border border-slate-700/60 p-2.5 rounded-xl transition-colors flex items-center gap-1.5" title="Sair do Operador (Mantém o caixa acumulado)">
+
+            <span class="text-xs font-bold hidden sm:inline">Sair</span>
+
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+
+          </button>
+
+        </div>
+
       </div>
 
-      <nav class="w-full bg-slate-900 py-2 px-3 border-t border-slate-800/40">
-        <div class="max-w-5xl mx-auto flex items-center justify-start sm:justify-center gap-2">
-          <button onclick="navigate('dashboard')" class="nav-item flex flex-col items-center justify-center py-2 px-4 rounded-xl">
-             <span class="text-[10px] font-bold uppercase">Início</span>
+
+
+      <nav class="w-full bg-slate-900 overflow-x-auto no-scrollbar py-2 px-3 border-t border-slate-800/40">
+
+        <div class="max-w-5xl mx-auto flex items-center justify-start sm:justify-center gap-2 min-w-max">
+
+          <button onclick="navigate('dashboard')" id="nav-dashboard" class="nav-item flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
+
+            <i data-lucide="layout-dashboard" class="w-5 h-5 mb-1"></i>
+
+            <span class="text-[10px] font-bold uppercase tracking-wider">Início</span>
+
           </button>
-          <button onclick="navigate('rental')" class="nav-item flex flex-col items-center justify-center py-2 px-4 rounded-xl">
-             <span class="text-[10px] font-bold uppercase">Alugar</span>
+
+
+
+          <button onclick="navigate('rental')" id="nav-rental" class="nav-item flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
+
+            <i data-lucide="play" class="w-5 h-5 mb-1"></i>
+
+            <span class="text-[10px] font-bold uppercase tracking-wider">Alugar</span>
+
           </button>
-          <button onclick="navigate('reports')" class="nav-item flex flex-col items-center justify-center py-2 px-4 rounded-xl">
-             <span class="text-[10px] font-bold uppercase">Caixa</span>
+
+
+
+          <button onclick="navigate('active')" id="nav-active" class="nav-item flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all relative">
+
+            <span id="badge-active" class="hidden absolute top-1 right-2 w-2.5 h-2.5 bg-orange-500 rounded-full animate-ping"></span>
+
+            <i data-lucide="timer" class="w-5 h-5 mb-1"></i>
+
+            <span class="text-[10px] font-bold uppercase tracking-wider">Na Pista</span>
+
           </button>
-          <!-- ADMIN ONLY -->
-          <button onclick="navigate('fleet')" class="nav-item admin-only flex flex-col items-center justify-center py-2 px-4 rounded-xl">
-             <span class="text-[10px] font-bold uppercase">Frota</span>
+
+
+
+          <button onclick="navigate('fleet')" id="nav-fleet" class="nav-item admin-only flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
+
+            <i data-lucide="car" class="w-5 h-5 mb-1"></i>
+
+            <span class="text-[10px] font-bold uppercase tracking-wider">Frota</span>
+
           </button>
+
+
+
+          <!-- ABA EQUIPE NA BARRA SUPERIOR (EXCLUSIVA ADMIN) -->
+
+          <button onclick="navigate('users')" id="nav-users" class="nav-item admin-only flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
+
+            <i data-lucide="users" class="w-5 h-5 mb-1"></i>
+
+            <span class="text-[10px] font-bold uppercase tracking-wider">Equipe</span>
+
+          </button>
+
+
+
+          <button onclick="navigate('reports')" id="nav-reports" class="nav-item flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
+
+            <i data-lucide="bar-chart-3" class="w-5 h-5 mb-1"></i>
+
+            <span class="text-[10px] font-bold uppercase tracking-wider">Caixa</span>
+
+          </button>
+
         </div>
+
       </nav>
+
     </header>
 
+
+
     <main class="flex-1 max-w-5xl mx-auto w-full p-4">
-      
+
+
+
       <!-- DASHBOARD -->
+
       <section id="view-dashboard" class="app-view space-y-6">
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div onclick="navigate('rental')" class="bg-cyan-600 p-6 rounded-3xl cursor-pointer">
-            <h2 class="text-3xl font-black italic uppercase text-white mt-3 mb-1">Liberar Carrinhos</h2>
+
+          <div onclick="navigate('rental')" class="bg-gradient-to-br from-cyan-600 to-blue-700 p-6 rounded-3xl cursor-pointer hover:shadow-[0_0_25px_rgba(6,182,212,0.4)] transition-all relative overflow-hidden group">
+
+            <div class="absolute -right-4 -bottom-4 opacity-20 group-hover:scale-110 transition-transform">
+
+              <i data-lucide="play" class="w-36 h-36"></i>
+
+            </div>
+
+            <span class="bg-cyan-900/60 text-cyan-200 text-xs font-black uppercase px-3 py-1 rounded-full border border-cyan-400/30">Locação Rápida</span>
+
+            <h2 class="text-3xl font-black italic uppercase text-white mt-3 mb-1">Liberar<br>Carrinhos</h2>
+
+            <p class="text-cyan-100 font-semibold text-sm">Escolha o tempo e libere a corrida</p>
+
           </div>
-          <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl">
-            <h3 class="text-xl font-bold text-slate-100">Status</h3>
-            <p class="text-sm text-slate-400 mt-2">Prontos para uso: <span id="dash-avail-count" class="text-cyan-400 font-bold text-lg">4</span></p>
+
+
+
+          <div onclick="navigate('active')" class="bg-slate-900 border border-slate-800 hover:border-cyan-500/60 p-6 rounded-3xl cursor-pointer transition-all flex flex-col justify-between">
+
+            <div class="flex items-start justify-between">
+
+              <div>
+
+                <span class="bg-orange-500/10 text-orange-400 text-xs font-black uppercase px-3 py-1 rounded-full border border-orange-500/30">Cronômetros</span>
+
+                <h3 class="text-xl font-bold text-slate-100 mt-2">Monitoramento da Pista</h3>
+
+              </div>
+
+              <div class="p-3 bg-slate-800 rounded-2xl text-orange-400">
+
+                <i data-lucide="timer" class="w-7 h-7"></i>
+
+              </div>
+
+            </div>
+
+            <div class="mt-6 flex items-baseline gap-2">
+
+              <span id="dash-active-count" class="text-4xl font-black text-cyan-400">0</span>
+
+              <span class="text-slate-400 text-sm font-semibold">em corrida agora</span>
+
+            </div>
+
           </div>
+
         </div>
+
+
+
+        <div>
+
+          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Status dos Drift Trikes</h3>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
+
+              <div class="p-3 bg-green-500/10 text-green-400 rounded-xl">
+
+                <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+
+              </div>
+
+              <div>
+
+                <p id="dash-avail-count" class="text-2xl font-black text-white">4</p>
+
+                <p class="text-xs text-slate-400 font-medium">Disponíveis</p>
+
+              </div>
+
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
+
+              <div class="p-3 bg-orange-500/10 text-orange-400 rounded-xl">
+
+                <i data-lucide="clock" class="w-6 h-6"></i>
+
+              </div>
+
+              <div>
+
+                <p id="dash-running-count" class="text-2xl font-black text-white">0</p>
+
+                <p class="text-xs text-slate-400 font-medium">Na Pista</p>
+
+              </div>
+
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
+
+              <div class="p-3 bg-cyan-500/10 text-cyan-400 rounded-xl">
+
+                <i data-lucide="car" class="w-6 h-6"></i>
+
+              </div>
+
+              <div>
+
+                <p id="dash-total-count" class="text-2xl font-black text-white">4</p>
+
+                <p class="text-xs text-slate-400 font-medium">Total Frota</p>
+
+              </div>
+
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
+
+              <div class="p-3 bg-blue-500/10 text-blue-400 rounded-xl">
+
+                <i data-lucide="bar-chart" class="w-6 h-6"></i>
+
+              </div>
+
+              <div>
+
+                <p id="dash-today-count" class="text-2xl font-black text-white">0</p>
+
+                <p class="text-xs text-slate-400 font-medium">Corridas Hoje</p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+        <div onclick="navigate('rental')" class="bg-slate-900/60 border border-slate-800 hover:border-cyan-500/60 p-4 sm:p-6 rounded-3xl cursor-pointer transition-all group">
+
+          <div class="flex items-center justify-between mb-4">
+
+            <h4 class="font-bold text-base text-slate-200 uppercase tracking-wider flex items-center gap-2 group-hover:text-cyan-400 transition-colors">
+
+              <i data-lucide="car" class="w-5 h-5 text-cyan-400"></i> Visão da Garagem
+
+            </h4>
+
+          </div>
+
+          <div id="dash-fleet-preview" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+
+        </div>
+
       </section>
 
-      <!-- ALUGAR -->
+
+
+      <!-- SELEÇÃO PARA ALUGAR -->
+
       <section id="view-rental" class="app-view space-y-5 hidden">
-        <h2 class="text-xl font-black uppercase italic text-white">Simulação de Aluguel</h2>
-        <button onclick="simularVenda()" class="bg-green-600 text-white font-bold py-3 px-6 rounded-xl w-full uppercase">
-          Registrar Venda (R$ 10,00)
-        </button>
-      </section>
 
-      <!-- CAIXA E FECHAMENTO -->
-      <section id="view-reports" class="app-view space-y-5 hidden">
-        <div class="bg-slate-900 p-6 rounded-3xl border border-slate-800 text-center">
-          <h2 class="text-xl font-black uppercase italic text-white mb-2">Caixa Atual (Global)</h2>
-          <p class="text-xs text-slate-400 mb-4">Soma das vendas de Jonas, Maysa e Marrison</p>
-          <div class="text-4xl font-black text-green-400 mb-6" id="valor-caixa-global">R$ 0,00</div>
-          
-          <button onclick="fecharCaixaGlobal()" class="bg-orange-500 hover:bg-orange-600 text-white font-black py-4 rounded-2xl uppercase tracking-wider w-full shadow-lg">
-            Fechar Caixa de Todos
-          </button>
+        <div class="flex items-center justify-between">
+
+          <div>
+
+            <h2 class="text-xl font-black uppercase italic text-white">Selecione os Carrinhos & Tempo</h2>
+
+            <p class="text-xs text-slate-400">Marque o carrinho e escolha 10, 20, 30 ou 40 minutos</p>
+
+          </div>
+
+          <span class="text-xs font-bold text-cyan-400 bg-cyan-950/60 border border-cyan-800/80 px-3 py-1.5 rounded-full">
+
+            R$ 1,00 / minuto
+
+          </span>
+
         </div>
+
+
+
+        <div id="rental-trikes-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5"></div>
+
+
+
+        <div id="rental-bottom-bar" class="fixed bottom-3 left-0 w-full px-4 z-40 hidden">
+
+          <div class="max-w-5xl mx-auto bg-slate-900/95 backdrop-blur-xl border-2 border-cyan-500/80 p-4 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.3)] flex items-center justify-between">
+
+            <div>
+
+              <p class="text-xs text-slate-400 font-bold uppercase">Total a Cobrar</p>
+
+              <p class="text-2xl font-black text-white" id="rental-bar-total">R$ 0,00</p>
+
+              <span class="text-[11px] text-cyan-400 font-semibold" id="rental-bar-count">0 carrinho(s)</span>
+
+            </div>
+
+            <button onclick="goToPayment()" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black px-6 py-3.5 rounded-xl uppercase tracking-wider text-sm flex items-center gap-2 shadow-lg">
+
+              Cobrar Pagamento <i data-lucide="arrow-right" class="w-5 h-5"></i>
+
+            </button>
+
+          </div>
+
+        </div>
+
       </section>
 
-      <!-- FROTA (ADMIN) -->
-      <section id="view-fleet" class="app-view space-y-5 hidden">
-        <h2 class="text-xl font-black uppercase italic text-white">Gerenciar Frota (Apenas Admin)</h2>
-        <p class="text-sm text-slate-400">Esta tela só aparece para o Marrison.</p>
+
+
+      <!-- PAGAMENTO PIX & MÉTODOS -->
+
+      <section id="view-payment" class="app-view hidden max-w-lg mx-auto space-y-4">
+
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 text-center shadow-2xl relative overflow-hidden">
+
+          <div class="absolute -top-10 -right-10 w-36 h-36 bg-orange-500/20 rounded-full blur-[70px]"></div>
+
+
+
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+
+            <button onclick="navigate('rental')" class="text-xs font-bold text-slate-400 hover:text-white flex items-center gap-1">
+
+              <i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar
+
+            </button>
+
+            <span class="text-xs font-black uppercase text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/30">
+
+              Aguardando Pagamento
+
+            </span>
+
+          </div>
+
+
+
+          <h2 class="text-2xl font-black text-white italic uppercase">Cobrança da Locação</h2>
+
+          <p id="payment-summary-text" class="text-sm text-slate-400 mt-1 mb-3">Detalhes do tempo</p>
+
+
+
+          <div class="mb-4">
+
+            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Forma de Pagamento</label>
+
+            <div class="grid grid-cols-3 gap-2 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
+
+              <button type="button" onclick="selectPaymentMethod('pix')" id="pay-method-pix" class="py-2.5 px-3 rounded-xl font-bold text-xs uppercase flex items-center justify-center gap-1.5 transition-all bg-orange-500 text-white shadow">
+
+                <i data-lucide="qr-code" class="w-4 h-4"></i> PIX
+
+              </button>
+
+              <button type="button" onclick="selectPaymentMethod('money')" id="pay-method-money" class="py-2.5 px-3 rounded-xl font-bold text-xs uppercase flex items-center justify-center gap-1.5 transition-all text-slate-400 hover:text-white">
+
+                <i data-lucide="banknote" class="w-4 h-4"></i> Dinheiro
+
+              </button>
+
+              <button type="button" onclick="selectPaymentMethod('card')" id="pay-method-card" class="py-2.5 px-3 rounded-xl font-bold text-xs uppercase flex items-center justify-center gap-1.5 transition-all text-slate-400 hover:text-white">
+
+                <i data-lucide="credit-card" class="w-4 h-4"></i> Cartão
+
+              </button>
+
+            </div>
+
+          </div>
+
+
+
+          <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl mb-4 flex items-center justify-between">
+
+            <span class="text-xs text-slate-400 font-bold uppercase">Valor a Cobrar</span>
+
+            <span id="payment-total-value" class="text-3xl font-black text-orange-400">R$ 10,00</span>
+
+          </div>
+
+
+
+          <div id="payment-pix-container" class="space-y-4">
+
+            <div class="bg-white p-3 sm:p-4 rounded-3xl shadow-2xl inline-block max-w-[320px] w-full border-4 border-orange-500 text-slate-900 select-none">
+
+              <div class="rounded-2xl bg-white shadow-inner mb-3 overflow-hidden flex flex-col items-center justify-center p-2 border border-slate-200">
+
+                <img 
+
+                  id="pix-qr-image"
+
+                  src="image_8929c9.jpg.jpeg" 
+
+                  alt="Cartaz QR Code PIX Jonas André" 
+
+                  class="w-full h-auto max-h-[380px] object-contain block mx-auto rounded-xl"
+
+                  onerror="handleQrCodeImageError(this)"
+
+                />
+
+              </div>
+
+
+
+              <div class="text-left text-xs space-y-1.5 px-1 font-sans">
+
+                <div class="flex items-center justify-between border-b border-slate-100 pb-1">
+
+                  <span class="text-slate-400 font-semibold flex items-center gap-1"><i data-lucide="user" class="w-3.5 h-3.5 text-orange-500"></i> Nome</span>
+
+                  <strong class="text-slate-800 uppercase font-black tracking-wide">JONAS ANDRÉ</strong>
+
+                </div>
+
+                <div class="flex items-center justify-between border-b border-slate-100 pb-1">
+
+                  <span class="text-slate-400 font-semibold flex items-center gap-1"><i data-lucide="key" class="w-3.5 h-3.5 text-orange-500"></i> Chave Pix</span>
+
+                  <strong class="text-slate-800 font-black">82999900971</strong>
+
+                </div>
+
+                <div class="flex items-center justify-between border-b border-slate-100 pb-1">
+
+                  <span class="text-slate-400 font-semibold flex items-center gap-1"><i data-lucide="building-2" class="w-3.5 h-3.5 text-orange-500"></i> Instituição</span>
+
+                  <strong class="text-slate-800 font-black">Mercado Pago</strong>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+
+            <div class="mt-4 bg-slate-950/80 border border-slate-800 p-3.5 rounded-2xl text-left text-xs space-y-2.5">
+
+              <button onclick="copyPixCode()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md">
+
+                <i data-lucide="copy" class="w-4 h-4"></i>
+
+                <span>Copiar Pix Copia e Cola (Banco)</span>
+
+              </button>
+
+
+
+              <div class="flex justify-between items-center text-slate-400 pt-1 border-t border-slate-800/80">
+
+                <span>Chave Celular direta:</span>
+
+                <button onclick="copyPixKey('82999900971')" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all">
+
+                  <span>82999900971</span>
+
+                  <i data-lucide="copy" class="w-3.5 h-3.5 text-orange-400"></i>
+
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+
+          <div id="payment-alt-container" class="hidden bg-slate-950 border border-slate-800 p-6 rounded-2xl text-center space-y-2">
+
+            <div id="alt-payment-icon" class="w-12 h-12 rounded-2xl mx-auto flex items-center justify-center bg-cyan-500/10 text-cyan-400">
+
+              <i data-lucide="banknote" class="w-6 h-6"></i>
+
+            </div>
+
+            <h4 id="alt-payment-title" class="font-bold text-white text-base">Recebimento em Dinheiro</h4>
+
+            <p id="alt-payment-desc" class="text-xs text-slate-400">Receba o valor com o cliente antes de liberar os carrinhos.</p>
+
+          </div>
+
+
+
+          <div class="mt-5 space-y-2.5">
+
+            <button onclick="confirmPaymentAndRelease()" class="w-full bg-gradient-to-r from-green-600 via-emerald-500 to-green-600 hover:from-green-500 hover:to-emerald-400 text-white font-black py-4 rounded-2xl uppercase tracking-wider text-base flex items-center justify-center gap-2.5 shadow-[0_0_25px_rgba(34,197,94,0.4)] transition-all">
+
+              <i data-lucide="check-circle" class="w-6 h-6"></i>
+
+              Pagamento Confirmado • Liberar
+
+            </button>
+
+            <button onclick="navigate('rental')" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-3 rounded-xl uppercase text-xs tracking-wider transition-colors">
+
+              Cancelar e Escolher Outros
+
+            </button>
+
+          </div>
+
+        </div>
+
       </section>
 
-    </main>
-  </div>
 
-  <script>
-    lucide.createIcons();
 
-    // 1. USUÁRIOS FIXOS
-    const USUARIOS = {
-      'marrison': { senha: '123', nome: 'Marrison Carlos', role: 'admin' },
-      'jonas': { senha: '123', nome: 'Jonas André', role: 'vendor' },
-      'maysa': { senha: '123', nome: 'Maysa', role: 'vendor' }
-    };
+      <!-- NA PISTA -->
 
-    let usuarioLogado = null;
-    let caixaGlobal = parseInt(localStorage.getItem('drift_caixa')) || 0;
+      <section id="view-active" class="app-view hidden space-y-4">
 
-    // 2. FUNÇÃO DE LOGIN
-    function handleLogin(e) {
-      e.preventDefault();
-      const user = document.getElementById('login-user').value.toLowerCase().trim();
-      const pass = document.getElementById('login-pass').value;
-      const errorDiv = document.getElementById('login-error');
+        <div class="flex items-center justify-between">
 
-      if (USUARIOS[user] && USUARIOS[user].senha === pass) {
-        usuarioLogado = USUARIOS[user];
-        errorDiv.classList.add('hidden');
-        iniciarApp();
-      } else {
-        errorDiv.textContent = 'Usuário ou senha incorretos!';
-        errorDiv.classList.remove('hidden');
-      }
-    }
+          <div>
 
-    function iniciarApp() {
-      document.getElementById('view-login').classList.add('hidden');
-      document.getElementById('app-container').classList.remove('hidden');
-      document.getElementById('header-user-tag').textContent = `${usuarioLogado.nome} (${usuarioLogado.role})`;
-      
-      // Se for admin, adiciona classe no body para mostrar menus ocultos
-      if (usuarioLogado.role === 'admin') {
-        document.body.classList.add('is-admin');
-      } else {
-        document.body.classList.remove('is-admin');
-      }
+            <h2 class="text-xl font-black uppercase italic text-white flex items-center gap-2">
 
-      atualizarTelaCaixa();
-      navigate('dashboard');
-      showToast(`Bem-vindo, ${usuarioLogado.nome}!`);
-    }
+              <i data-lucide="timer" class="w-6 h-6 text-cyan-400"></i> Monitoramento na Pista
 
-    function handleLogout() {
-      usuarioLogado = null;
-      document.getElementById('form-login').reset();
-      document.getElementById('app-container').classList.add('hidden');
-      document.getElementById('view-login').classList.remove('hidden');
-      document.body.classList.remove('is-admin');
-    }
+            </h2>
 
-    // 3. NAVEGAÇÃO
-    function navigate(viewId) {
-      document.querySelectorAll('.app-view').forEach(el => el.classList.add('hidden'));
-      document.getElementById(`view-${viewId}`).classList.remove('hidden');
-    }
+            <p class="text-xs text-slate-400">Tempo regressivo individual por carrinho</p>
 
-    // 4. LÓGICA DE CAIXA GLOBAL
-    function simularVenda() {
-      caixaGlobal += 10;
-      localStorage.setItem('drift_caixa', caixaGlobal); // Salva no dispositivo
-      atualizarTelaCaixa();
-      showToast('Venda registrada no caixa global!');
-    }
+          </div>
 
-    function atualizarTelaCaixa() {
-      document.getElementById('valor-caixa-global').textContent = `R$ ${caixaGlobal.toFixed(2).replace('.', ',')}`;
-    }
+          <button onclick="navigate('rental')" class="bg-cyan-600/20 border border-cyan-500/40 text-cyan-300 hover:bg-cyan-600/30 font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1">
 
-    function fecharCaixaGlobal() {
-      if(caixaGlobal === 0) {
-        showToast('O caixa já está zerado.');
-        return;
-      }
-      
-      if(confirm(`Tem certeza que deseja fechar o caixa de R$ ${caixaGlobal}? Isso irá zerar o contador de todos os usuários.`)) {
-        caixaGlobal = 0;
-        localStorage.setItem('drift_caixa', caixaGlobal);
-        atualizarTelaCaixa();
-        showToast('Caixa fechado com sucesso!');
-      }
-    }
+            <i data-lucide="plus" class="w-4 h-4"></i> Mais Aluguel
 
-    // 5. SINCRONIZAÇÃO ENTRE ABAS (SIMULA O TEMPO REAL)
-    // Se Jonas faz uma venda, a aba da Maysa atualiza automaticamente
-    window.addEventListener('storage', (e) => {
-      if(e.key === 'drift_caixa') {
-        caixaGlobal = parseInt(e.newValue) || 0;
-        atualizarTelaCaixa();
-      }
-    });
+          </button>
 
-    function showToast(msg) {
-      const toast = document.getElementById('toast');
-      document.getElementById('toast-message').textContent = msg;
-      toast.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-4');
-      setTimeout(() => {
-        toast.classList.add('opacity-0', 'pointer-events-none', '-translate-y-4');
-      }, 3000);
-    }
-  </script>
-</body>
-</html>
+        </div>
+
+
+
+        <div id="active-rentals-list" class="space-y-3"></div>
+
+      </section>
+
+
+
+      <!-- GERENCIAR FROTA (ADMIN) -->
+
+      <section id="view-fleet" class="app-view hidden space-y-6">
+
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl relative" id="fleet-form-card">
+
+          <div class="flex items-center justify-between mb-4">
+
+            <h3 id="fleet-form-title" class="font-bold text-base text-slate-200 flex items-center gap-2">
+
+              <i data-lucide="plus-circle" class="w-5 h-5 text-cyan-400"></i> Adicionar Novo Carrinho
+
+            </h3>
+
+            <button id="fleet-cancel-edit-btn" onclick="cancelTrikeEdit()" class="hidden text-xs text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800 px-3 py-1 rounded-lg">
+
+              <i data-lucide="x" class="w-3.5 h-3.5"></i> Cancelar
+
+            </button>
+
+          </div>
+
+
+
+          <form id="form-trike" onsubmit="handleSaveTrike(event)" class="space-y-4">
+
+            <input type="hidden" id="trike-edit-id" value="" />
+
+
+
+            <div class="flex flex-col sm:flex-row items-center gap-4">
+
+              <label class="cursor-pointer group flex-shrink-0 flex flex-col items-center">
+
+                <div class="w-24 h-24 rounded-2xl border-2 border-dashed border-slate-700 group-hover:border-cyan-400 bg-slate-950 flex items-center justify-center overflow-hidden relative shadow-inner">
+
+                  <img id="trike-preview-img" src="" alt="Foto" class="hidden w-full h-full object-cover" />
+
+                  <div id="trike-preview-placeholder" class="text-center p-2">
+
+                    <i data-lucide="camera" class="w-7 h-7 text-slate-500 mx-auto group-hover:text-cyan-400"></i>
+
+                    <span class="text-[10px] text-slate-500 font-bold block mt-1">FOTO</span>
+
+                  </div>
+
+                </div>
+
+                <input type="file" id="trike-file-input" accept="image/*" class="hidden" onchange="previewTrikePhoto(event)" />
+
+                <span class="text-[10px] text-cyan-400 mt-1 font-semibold">Tirar ou escolher foto</span>
+
+              </label>
+
+
+
+              <div class="flex-1 w-full space-y-3">
+
+                <div>
+
+                  <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nome e Cor do Carrinho</label>
+
+                  <input 
+
+                    type="text" 
+
+                    id="trike-name-input" 
+
+                    required 
+
+                    placeholder="Ex: Carrinho 5 (Preto Neon)" 
+
+                    class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-500 text-slate-100 px-4 py-3 rounded-xl text-sm outline-none"
+
+                  />
+
+                </div>
+
+
+
+                <button type="submit" id="fleet-submit-btn" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded-xl uppercase tracking-wider text-xs shadow-lg transition-all">
+
+                  Cadastrar Carrinho
+
+                </button>
+
+              </div>
+
+            </div>
+
+          </form>
+
+        </div>
+
+
+
+        <div>
+
+          <div class="flex items-center justify-between mb-3">
+
+            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider">Carrinhos na Frota (<span id="fleet-total-badge">0</span>)</h3>
+
+            <button onclick="restoreDefaultPhotos()" class="text-[11px] font-bold text-cyan-400 bg-cyan-950/60 border border-cyan-800 px-3 py-1 rounded-lg hover:bg-cyan-900 transition-colors">
+
+              Resetar Imagens
+
+            </button>
+
+          </div>
+
+          <div id="fleet-manage-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+
+        </div>
+
+      </section>
+
+
+
+      <!-- GERENCIAR EQUIPE (EXCLUSIVA DE MARRISON CARLOS / ADMIN) -->
+
+      <section id="view-users" class="app-view hidden space-y-6">
+
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
+
+          <h3 class="font-bold text-base text-slate-200 mb-4 flex items-center gap-2">
+
+            <i data-lucide="user-plus" class="w-5 h-5 text-purple-400"></i> Cadastrar Novo Operador / Admin
+
+          </h3>
+
+          <form onsubmit="handleCreateUser(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+            <div>
+
+              <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nome Completo</label>
+
+              <input id="new-user-name" type="text" required placeholder="Ex: Carlos Silva" class="w-full bg-slate-950 border border-slate-700 px-4 py-2.5 rounded-xl text-sm focus:border-purple-500 outline-none" />
+
+            </div>
+
+            <div>
