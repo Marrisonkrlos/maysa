@@ -356,7 +356,7 @@
               <div class="rounded-2xl bg-white shadow-inner mb-3 overflow-hidden flex flex-col items-center justify-center p-2 border border-slate-200">
                 <img 
                   id="pix-qr-image"
-                  src="image_8929c9.jpg" 
+                  src="https://raw.githubusercontent.com/Marrisonkrlos/maysa/main/image_8929c9.jpg.jpeg" 
                   alt="Cartaz QR Code PIX Jonas André" 
                   class="w-full h-auto max-h-[380px] object-contain block mx-auto rounded-xl"
                   onerror="handleQrCodeImageError(this)"
@@ -660,7 +660,7 @@
       { 
         id: 1, 
         name: "Carrinho 1 (Vermelho Xtreme)", 
-        image: "image_893169.jpg", // Foto 1 dos carrinhos
+        image: "https://raw.githubusercontent.com/Marrisonkrlos/maysa/main/carrinho%20(1)", // Foto 1 dos carrinhos
         status: "available", 
         endTime: null,
         totalRentals: 0,
@@ -669,7 +669,7 @@
       { 
         id: 2, 
         name: "Carrinho 2 (Amarelo Graffiti)", 
-        image: "image_893169.jpg", 
+        image: "https://raw.githubusercontent.com/Marrisonkrlos/maysa/main/carrinho%20(2)", 
         status: "available", 
         endTime: null,
         totalRentals: 0,
@@ -678,7 +678,7 @@
       { 
         id: 3, 
         name: "Carrinho 3 (Azul Camuflado)", 
-        image: "image_893169.jpg", 
+        image: "https://raw.githubusercontent.com/Marrisonkrlos/maysa/main/carrinho%20(3)", 
         status: "available", 
         endTime: null,
         totalRentals: 0,
@@ -687,7 +687,7 @@
       { 
         id: 4, 
         name: "Carrinho 4 (Fogo & Gelo)", 
-        image: "image_893169.jpg", 
+        image: "https://raw.githubusercontent.com/Marrisonkrlos/maysa/main/carrinho%20(4)", 
         status: "available", 
         endTime: null,
         totalRentals: 0,
@@ -907,7 +907,7 @@
         <div class="bg-slate-950 border-2 ${t.status === 'in-use' ? 'border-orange-500/80 shadow-[0_0_15px_rgba(249,115,22,0.25)]' : 'border-slate-800 hover:border-slate-700'} rounded-2xl p-3 text-center overflow-hidden transition-all flex flex-col justify-between">
           <div class="h-44 sm:h-48 w-full rounded-xl overflow-hidden bg-slate-900 mb-3 relative group">
             <img 
-              src="${t.image || 'image_893169.jpg'}" 
+              src="${t.image || 'https://placehold.co/400x300/020617/06b6d4?text=Trike'}" 
               alt="${t.name}" 
               class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300" 
               onerror="this.onerror=null; this.src='https://placehold.co/400x300/020617/06b6d4?text=Trike';"
@@ -948,7 +948,7 @@
           <div onclick="toggleTrikeSelection(${t.id})" class="p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between ${isSelected ? 'bg-cyan-950/40 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]' : 'bg-slate-900 border-slate-800 hover:border-slate-700'}">
             <div class="flex items-center gap-3">
               <div class="w-16 h-16 rounded-xl overflow-hidden bg-slate-950 border border-slate-800 flex-shrink-0">
-                <img src="${t.image || 'image_893169.jpg'}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike';"/>
+                <img src="${t.image || 'https://placehold.co/100x100/0f172a/06b6d4?text=Trike'}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike';"/>
               </div>
               <div>
                 <h4 class="font-bold text-sm text-white">${t.name}</h4>
@@ -1155,7 +1155,7 @@
           <div class="p-4 rounded-2xl border-2 ${statusClass} flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg transition-all">
             <div class="flex items-center gap-3.5">
               <div class="w-16 h-16 rounded-xl overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-700/80">
-                <img src="${t.image || 'image_893169.jpg'}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike'"/>
+                <img src="${t.image || 'https://placehold.co/100x100/0f172a/06b6d4?text=Trike'}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike'"/>
               </div>
               <div>
                 <div class="flex items-center gap-2">
@@ -1320,7 +1320,7 @@
         trikes.push({
           id: newId,
           name: name,
-          image: tempTrikePhoto || "image_893169.jpg",
+          image: tempTrikePhoto || "https://placehold.co/400x300/020617/06b6d4?text=Novo+Trike",
           status: 'available',
           endTime: null,
           totalRentals: 0
@@ -1385,7 +1385,7 @@
         <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div class="w-14 h-14 rounded-xl overflow-hidden bg-slate-950 flex-shrink-0 border border-slate-700">
-              <img src="${t.image || 'image_893169.jpg'}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike'"/>
+              <img src="${t.image || 'https://placehold.co/100x100/0f172a/06b6d4?text=Trike'}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike'"/>
             </div>
             <div>
               <h4 class="font-bold text-sm text-white">${t.name}</h4>
