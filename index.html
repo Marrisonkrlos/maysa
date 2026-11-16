@@ -157,7 +157,13 @@
             <span class="text-[10px] font-bold uppercase tracking-wider">Na Pista</span>
           </button>
 
-          <!-- Itens Exclusivos de Administrador -->
+          <!-- O botão Caixa NÃO possui a classe admin-only -->
+          <button onclick="navigate('reports')" id="nav-reports" class="nav-item flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
+            <i data-lucide="bar-chart-3" class="w-5 h-5 mb-1"></i>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Caixa</span>
+          </button>
+
+          <!-- Itens Exclusivos de Administrador (Foram pro final para não atrapalhar o layout de quem é vendedor) -->
           <button onclick="navigate('fleet')" id="nav-fleet" class="nav-item admin-only flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
             <i data-lucide="car" class="w-5 h-5 mb-1"></i>
             <span class="text-[10px] font-bold uppercase tracking-wider">Frota</span>
@@ -166,12 +172,6 @@
           <button onclick="navigate('users')" id="nav-users" class="nav-item admin-only flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
             <i data-lucide="user-plus" class="w-5 h-5 mb-1"></i>
             <span class="text-[10px] font-bold uppercase tracking-wider">Equipe</span>
-          </button>
-
-          <!-- O botão Caixa não possui mais 'admin-only', todos podem ver e acessar -->
-          <button onclick="navigate('reports')" id="nav-reports" class="nav-item flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
-            <i data-lucide="bar-chart-3" class="w-5 h-5 mb-1"></i>
-            <span class="text-[10px] font-bold uppercase tracking-wider">Caixa</span>
           </button>
         </div>
       </nav>
@@ -874,14 +874,24 @@
       const userTag = document.getElementById('header-user-tag');
       userTag.innerText = `${currentUser.name}`;
 
-      // Controle de privilégios
+      // Controle de privilégios (agora mais restrito apenas aos itens admin-only)
       const adminElements = document.querySelectorAll('.admin-only');
       adminElements.forEach(el => {
         if (currentUser.role === 'admin') {
           el.classList.remove('hidden');
+          // Necessário para sobrescrever possíveis display:none
+          el.style.display = 'flex'; 
         } else {
           el.classList.add('hidden');
+          el.style.display = 'none';
         }
+      });
+
+      // Garantir que os botões não-admin estejam visíveis, caso tenham sido ocultados por cache
+      const nonAdminElements = document.querySelectorAll('.nav-item:not(.admin-only)');
+      nonAdminElements.forEach(el => {
+          el.classList.remove('hidden');
+          el.style.display = 'flex';
       });
 
       navigate('dashboard');
