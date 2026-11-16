@@ -699,21 +699,17 @@
     ];
 
     const DEFAULT_USERS = [
-      { id: 1, name: "Marrison Carlos (Dev/Admin)", username: "admin", password: "admin", role: "admin" },
-      { id: 2, name: "Vendedor Pista", username: "vendedor", password: "123", role: "seller" }
+      { id: 1, name: "Marrison (Admin)", username: "marrison", password: "123", role: "admin" },
+      { id: 2, name: "Jonas (Vendedor)", username: "jonas", password: "123", role: "seller" },
+      { id: 3, name: "Maysa (Vendedora)", username: "maysa", password: "123", role: "seller" }
     ];
 
     // --- 3. CARREGAMENTO DO LOCALSTORAGE COM PERSISTÊNCIA ---
     let trikes = JSON.parse(localStorage.getItem('dt_trikes')) || DEFAULT_TRIKES;
-    let users = JSON.parse(localStorage.getItem('dt_users')) || DEFAULT_USERS;
-
-    // Atualiza nome se o usuário admin já estiver salvo em cache anterior
-    users = users.map(u => {
-      if (u.username === 'admin') {
-        return { ...u, name: 'Marrison Carlos (Dev/Admin)' };
-      }
-      return u;
-    });
+    
+    // Forçando usuários fixos
+    let users = DEFAULT_USERS; 
+    localStorage.setItem('dt_users', JSON.stringify(users));
 
     let dailyRevenue = parseFloat(localStorage.getItem('dt_revenue')) || 0;
     let dailyRentals = parseInt(localStorage.getItem('dt_rentals')) || 0;
@@ -723,15 +719,12 @@
     let currentPaymentMethod = 'pix';
     let customPixPoster = localStorage.getItem('dt_custom_pix') || null;
     let currentUser = JSON.parse(localStorage.getItem('dt_current_user')) || null;
-    if (currentUser && currentUser.username === 'admin') {
-      currentUser.name = 'Marrison Carlos (Dev/Admin)';
-      localStorage.setItem('dt_current_user', JSON.stringify(currentUser));
-    }
+    
     let currentView = 'dashboard';
     let selectedTrikeIds = [];
     let tempTrikePhoto = null;
 
-    function saveState() {
+    async function saveState() {
       localStorage.setItem('dt_trikes', JSON.stringify(trikes));
       localStorage.setItem('dt_users', JSON.stringify(users));
       localStorage.setItem('dt_revenue', dailyRevenue.toString());
@@ -745,6 +738,23 @@
         localStorage.setItem('dt_current_user', JSON.stringify(currentUser));
       } else {
         localStorage.removeItem('dt_current_user');
+      }
+
+      // Sincroniza com a nuvem (Supabase)
+      if (supabaseClient) {
+        const payload = {
+          trikes,
+          users,
+          dailyRevenue,
+          dailyRentals,
+          dailyByPayment,
+          registerHistory
+        };
+        try {
+          await supabaseClient.from('app_data').upsert({ id: 1, payload: payload });
+        } catch(e) {
+          console.error("Erro ao sincronizar com Supabase:", e);
+        }
       }
     }
 
@@ -869,9 +879,9 @@
 
       // Tag do usuário no cabeçalho
       const userTag = document.getElementById('header-user-tag');
-      userTag.innerText = `${currentUser.name} (${currentUser.role === 'admin' ? 'ADMIN' : 'VENDEDOR'})`;
+      userTag.innerText = `${currentUser.name}`;
 
-      // Controle de privilégios: esconder abas restritas se for apenas vendedor
+      // Controle de privilégios (caixa não é mais admin-only, apenas frota e equipe)
       const adminElements = document.querySelectorAll('.admin-only');
       adminElements.forEach(el => {
         if (currentUser.role === 'admin') {
@@ -978,7 +988,7 @@
     }
 
     function quickLoginAdmin() {
-      const admin = users.find(u => u.username === 'admin') || DEFAULT_USERS[0];
+      const admin = users.find(u => u.username === 'marrison') || DEFAULT_USERS[0];
       currentUser = admin;
       saveState();
       initApp();
@@ -1562,9 +1572,71 @@
       renderReports();
     }
 
-    // --- 14. INICIALIZAÇÃO AUTOMÁTICA ---
-    window.onload = function() {
+    // --- 14. SINCRONIZAÇÃO EM TEMPO REAL ENTRE ABAS ---
+    window.addEventListener('storage', function(e) {
+      if (e.key && e.key.startsWith('dt_')) {
+        trikes = JSON.parse(localStorage.getItem('dt_trikes')) || DEFAULT_TRIKES;
+        dailyRevenue = parseFloat(localStorage.getItem('dt_revenue')) || 0;
+        dailyRentals = parseInt(localStorage.getItem('dt_rentals')) || 0;
+        dailyByPayment = JSON.parse(localStorage.getItem('dt_by_payment')) || { pix: 0, money: 0, card: 0 };
+        registerHistory = JSON.parse(localStorage.getItem('dt_reg_history')) || [];
+        
+        if (currentView === 'dashboard') renderDashboard();
+        if (currentView === 'rental') renderRentalSelection();
+        if (currentView === 'active') renderActiveRentals();
+        if (currentView === 'fleet') renderFleetManagement();
+        if (currentView === 'reports') renderReports();
+      }
+    });
+
+    // --- 15. INICIALIZAÇÃO AUTOMÁTICA & SUPABASE ---
+    async function initSupabaseSync() {
+      if (supabaseClient) {
+        try {
+          // Busca os dados da nuvem
+          const { data, error } = await supabaseClient.from('app_data').select('payload').eq('id', 1).single();
+          if (data && data.payload) {
+            trikes = data.payload.trikes || DEFAULT_TRIKES;
+            users = data.payload.users || DEFAULT_USERS;
+            dailyRevenue = data.payload.dailyRevenue || 0;
+            dailyRentals = data.payload.dailyRentals || 0;
+            dailyByPayment = data.payload.dailyByPayment || { pix: 0, money: 0, card: 0 };
+            registerHistory = data.payload.registerHistory || [];
+            
+            // Força a manter os usuários originais caso a nuvem zere
+            if(users.length === 0) users = DEFAULT_USERS;
+          }
+        } catch(e) {
+          console.warn("Sem dados na nuvem ou erro de conexão. Usando local.");
+        }
+
+        // Inscreve-se para escutar mudanças em tempo real de outros celulares
+        supabaseClient.channel('realtime_sync')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'app_data' }, (payload) => {
+            console.log('Atualização recebida da nuvem!', payload);
+            if (payload.new && payload.new.payload) {
+               trikes = payload.new.payload.trikes || trikes;
+               users = payload.new.payload.users || users;
+               dailyRevenue = payload.new.payload.dailyRevenue || dailyRevenue;
+               dailyRentals = payload.new.payload.dailyRentals || dailyRentals;
+               dailyByPayment = payload.new.payload.dailyByPayment || dailyByPayment;
+               registerHistory = payload.new.payload.registerHistory || registerHistory;
+               
+               // Atualiza a tela atual imediatamente
+               if (currentView === 'dashboard') renderDashboard();
+               if (currentView === 'rental') renderRentalSelection();
+               if (currentView === 'active') renderActiveRentals();
+               if (currentView === 'fleet') renderFleetManagement();
+               if (currentView === 'reports') renderReports();
+            }
+          })
+          .subscribe();
+      }
+    }
+
+    window.onload = async function() {
       lucide.createIcons();
+      await initSupabaseSync();
       if (currentUser) {
         initApp();
       }
