@@ -111,10 +111,6 @@
 
 
       </form>
-
-      <div class="mt-6 pt-4 border-t border-slate-800/80 text-center text-xs text-slate-500">
-        Acesso padrão: <strong class="text-cyan-400">admin</strong> / senha: <strong class="text-cyan-400">admin</strong>
-      </div>
     </div>
   </div>
 
@@ -655,7 +651,7 @@
     const RENTAL_MINUTES = 10;
     const RENTAL_MS = RENTAL_MINUTES * 60 * 1000;
 
-    // --- 2. DADOS PADRÃO (COM OS CARRINHOS DA FOTO 1) ---
+    // --- 2. DADOS PADRÃO ---
     const DEFAULT_TRIKES = [
       { 
         id: 1, 
@@ -696,9 +692,9 @@
     ];
 
     const DEFAULT_USERS = [
-      { id: 1, name: "Marrison (Admin)", username: "marrison", password: "123", role: "admin" },
-      { id: 2, name: "Jonas (Vendedor)", username: "jonas", password: "123", role: "seller" },
-      { id: 3, name: "Maysa (Vendedora)", username: "maysa", password: "123", role: "seller" }
+      { id: 1, name: "Marrison (Dev/Admin)", username: "marrison", password: "Mkrlos@123", role: "admin" },
+      { id: 2, name: "Jonas (Vendedor)", username: "jonas", password: "12345", role: "seller" },
+      { id: 3, name: "Maysa (Vendedora)", username: "maysa", password: "12345", role: "seller" }
     ];
 
     // --- 3. CARREGAMENTO DO LOCALSTORAGE COM PERSISTÊNCIA ---
