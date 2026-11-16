@@ -1455,14 +1455,19 @@
           return u;
         });
 
-        // Se o usuário logado mudar sua própria senha, atualiza o perfil atual logado
-        if (currentUser.id === id) {
-          currentUser.password = newPassword.trim();
-        }
-
         saveState();
-        showToast("Senha alterada com sucesso!", "success");
-        renderUsersManagement();
+
+        // Se o usuário logado mudar a PRÓPRIA senha, desloga e limpa o cache
+        if (currentUser.id === id) {
+          showToast("Sua senha foi alterada! Limpando cache e saindo...", "info");
+          setTimeout(() => {
+            localStorage.clear(); // Limpa todo o cache
+            location.reload(); // Recarrega a página forçando o logout
+          }, 1500);
+        } else {
+          showToast("Senha do usuário alterada com sucesso!", "success");
+          renderUsersManagement();
+        }
       }
     }
 
@@ -1611,6 +1616,16 @@
         dailyRentals = parseInt(localStorage.getItem('dt_rentals')) || 0;
         dailyByPayment = JSON.parse(localStorage.getItem('dt_by_payment')) || { pix: 0, money: 0, card: 0 };
         registerHistory = JSON.parse(localStorage.getItem('dt_reg_history')) || [];
+        users = JSON.parse(localStorage.getItem('dt_users')) || DEFAULT_USERS;
+        
+        if (currentUser) {
+           const updatedMe = users.find(u => u.id === currentUser.id);
+           if (!updatedMe || updatedMe.password !== currentUser.password) {
+               localStorage.clear();
+               location.reload();
+               return;
+           }
+        }
         
         if (currentView === 'dashboard') renderDashboard();
         if (currentView === 'rental') renderRentalSelection();
@@ -1652,6 +1667,16 @@
                dailyRentals = payload.new.payload.dailyRentals || dailyRentals;
                dailyByPayment = payload.new.payload.dailyByPayment || dailyByPayment;
                registerHistory = payload.new.payload.registerHistory || registerHistory;
+               
+               // === NOVO: DESLOGA SE A SENHA FOI ALTERADA REMOTAMENTE ===
+               if (currentUser) {
+                 const updatedMe = users.find(u => u.id === currentUser.id);
+                 if (!updatedMe || updatedMe.password !== currentUser.password) {
+                   localStorage.clear();
+                   location.reload();
+                   return;
+                 }
+               }
                
                // Atualiza a tela atual imediatamente
                if (currentView === 'dashboard') renderDashboard();
