@@ -1506,15 +1506,27 @@
       document.getElementById('report-pay-card').innerText = `R$ ${(dailyByPayment.card || 0).toFixed(2)}`;
 
       const breakdown = document.getElementById('report-trikes-breakdown');
+      const maxRentals = Math.max(...trikes.map(t => t.totalRentals || 0), 1);
+      
       breakdown.innerHTML = trikes.map(t => {
         const count = t.totalRentals || 0;
         const total = count * PRICE_PER_TRIKE;
+        const totalMins = count * RENTAL_MINUTES;
+        const percent = count === 0 ? 0 : (count / maxRentals) * 100;
         return `
-          <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800">
-            <span class="text-xs font-bold text-slate-200">${t.name}</span>
-            <div class="text-right">
-              <span class="text-xs font-black text-cyan-400">${count} locações</span>
-              <span class="text-[11px] text-slate-400 block">R$ ${total.toFixed(2)}</span>
+          <div class="mb-4 last:mb-0 bg-slate-950 p-3.5 rounded-2xl border border-slate-800 shadow-inner">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between text-xs mb-2.5 gap-1.5">
+              <span class="font-bold text-slate-200 truncate">${t.name}</span>
+              <div class="text-left sm:text-right flex-shrink-0 flex items-center gap-1.5 bg-slate-900 px-2 py-1 rounded-lg border border-slate-800">
+                <span class="font-black text-cyan-400"><i data-lucide="play" class="w-3 h-3 inline pb-0.5"></i> ${count}x</span>
+                <span class="text-slate-600 font-black">/</span>
+                <span class="text-orange-400 font-black"><i data-lucide="clock" class="w-3 h-3 inline pb-0.5"></i> ${totalMins} min</span>
+                <span class="text-slate-600 font-black">/</span>
+                <span class="text-green-400 font-black">R$ ${total.toFixed(2)}</span>
+              </div>
+            </div>
+            <div class="w-full bg-slate-900 rounded-full h-3 border border-slate-800 overflow-hidden relative shadow-inner">
+              <div class="bg-gradient-to-r from-cyan-600 via-cyan-400 to-blue-500 h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(6,182,212,0.5)]" style="width: ${percent}%;"></div>
             </div>
           </div>
         `;
