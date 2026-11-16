@@ -704,9 +704,8 @@
     // --- 3. CARREGAMENTO DO LOCALSTORAGE COM PERSISTÊNCIA ---
     let trikes = JSON.parse(localStorage.getItem('dt_trikes')) || DEFAULT_TRIKES;
     
-    // Forçando usuários fixos
-    let users = DEFAULT_USERS; 
-    localStorage.setItem('dt_users', JSON.stringify(users));
+    // Permitir carregar usuários do localStorage para persistir senhas alteradas
+    let users = JSON.parse(localStorage.getItem('dt_users')) || DEFAULT_USERS;
 
     let dailyRevenue = parseFloat(localStorage.getItem('dt_revenue')) || 0;
     let dailyRentals = parseInt(localStorage.getItem('dt_rentals')) || 0;
@@ -1447,6 +1446,30 @@
       renderUsersManagement();
     }
 
+    function changeUserPassword(id) {
+      const userToChange = users.find(u => u.id === id);
+      if (!userToChange) return;
+
+      const newPassword = prompt(`Digite a nova senha para ${userToChange.name}:`);
+      if (newPassword !== null && newPassword.trim() !== '') {
+        users = users.map(u => {
+          if (u.id === id) {
+            return { ...u, password: newPassword.trim() };
+          }
+          return u;
+        });
+
+        // Se o usuário logado mudar sua própria senha, atualiza o perfil atual logado
+        if (currentUser.id === id) {
+          currentUser.password = newPassword.trim();
+        }
+
+        saveState();
+        showToast("Senha alterada com sucesso!", "success");
+        renderUsersManagement();
+      }
+    }
+
     function removeUser(id) {
       if (id === currentUser.id) {
         showToast("Você não pode excluir sua própria conta!", "error");
@@ -1464,7 +1487,7 @@
         const isMe = currentUser && currentUser.id === u.id;
         const isAdmin = u.role === 'admin';
         return `
-          <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
+          <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-xl flex items-center justify-center ${isAdmin ? 'bg-purple-500/20 text-purple-400' : 'bg-cyan-500/20 text-cyan-400'}">
                 <i data-lucide="${isAdmin ? 'shield-check' : 'user'}" class="w-5 h-5"></i>
@@ -1475,16 +1498,19 @@
               </div>
             </div>
 
-            ${!isMe ? `
-              <div class="flex items-center gap-1.5">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <button onclick="changeUserPassword(${u.id})" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 transition-colors flex items-center gap-1" title="Mudar Senha">
+                <i data-lucide="key" class="w-3.5 h-3.5"></i> Senha
+              </button>
+              ${!isMe ? `
                 <button onclick="toggleUserPrivilege(${u.id})" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 transition-colors" title="Mudar privilégio">
                   ${isAdmin ? 'Tornar Vendedor' : 'Tornar Admin'}
                 </button>
                 <button onclick="removeUser(${u.id})" class="p-2 rounded-lg bg-slate-800 hover:bg-red-950 text-slate-400 hover:text-red-400 transition-colors" title="Remover">
                   <i data-lucide="trash-2" class="w-4 h-4"></i>
                 </button>
-              </div>
-            ` : ''}
+              ` : ''}
+            </div>
           </div>
         `;
       }).join('');
