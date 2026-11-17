@@ -17,6 +17,8 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Supabase JS Client (Pronto para sincronização) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Chart.js para Gráficos Interativos -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
   <!-- Fonte Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -53,11 +55,6 @@
     /* Feedback visual ao clicar */
     button:active, .clickable:active {
       transform: scale(0.97);
-    }
-    /* Animação Modernizada para Gráfico */
-    @keyframes shimmer {
-      0% { transform: translateX(-100%) skewX(-15deg); }
-      100% { transform: translateX(200%) skewX(-15deg); }
     }
   </style>
 </head>
@@ -594,13 +591,13 @@
           </button>
         </div>
 
-        <!-- Estatísticas por Carrinho (GRÁFICO MODERNIZADO) -->
+        <!-- Estatísticas por Carrinho (GRÁFICO COM CHART.JS - INTERATIVO E LEGAL) -->
         <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
           <h3 class="font-bold text-base text-slate-200 mb-4 flex items-center gap-2">
             <i data-lucide="bar-chart-2" class="w-5 h-5 text-cyan-400"></i> Desempenho por Carrinho
           </h3>
-          <div id="report-trikes-breakdown" class="space-y-3">
-            <!-- Renderizado via JS -->
+          <div class="relative h-64 w-full">
+            <canvas id="trikesChart"></canvas>
           </div>
         </div>
 
@@ -756,6 +753,9 @@
     let selectedTrikeIds = [];
     let selectedTrikesData = {}; 
     let tempTrikePhoto = null;
+    
+    // Instância do Gráfico Interativo
+    let trikesChartInstance = null;
 
     async function saveState() {
       localStorage.setItem('dt_trikes', JSON.stringify(trikes));
@@ -1586,33 +1586,107 @@
       document.getElementById('report-pay-money').innerText = `R$ ${(dailyByPayment.money || 0).toFixed(2)}`;
       document.getElementById('report-pay-card').innerText = `R$ ${(dailyByPayment.card || 0).toFixed(2)}`;
 
-      const breakdown = document.getElementById('report-trikes-breakdown');
-      const maxRentals = Math.max(...trikes.map(t => t.totalRentals || 0), 1);
-      
-      breakdown.innerHTML = trikes.map((t, i) => {
-        const count = t.totalRentals || 0;
-        const percent = count === 0 ? 0 : (count / maxRentals) * 100;
-        return `
-          <div class="group relative bg-slate-950/50 p-4 rounded-2xl border border-slate-800/60 hover:border-cyan-500/40 transition-all hover:shadow-[0_4px_20px_rgba(6,182,212,0.15)] overflow-hidden">
-            <div class="flex items-center justify-between mb-3 relative z-10">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center shadow-inner overflow-hidden">
-                  <img src="${t.image || 'https://placehold.co/100x100/0f172a/06b6d4?text=T'}" class="w-full h-full object-cover opacity-90" onerror="this.style.display='none'" />
-                </div>
-                <span class="font-black text-sm text-slate-200 group-hover:text-cyan-300 transition-colors">${t.name}</span>
-              </div>
-              <div class="flex items-center bg-slate-900/80 px-3 py-1 rounded-lg border border-slate-700/50 backdrop-blur-sm shadow-md">
-                <span class="font-black text-cyan-400 text-xs">${count} Corridas</span>
-              </div>
-            </div>
-            <div class="w-full bg-slate-900/90 rounded-full h-3.5 border border-slate-800/80 overflow-hidden relative shadow-inner p-0.5">
-              <div class="bg-gradient-to-r from-cyan-600 via-blue-500 to-purple-500 h-full rounded-full transition-all duration-[1500ms] ease-out shadow-[0_0_12px_rgba(6,182,212,0.6)] relative overflow-hidden" style="width: ${percent}%;">
-                <div class="absolute inset-0 bg-white/20 w-[200%] h-full [animation:shimmer_2.5s_infinite_linear]"></div>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
+      // --- GRÁFICO CHART.JS INTERATIVO ---
+      const ctx = document.getElementById('trikesChart');
+      if (ctx) {
+        // Extrai apenas o nome simples do carrinho para a legenda caber legal
+        const labels = trikes.map(t => t.name.split(' (')[0]); 
+        const dataVals = trikes.map(t => t.totalRentals || 0);
+        
+        if (trikesChartInstance) {
+          trikesChartInstance.destroy();
+        }
+
+        trikesChartInstance = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Corridas Realizadas',
+              data: dataVals,
+              backgroundColor: [
+                'rgba(6, 182, 212, 0.7)',  // cyan
+                'rgba(249, 115, 22, 0.7)', // orange
+                'rgba(168, 85, 247, 0.7)', // purple
+                'rgba(34, 197, 94, 0.7)'   // green
+              ],
+              borderColor: [
+                'rgba(6, 182, 212, 1)',
+                'rgba(249, 115, 22, 1)',
+                'rgba(168, 85, 247, 1)',
+                'rgba(34, 197, 94, 1)'
+              ],
+              borderWidth: 2,
+              borderRadius: 8,
+              hoverBackgroundColor: [
+                'rgba(6, 182, 212, 1)',
+                'rgba(249, 115, 22, 1)',
+                'rgba(168, 85, 247, 1)',
+                'rgba(34, 197, 94, 1)'
+              ]
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              },
+              tooltip: {
+                backgroundColor: 'rgba(2, 6, 23, 0.95)',
+                titleColor: '#38bdf8',
+                bodyColor: '#f8fafc',
+                titleFont: { size: 13, family: "'Inter', sans-serif" },
+                bodyFont: { size: 12, font: 'bold', family: "'Inter', sans-serif" },
+                borderColor: 'rgba(56, 189, 248, 0.4)',
+                borderWidth: 1,
+                padding: 12,
+                displayColors: false,
+                callbacks: {
+                  label: function(context) {
+                    const count = context.raw;
+                    // Valor estimado base (como você tem preços dinâmicos, essa é uma média visual)
+                    const estimativaValor = (count * PRICE_PER_TRIKE).toFixed(2);
+                    return count + ' corridas (R$ ' + estimativaValor + ')';
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: {
+                  color: 'rgba(30, 41, 59, 0.6)',
+                  drawBorder: false
+                },
+                ticks: {
+                  color: '#94a3b8',
+                  stepSize: 1,
+                  font: { family: "'Inter', sans-serif" }
+                }
+              },
+              x: {
+                grid: {
+                  display: false
+                },
+                ticks: {
+                  color: '#cbd5e1',
+                  font: {
+                    size: 11,
+                    weight: 'bold',
+                    family: "'Inter', sans-serif"
+                  }
+                }
+              }
+            },
+            animation: {
+              duration: 1200,
+              easing: 'easeOutBounce' // Dá um efeitinho elástico legal ao carregar
+            }
+          }
+        });
+      }
 
       // Renderiza Histórico dentro do Modal
       const histList = document.getElementById('report-history-list');
