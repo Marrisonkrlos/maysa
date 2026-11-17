@@ -18,10 +18,9 @@
   <!-- Supabase JS Client (Pronto para sincronização) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
-  <!-- Chart.js para Gráficos Interativos -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Plugin Chart.js para textos dentro do gráfico -->
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <!-- Chart.js para Gráficos Interativos (LINKS ATUALIZADOS E SEGUROS) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
   
   <!-- Fonte Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1566,107 +1565,105 @@
       document.getElementById('report-pay-money').innerText = `R$ ${(dailyByPayment.money || 0).toFixed(2)}`;
       document.getElementById('report-pay-card').innerText = `R$ ${(dailyByPayment.card || 0).toFixed(2)}`;
 
-      // --- GRÁFICO CHART.JS DE PIZZA ESTILIZADO COM DADOS SINCRONIZADOS ---
+      // --- GRÁFICO CHART.JS DE PIZZA (CORRIGIDO PARA SEMPRE RENDERIZAR) ---
       const ctx = document.getElementById('trikesChart');
       if (ctx) {
-        // Legenda mostra o Nome e o Valor Arrecadado
+        
+        // Formata os nomes da legenda (nome do carrinho + valor arrecadado)
         const labels = trikes.map(t => {
            const name = t.name.split(' (')[0];
            const money = (t.totalRevenue || 0).toFixed(2);
            return `${name}: R$ ${money}`;
         }); 
         
-        // Fatias do gráfico baseadas nos minutos
+        // Pega os minutos totais de cada carrinho
         const dataVals = trikes.map(t => t.totalMinutes || 0);
         
-        // Só renderiza a pizza se houver corridas para evitar erro visual no gráfico zerado
+        // Verifica se houve alguma corrida
         const temCorridas = dataVals.some(v => v > 0);
 
         if (trikesChartInstance) {
           trikesChartInstance.destroy();
         }
 
-        if (temCorridas) {
-          Chart.register(ChartDataLabels);
-          trikesChartInstance = new Chart(ctx, {
-            type: 'pie',
-            data: {
-              labels: labels,
-              datasets: [{
-                data: dataVals,
-                backgroundColor: [
-                  'rgba(6, 182, 212, 0.85)',  // cyan
-                  'rgba(249, 115, 22, 0.85)', // orange
-                  'rgba(168, 85, 247, 0.85)', // purple
-                  'rgba(34, 197, 94, 0.85)'   // green
-                ],
-                borderColor: '#020617', // Cor de fundo do app para dar espaçamento nas fatias
-                borderWidth: 4,
-                hoverOffset: 15
-              }]
+        // Garante que o plugin de textos está rodando
+        if (typeof ChartDataLabels !== 'undefined') {
+            Chart.register(ChartDataLabels);
+        }
+
+        trikesChartInstance = new Chart(ctx, {
+          type: 'pie',
+          data: {
+            labels: temCorridas ? labels : ['Aguardando locações...'],
+            datasets: [{
+              data: temCorridas ? dataVals : [1], // Fictício se não tiver dados
+              backgroundColor: temCorridas ? [
+                'rgba(6, 182, 212, 0.85)',  // cyan
+                'rgba(249, 115, 22, 0.85)', // orange
+                'rgba(168, 85, 247, 0.85)', // purple
+                'rgba(34, 197, 94, 0.85)'   // green
+              ] : ['rgba(30, 41, 59, 0.5)'], // Cinza escuro pra quando o caixa tá zerado
+              borderColor: '#020617', // Espaço preto entre fatias
+              borderWidth: temCorridas ? 4 : 0,
+              hoverOffset: temCorridas ? 15 : 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+              padding: { bottom: 20 }
             },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              layout: {
-                padding: { bottom: 20 }
-              },
-              plugins: {
-                legend: {
-                  position: 'bottom',
-                  labels: {
-                    color: '#cbd5e1',
-                    font: { family: "'Inter', sans-serif", size: 12, weight: 'bold' },
-                    padding: 20
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  color: '#cbd5e1',
+                  font: { family: "'Inter', sans-serif", size: 12, weight: 'bold' },
+                  padding: 20,
+                  generateLabels: function(chart) {
+                    // Esconde a legenda se o caixa estiver zerado
+                    if (!temCorridas) return []; 
+                    return Chart.defaults.plugins.legend.labels.generateLabels(chart);
                   }
-                },
-                tooltip: {
-                  backgroundColor: 'rgba(2, 6, 23, 0.95)',
-                  titleColor: '#38bdf8',
-                  bodyColor: '#f8fafc',
-                  padding: 12,
-                  borderColor: 'rgba(56, 189, 248, 0.4)',
-                  borderWidth: 1,
-                  titleFont: { size: 13, family: "'Inter', sans-serif" },
-                  bodyFont: { size: 13, font: 'bold', family: "'Inter', sans-serif" },
-                  callbacks: {
-                    label: function(context) {
-                       return ` ${context.raw} Minutos na pista`;
-                    }
-                  }
-                },
-                datalabels: {
-                  color: '#ffffff',
-                  font: { weight: 'bold', size: 15, family: "'Inter', sans-serif" },
-                  formatter: (value) => {
-                    if (value === 0) return '';
-                    return value + ' min'; // Aqui aparece os minutos dentro das fatias
-                  },
-                  textShadowBlur: 6,
-                  textShadowColor: 'rgba(0, 0, 0, 0.8)'
                 }
               },
-              animation: {
-                animateScale: true,
-                animateRotate: true,
-                duration: 1500,
-                easing: 'easeOutQuart'
+              tooltip: {
+                enabled: temCorridas, // Só ativa tooltip quando houver corridas
+                backgroundColor: 'rgba(2, 6, 23, 0.95)',
+                titleColor: '#38bdf8',
+                bodyColor: '#f8fafc',
+                padding: 12,
+                borderColor: 'rgba(56, 189, 248, 0.4)',
+                borderWidth: 1,
+                titleFont: { size: 13, family: "'Inter', sans-serif" },
+                bodyFont: { size: 13, font: 'bold', family: "'Inter', sans-serif" },
+                callbacks: {
+                  label: function(context) {
+                     return ` ${context.raw} Minutos na pista`;
+                  }
+                }
+              },
+              datalabels: {
+                display: temCorridas, // Só exibe os textos dentro da pizza se tiver corridas
+                color: '#ffffff',
+                font: { weight: 'bold', size: 15, family: "'Inter', sans-serif" },
+                formatter: (value) => {
+                  if (value === 0) return '';
+                  return value + ' min'; // Aqui ele escreve "10 min", "20 min" na fatia
+                },
+                textShadowBlur: 6,
+                textShadowColor: 'rgba(0, 0, 0, 0.8)'
               }
+            },
+            animation: {
+              animateScale: true,
+              animateRotate: true,
+              duration: 1500,
+              easing: 'easeOutQuart'
             }
-          });
-        } else {
-           // Se não houver corridas ainda, destroi e não cria para evitar o fallback cinza
-           if (trikesChartInstance) trikesChartInstance.destroy();
-           const parent = ctx.parentElement;
-           const currentP = parent.querySelector('.empty-chart-msg');
-           if(!currentP){
-              const p = document.createElement('p');
-              p.className = 'empty-chart-msg absolute inset-0 flex items-center justify-center text-slate-500 text-sm font-bold flex-col gap-2';
-              p.innerHTML = '<i data-lucide="pie-chart" class="w-10 h-10 opacity-30"></i> Nenhum dado para o gráfico ainda.';
-              parent.appendChild(p);
-              lucide.createIcons();
-           }
-        }
+          }
+        });
       }
 
       // Renderiza Histórico dentro do Modal
@@ -1726,12 +1723,6 @@
       trikes = trikes.map(t => ({ ...t, totalRentals: 0, totalMinutes: 0, totalRevenue: 0 }));
       
       saveState();
-      
-      // Remove msg de empty chart se tiver
-      const ctx = document.getElementById('trikesChart');
-      if (ctx && ctx.parentElement.querySelector('.empty-chart-msg')) {
-        ctx.parentElement.querySelector('.empty-chart-msg').remove();
-      }
       
       renderReports();
     }
