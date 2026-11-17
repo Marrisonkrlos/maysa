@@ -54,6 +54,11 @@
     button:active, .clickable:active {
       transform: scale(0.97);
     }
+    /* Animação Modernizada para Gráfico */
+    @keyframes shimmer {
+      0% { transform: translateX(-100%) skewX(-15deg); }
+      100% { transform: translateX(200%) skewX(-15deg); }
+    }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans select-none pb-10">
@@ -192,7 +197,7 @@
             </div>
             <span class="bg-cyan-900/60 text-cyan-200 text-xs font-black uppercase px-3 py-1 rounded-full border border-cyan-400/30">Locação Rápida</span>
             <h2 class="text-3xl font-black italic uppercase text-white mt-3 mb-1">Liberar<br>Carrinhos</h2>
-            <p class="text-cyan-100 font-semibold text-sm">R$ 10,00 • 10 Minutos cada</p>
+            <p class="text-cyan-100 font-semibold text-sm">Tempos flexíveis a partir de 10 Min</p>
           </div>
 
           <!-- Ação Rápida: Na Pista -->
@@ -276,15 +281,12 @@
         <div class="flex items-center justify-between">
           <div>
             <h2 class="text-xl font-black uppercase italic text-white">Selecione os Carrinhos</h2>
-            <p class="text-xs text-slate-400">Marque 1 ou mais carrinhos para a mesma pessoa/comanda</p>
+            <p class="text-xs text-slate-400">Marque 1 ou mais carrinhos e escolha o tempo de cada</p>
           </div>
-          <span class="text-xs font-bold text-orange-400 bg-orange-500/10 border border-orange-500/30 px-3 py-1.5 rounded-full">
-            R$ 10,00 = 10 Min
-          </span>
         </div>
 
         <!-- Grade de Carrinhos Disponíveis -->
-        <div id="rental-trikes-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        <div id="rental-trikes-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pb-20">
           <!-- Renderizado via JS -->
         </div>
 
@@ -306,7 +308,7 @@
       <!-- ========================================== -->
       <!-- TELA: PAGAMENTO PIX (FOTO 2 / CARTAZ)      -->
       <!-- ========================================== -->
-      <section id="view-payment" class="app-view hidden max-w-lg mx-auto space-y-4">
+      <section id="view-payment" class="app-view hidden max-w-lg mx-auto space-y-4 pb-20">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 text-center shadow-2xl relative overflow-hidden">
           <div class="absolute -top-10 -right-10 w-36 h-36 bg-orange-500/20 rounded-full blur-[70px]"></div>
 
@@ -320,7 +322,7 @@
           </div>
 
           <h2 class="text-2xl font-black text-white italic uppercase">Cobrança da Locação</h2>
-          <p id="payment-summary-text" class="text-sm text-slate-400 mt-1 mb-3">1 Carrinho • 10 Minutos</p>
+          <p id="payment-summary-text" class="text-sm text-slate-400 mt-1 mb-3">Tempos Selecionados</p>
 
           <!-- Seletor de Método de Pagamento -->
           <div class="mb-4">
@@ -341,7 +343,7 @@
           <!-- Valor Destaque -->
           <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl mb-4 flex items-center justify-between">
             <span class="text-xs text-slate-400 font-bold uppercase">Valor a Cobrar</span>
-            <span id="payment-total-value" class="text-3xl font-black text-orange-400">R$ 10,00</span>
+            <span id="payment-total-value" class="text-3xl font-black text-orange-400">R$ 0,00</span>
           </div>
 
           <!-- Container do Cartaz PIX (Visível quando método for PIX) -->
@@ -433,14 +435,14 @@
             <h2 class="text-xl font-black uppercase italic text-white flex items-center gap-2">
               <i data-lucide="timer" class="w-6 h-6 text-cyan-400"></i> Monitoramento na Pista
             </h2>
-            <p class="text-xs text-slate-400">Tempo regressivo de 10 minutos por carrinho</p>
+            <p class="text-xs text-slate-400">Acompanhe os carrinhos ativos na corrida</p>
           </div>
           <button onclick="navigate('rental')" class="bg-cyan-600/20 border border-cyan-500/40 text-cyan-300 hover:bg-cyan-600/30 font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1">
             <i data-lucide="plus" class="w-4 h-4"></i> Mais Aluguel
           </button>
         </div>
 
-        <div id="active-rentals-list" class="space-y-3">
+        <div id="active-rentals-list" class="space-y-3 pb-20">
           <!-- Renderizado via JS -->
         </div>
       </section>
@@ -501,7 +503,7 @@
         <!-- Lista de Carrinhos Cadastrados -->
         <div>
           <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Carrinhos na Frota (<span id="fleet-total-badge">0</span>)</h3>
-          <div id="fleet-manage-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div id="fleet-manage-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-20">
             <!-- Renderizado via JS -->
           </div>
         </div>
@@ -545,7 +547,7 @@
 
         <div>
           <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Membros da Equipe</h3>
-          <div id="users-manage-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div id="users-manage-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-20">
             <!-- Renderizado via JS -->
           </div>
         </div>
@@ -554,7 +556,7 @@
       <!-- ========================================== -->
       <!-- TELA: CAIXA / FECHAMENTO DO DIA            -->
       <!-- ========================================== -->
-      <section id="view-reports" class="app-view hidden space-y-6">
+      <section id="view-reports" class="app-view hidden space-y-6 pb-20">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl relative overflow-hidden text-center shadow-xl">
             <div class="absolute -top-6 -right-6 w-28 h-28 bg-green-500/10 rounded-full blur-[40px]"></div>
@@ -592,22 +594,27 @@
           </div>
         </div>
 
-        <!-- Estatísticas por Carrinho -->
+        <!-- Estatísticas por Carrinho (GRÁFICO MODERNIZADO) -->
         <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
           <h3 class="font-bold text-base text-slate-200 mb-4 flex items-center gap-2">
             <i data-lucide="bar-chart-2" class="w-5 h-5 text-cyan-400"></i> Desempenho por Carrinho
           </h3>
-          <div id="report-trikes-breakdown" class="space-y-2">
+          <div id="report-trikes-breakdown" class="space-y-3">
             <!-- Renderizado via JS -->
           </div>
         </div>
 
-        <!-- Histórico de Fechamentos Anteriores -->
+        <!-- Histórico de Fechamentos Anteriores (COM TOGGLE OCULTO) -->
         <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
-          <h3 class="font-bold text-base text-slate-200 mb-4 flex items-center gap-2">
-            <i data-lucide="history" class="w-5 h-5 text-purple-400"></i> Histórico de Caixas Fechados
-          </h3>
-          <div id="report-history-list" class="space-y-2.5 max-h-60 overflow-y-auto no-scrollbar">
+          <div class="flex items-center justify-between cursor-pointer mb-2" onclick="toggleHistoryVisibility()">
+            <h3 class="font-bold text-base text-slate-200 flex items-center gap-2">
+              <i data-lucide="history" class="w-5 h-5 text-purple-400"></i> Histórico de Caixas Fechados
+            </h3>
+            <div class="p-1 rounded bg-slate-800/60">
+               <i data-lucide="chevron-down" id="history-chevron" class="w-5 h-5 text-slate-400 transition-transform duration-300"></i>
+            </div>
+          </div>
+          <div id="report-history-list" class="space-y-2.5 max-h-72 overflow-y-auto no-scrollbar hidden mt-4 transition-all">
             <!-- Renderizado via JS -->
           </div>
         </div>
@@ -649,15 +656,13 @@
     }
 
     const PRICE_PER_TRIKE = 10.00;
-    const RENTAL_MINUTES = 10;
-    const RENTAL_MS = RENTAL_MINUTES * 60 * 1000;
 
     // --- 2. DADOS PADRÃO ---
     const DEFAULT_TRIKES = [
       { 
         id: 1, 
         name: "Carrinho 1 (Vermelho Xtreme)", 
-        image: "https://raw.githubusercontent.com/Marrisonkrlos/maysa/main/carrinho%20(1)", // Foto 1 dos carrinhos
+        image: "https://raw.githubusercontent.com/Marrisonkrlos/maysa/main/carrinho%20(1)",
         status: "available", 
         endTime: null,
         totalRentals: 0,
@@ -700,8 +705,6 @@
 
     // --- 3. CARREGAMENTO DO LOCALSTORAGE COM PERSISTÊNCIA ---
     let trikes = JSON.parse(localStorage.getItem('dt_trikes')) || DEFAULT_TRIKES;
-    
-    // Permitir carregar usuários do localStorage para persistir senhas alteradas
     let users = JSON.parse(localStorage.getItem('dt_users')) || DEFAULT_USERS;
 
     let dailyRevenue = parseFloat(localStorage.getItem('dt_revenue')) || 0;
@@ -714,8 +717,12 @@
     let currentUser = JSON.parse(localStorage.getItem('dt_current_user')) || null;
     
     let currentView = 'dashboard';
+    
+    // VARIÁVEIS ADICIONAIS DE SELEÇÃO DINÂMICA
     let selectedTrikeIds = [];
+    let selectedTrikesData = {}; // Estrutura: { [id]: { time: 10, price: 10 } }
     let tempTrikePhoto = null;
+    let isHistoryVisible = false; // Controle da Visibilidade do Histórico Oculto
 
     async function saveState() {
       localStorage.setItem('dt_trikes', JSON.stringify(trikes));
@@ -733,16 +740,8 @@
         localStorage.removeItem('dt_current_user');
       }
 
-      // Sincroniza com a nuvem (Supabase)
       if (supabaseClient) {
-        const payload = {
-          trikes,
-          users,
-          dailyRevenue,
-          dailyRentals,
-          dailyByPayment,
-          registerHistory
-        };
+        const payload = { trikes, users, dailyRevenue, dailyRentals, dailyByPayment, registerHistory };
         try {
           await supabaseClient.from('app_data').upsert({ id: 1, payload: payload });
         } catch(e) {
@@ -773,9 +772,7 @@
       }, 3000);
     }
 
-    // Alerta sonoro nativo sintetizado (Web Audio API) + Vibração no celular
     function playBeepAlert(isCritical = false) {
-      // Vibração no celular do operador se suportado
       if (navigator.vibrate) {
         if (isCritical) {
           navigator.vibrate([200, 100, 200, 100, 400]);
@@ -806,27 +803,22 @@
     function navigate(viewName) {
       currentView = viewName;
       
-      // Ocultar todas as seções
       document.querySelectorAll('.app-view').forEach(el => el.classList.add('hidden'));
 
-      // Desativar botões de navegação
       document.querySelectorAll('.nav-item').forEach(btn => {
         btn.classList.remove('text-cyan-400', 'bg-slate-800', 'shadow-inner');
         btn.classList.add('text-slate-400');
       });
 
-      // Ativar a tela correspondente
       const targetView = document.getElementById(`view-${viewName}`);
       if (targetView) targetView.classList.remove('hidden');
 
-      // Destacar o botão do menu
       const activeNav = document.getElementById(`nav-${viewName}`);
       if (activeNav) {
         activeNav.classList.remove('text-slate-400');
         activeNav.classList.add('text-cyan-400', 'bg-slate-800', 'shadow-inner');
       }
 
-      // Renderizar conteúdo específico da tela
       if (viewName === 'dashboard') renderDashboard();
       if (viewName === 'rental') renderRentalSelection();
       if (viewName === 'active') renderActiveRentals();
@@ -870,16 +862,13 @@
       document.getElementById('view-login').classList.add('hidden');
       document.getElementById('app-container').classList.remove('hidden');
 
-      // Tag do usuário no cabeçalho
       const userTag = document.getElementById('header-user-tag');
       userTag.innerText = `${currentUser.name}`;
 
-      // Controle de privilégios (agora mais restrito apenas aos itens admin-only)
       const adminElements = document.querySelectorAll('.admin-only');
       adminElements.forEach(el => {
         if (currentUser.role === 'admin') {
           el.classList.remove('hidden');
-          // Necessário para sobrescrever possíveis display:none
           el.style.display = 'flex'; 
         } else {
           el.classList.add('hidden');
@@ -887,7 +876,6 @@
         }
       });
 
-      // Garantir que os botões não-admin estejam visíveis, caso tenham sido ocultados por cache
       const nonAdminElements = document.querySelectorAll('.nav-item:not(.admin-only)');
       nonAdminElements.forEach(el => {
           el.classList.remove('hidden');
@@ -908,7 +896,6 @@
       document.getElementById('dash-total-count').innerText = trikes.length;
       document.getElementById('dash-today-count').innerText = dailyRentals;
 
-      // Galeria visual expandida com fotos maiores e foco centralizado
       const previewCont = document.getElementById('dash-fleet-preview');
       previewCont.innerHTML = trikes.map(t => `
         <div class="bg-slate-950 border-2 ${t.status === 'in-use' ? 'border-orange-500/80 shadow-[0_0_15px_rgba(249,115,22,0.25)]' : 'border-slate-800 hover:border-slate-700'} rounded-2xl p-3 text-center overflow-hidden transition-all flex flex-col justify-between">
@@ -930,7 +917,14 @@
       lucide.createIcons();
     }
 
-    // --- 8. TELA: SELEÇÃO PARA ALUGUEL ---
+    // --- 8. TELA: SELEÇÃO PARA ALUGUEL (DINÂMICO) ---
+    function updateTrikeTime(id, time, price) {
+      if (selectedTrikesData[id]) {
+        selectedTrikesData[id] = { time, price };
+        renderRentalSelection();
+      }
+    }
+
     function renderRentalSelection() {
       const availableTrikes = trikes.filter(t => t.status === 'available');
       const listEl = document.getElementById('rental-trikes-list');
@@ -951,28 +945,45 @@
 
       listEl.innerHTML = availableTrikes.map(t => {
         const isSelected = selectedTrikeIds.includes(t.id);
+        const data = selectedTrikesData[t.id] || { time: 10, price: 10 };
+
+        // Caixa de Seleção Dinâmica (Tempo) visível quando selecionado
+        let timeSelector = '';
+        if (isSelected) {
+          timeSelector = `
+            <div class="mt-3.5 pt-3.5 border-t border-cyan-500/20 flex gap-2 w-full justify-between">
+              <button onclick="event.stopPropagation(); updateTrikeTime(${t.id}, 10, 10)" class="flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-lg border transition-all ${data.time === 10 ? 'bg-cyan-500 text-slate-900 border-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.3)]' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'}">10 Min<br>R$ 10</button>
+              <button onclick="event.stopPropagation(); updateTrikeTime(${t.id}, 20, 20)" class="flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-lg border transition-all ${data.time === 20 ? 'bg-cyan-500 text-slate-900 border-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.3)]' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'}">20 Min<br>R$ 20</button>
+              <button onclick="event.stopPropagation(); updateTrikeTime(${t.id}, 25, 20)" class="flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-lg border transition-all ${data.time === 25 ? 'bg-cyan-500 text-slate-900 border-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.3)]' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'}">25 Min<br>R$ 20</button>
+            </div>
+          `;
+        }
+
         return `
-          <div onclick="toggleTrikeSelection(${t.id})" class="p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between ${isSelected ? 'bg-cyan-950/40 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]' : 'bg-slate-900 border-slate-800 hover:border-slate-700'}">
-            <div class="flex items-center gap-3">
-              <div class="w-16 h-16 rounded-xl overflow-hidden bg-slate-950 border border-slate-800 flex-shrink-0">
-                <img src="${t.image || 'https://placehold.co/100x100/0f172a/06b6d4?text=Trike'}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike';"/>
+          <div onclick="toggleTrikeSelection(${t.id})" class="p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${isSelected ? 'bg-cyan-950/40 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]' : 'bg-slate-900 border-slate-800 hover:border-slate-700'}">
+            <div class="flex items-center justify-between w-full">
+              <div class="flex items-center gap-3">
+                <div class="w-16 h-16 rounded-xl overflow-hidden bg-slate-950 border border-slate-800 flex-shrink-0">
+                  <img src="${t.image || 'https://placehold.co/100x100/0f172a/06b6d4?text=Trike'}" alt="${t.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/100x100/0f172a/06b6d4?text=Trike';"/>
+                </div>
+                <div>
+                  <h4 class="font-bold text-sm text-white">${t.name}</h4>
+                  <p class="text-xs text-cyan-400 font-semibold mt-0.5">R$ ${data.price.toFixed(2)} • ${data.time} Min</p>
+                </div>
               </div>
-              <div>
-                <h4 class="font-bold text-sm text-white">${t.name}</h4>
-                <p class="text-xs text-cyan-400 font-semibold mt-0.5">R$ 10,00 • 10 Min</p>
+              <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${isSelected ? 'bg-cyan-500 border-cyan-400 text-slate-950' : 'border-slate-600 bg-slate-950'}">
+                ${isSelected ? '<i data-lucide="check" class="w-4 h-4 stroke-[3]"></i>' : ''}
               </div>
             </div>
-            <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-cyan-500 border-cyan-400 text-slate-950' : 'border-slate-600 bg-slate-950'}">
-              ${isSelected ? '<i data-lucide="check" class="w-4 h-4 stroke-[3]"></i>' : ''}
-            </div>
+            ${timeSelector}
           </div>
         `;
       }).join('');
 
-      // Barra flutuante de total
       if (selectedTrikeIds.length > 0) {
         bottomBar.classList.remove('hidden');
-        document.getElementById('rental-bar-total').innerText = `R$ ${(selectedTrikeIds.length * PRICE_PER_TRIKE).toFixed(2)}`;
+        const totalAmount = selectedTrikeIds.reduce((sum, id) => sum + selectedTrikesData[id].price, 0);
+        document.getElementById('rental-bar-total').innerText = `R$ ${totalAmount.toFixed(2)}`;
         document.getElementById('rental-bar-count').innerText = `${selectedTrikeIds.length} carrinho(s) selecionado(s)`;
       } else {
         bottomBar.classList.add('hidden');
@@ -984,18 +995,12 @@
     function toggleTrikeSelection(id) {
       if (selectedTrikeIds.includes(id)) {
         selectedTrikeIds = selectedTrikeIds.filter(x => x !== id);
+        delete selectedTrikesData[id];
       } else {
         selectedTrikeIds.push(id);
+        selectedTrikesData[id] = { time: 10, price: 10 };
       }
       renderRentalSelection();
-    }
-
-    function quickLoginAdmin() {
-      const admin = users.find(u => u.username === 'marrison') || DEFAULT_USERS[0];
-      currentUser = admin;
-      saveState();
-      initApp();
-      showToast(`Bem-vindo, ${admin.name}!`, 'success');
     }
 
     // --- 9. TELA DE PAGAMENTO COM SELETOR DE MÉTODO ---
@@ -1042,9 +1047,9 @@
         showToast("Selecione ao menos 1 carrinho!", "error");
         return;
       }
-      const total = selectedTrikeIds.length * PRICE_PER_TRIKE;
-      document.getElementById('payment-total-value').innerText = `R$ ${total.toFixed(2)}`;
-      document.getElementById('payment-summary-text').innerText = `${selectedTrikeIds.length} Carrinho(s) • ${RENTAL_MINUTES} Minutos na Pista`;
+      const totalAmount = selectedTrikeIds.reduce((sum, id) => sum + selectedTrikesData[id].price, 0);
+      document.getElementById('payment-total-value').innerText = `R$ ${totalAmount.toFixed(2)}`;
+      document.getElementById('payment-summary-text').innerText = `${selectedTrikeIds.length} Carrinho(s) • Tempos Personalizados`;
       selectPaymentMethod('pix');
       navigate('payment');
     }
@@ -1061,15 +1066,17 @@
 
     function confirmPaymentAndRelease() {
       const now = Date.now();
-      const end = now + RENTAL_MS;
       const operatorName = currentUser ? currentUser.name : 'Operador';
+      
+      const totalAmount = selectedTrikeIds.reduce((sum, id) => sum + selectedTrikesData[id].price, 0);
 
       trikes = trikes.map(t => {
         if (selectedTrikeIds.includes(t.id)) {
+          const timeMs = selectedTrikesData[t.id].time * 60 * 1000;
           return {
             ...t,
             status: 'in-use',
-            endTime: end,
+            endTime: now + timeMs,
             totalRentals: (t.totalRentals || 0) + 1,
             rentedBy: operatorName
           };
@@ -1077,16 +1084,16 @@
         return t;
       });
 
-      const amount = selectedTrikeIds.length * PRICE_PER_TRIKE;
-      dailyRevenue += amount;
+      dailyRevenue += totalAmount;
       dailyRentals += selectedTrikeIds.length;
-      dailyByPayment[currentPaymentMethod] = (dailyByPayment[currentPaymentMethod] || 0) + amount;
+      dailyByPayment[currentPaymentMethod] = (dailyByPayment[currentPaymentMethod] || 0) + totalAmount;
       
       saveState();
       playBeepAlert(false);
       showToast(`${selectedTrikeIds.length} Carrinho(s) Liberado(s)! [${currentPaymentMethod.toUpperCase()}]`, 'success');
       
       selectedTrikeIds = [];
+      selectedTrikesData = {};
       navigate('active');
     }
 
@@ -1129,7 +1136,7 @@
           <div class="bg-slate-900 border border-slate-800 p-10 rounded-3xl text-center">
             <i data-lucide="timer-off" class="w-12 h-12 text-slate-600 mx-auto mb-2"></i>
             <h4 class="text-base font-bold text-slate-300">Pista vazia no momento</h4>
-            <p class="text-xs text-slate-500 mt-1">Alugue carrinhos para iniciar os cronômetros de 10 minutos.</p>
+            <p class="text-xs text-slate-500 mt-1">Alugue carrinhos para iniciar os cronômetros.</p>
           </div>
         `;
         lucide.createIcons();
@@ -1209,7 +1216,6 @@
       renderActiveRentals();
     }
 
-    // Loop global de atualização do tempo a cada segundo
     setInterval(() => {
       const inUse = trikes.filter(t => t.status === 'in-use');
       if (inUse.length > 0) {
@@ -1219,7 +1225,6 @@
       }
     }, 1000);
 
-    // Payload Pix Padrão Banco Central (EMV/BRCode) oficial para chave celular +5582999900971 do Jonas André
     function getOfficialPixPayload(amount = 10.00) {
       const key = "+5582999900971";
       const name = "JONAS ANDRE";
@@ -1229,7 +1234,6 @@
       const partMerchant = `0014br.gov.bcb.pix01${String(key.length).padStart(2, '0')}${key}`;
       let raw = `00020126${String(partMerchant.length).padStart(2, '0')}${partMerchant}52040000530398654${String(formattedAmount.length).padStart(2, '0')}${formattedAmount}5802BR59${String(name.length).padStart(2, '0')}${name}60${String(city.length).padStart(2, '0')}${city}62070503***6304`;
       
-      // Cálculo do CRC16-CCITT oficial exigido pelo BACEN
       let crc = 0xFFFF;
       for (let i = 0; i < raw.length; i++) {
         crc ^= (raw.charCodeAt(i) << 8);
@@ -1246,7 +1250,7 @@
     }
 
     function copyPixCode() {
-      const totalAmount = selectedTrikeIds.length > 0 ? (selectedTrikeIds.length * PRICE_PER_TRIKE) : PRICE_PER_TRIKE;
+      let totalAmount = selectedTrikeIds.length > 0 ? selectedTrikeIds.reduce((sum, id) => sum + selectedTrikesData[id].price, 0) : PRICE_PER_TRIKE;
       const pixPayload = getOfficialPixPayload(totalAmount);
       const tempInput = document.createElement("textarea");
       tempInput.value = pixPayload;
@@ -1263,8 +1267,7 @@
         return;
       }
       imgElement.onerror = null;
-      // Gera QR Code com o Payload oficial do Banco Central formatado para o valor correto
-      const totalAmount = selectedTrikeIds.length > 0 ? (selectedTrikeIds.length * PRICE_PER_TRIKE) : PRICE_PER_TRIKE;
+      let totalAmount = selectedTrikeIds.length > 0 ? selectedTrikeIds.reduce((sum, id) => sum + selectedTrikesData[id].price, 0) : PRICE_PER_TRIKE;
       const pixPayload = encodeURIComponent(getOfficialPixPayload(totalAmount));
       imgElement.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=2&data=${pixPayload}`;
     }
@@ -1309,20 +1312,14 @@
       if (!name) return;
 
       if (editId) {
-        // Atualização de carrinho existente
         trikes = trikes.map(t => {
           if (t.id === parseInt(editId, 10)) {
-            return {
-              ...t,
-              name: name,
-              image: tempTrikePhoto || t.image
-            };
+            return { ...t, name: name, image: tempTrikePhoto || t.image };
           }
           return t;
         });
         showToast("Carrinho atualizado!", "success");
       } else {
-        // Criação de novo carrinho
         const newId = trikes.length > 0 ? Math.max(...trikes.map(x => x.id)) + 1 : 1;
         trikes.push({
           id: newId,
@@ -1468,12 +1465,11 @@
 
         saveState();
 
-        // Se o usuário logado mudar a PRÓPRIA senha, desloga e limpa o cache
         if (currentUser.id === id) {
           showToast("Sua senha foi alterada! Limpando cache e saindo...", "info");
           setTimeout(() => {
-            localStorage.clear(); // Limpa todo o cache
-            location.reload(); // Recarrega a página forçando o logout
+            localStorage.clear();
+            location.reload();
           }, 1500);
         } else {
           showToast("Senha do usuário alterada com sucesso!", "success");
@@ -1531,60 +1527,93 @@
     }
 
     // --- 13. RELATÓRIOS & FECHAMENTO DE CAIXA PERPÉTUO ---
+
+    // Toggle e Deletar Histórico
+    function toggleHistoryVisibility() {
+      isHistoryVisible = !isHistoryVisible;
+      const list = document.getElementById('report-history-list');
+      const chevron = document.getElementById('history-chevron');
+      if (isHistoryVisible) {
+        list.classList.remove('hidden');
+        chevron.classList.add('rotate-180');
+      } else {
+        list.classList.add('hidden');
+        chevron.classList.remove('rotate-180');
+      }
+    }
+
+    function deleteHistoryEntry(id) {
+      if (confirm("Tem certeza que deseja APAGAR este fechamento do histórico?")) {
+        registerHistory = registerHistory.filter(h => h.id !== id);
+        saveState();
+        renderReports();
+        showToast("Fechamento apagado com sucesso.", "info");
+      }
+    }
+
     function renderReports() {
       document.getElementById('report-revenue').innerText = `R$ ${dailyRevenue.toFixed(2)}`;
       document.getElementById('report-rentals').innerText = dailyRentals;
 
-      // Discriminação por Pagamento
       document.getElementById('report-pay-pix').innerText = `R$ ${(dailyByPayment.pix || 0).toFixed(2)}`;
       document.getElementById('report-pay-money').innerText = `R$ ${(dailyByPayment.money || 0).toFixed(2)}`;
       document.getElementById('report-pay-card').innerText = `R$ ${(dailyByPayment.card || 0).toFixed(2)}`;
 
+      // 1. GRÁFICO DE CARRINHOS MODERNIZADO
       const breakdown = document.getElementById('report-trikes-breakdown');
       const maxRentals = Math.max(...trikes.map(t => t.totalRentals || 0), 1);
       
-      breakdown.innerHTML = trikes.map(t => {
+      breakdown.innerHTML = trikes.map((t, i) => {
         const count = t.totalRentals || 0;
-        const total = count * PRICE_PER_TRIKE;
-        const totalMins = count * RENTAL_MINUTES;
         const percent = count === 0 ? 0 : (count / maxRentals) * 100;
         return `
-          <div class="mb-4 last:mb-0 bg-slate-950 p-3.5 rounded-2xl border border-slate-800 shadow-inner">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between text-xs mb-2.5 gap-1.5">
-              <span class="font-bold text-slate-200 truncate">${t.name}</span>
-              <div class="text-left sm:text-right flex-shrink-0 flex items-center gap-1.5 bg-slate-900 px-2 py-1 rounded-lg border border-slate-800">
-                <span class="font-black text-cyan-400"><i data-lucide="play" class="w-3 h-3 inline pb-0.5"></i> ${count}x</span>
-                <span class="text-slate-600 font-black">/</span>
-                <span class="text-orange-400 font-black"><i data-lucide="clock" class="w-3 h-3 inline pb-0.5"></i> ${totalMins} min</span>
-                <span class="text-slate-600 font-black">/</span>
-                <span class="text-green-400 font-black">R$ ${total.toFixed(2)}</span>
+          <div class="group relative bg-slate-950/50 p-4 rounded-2xl border border-slate-800/60 hover:border-cyan-500/40 transition-all hover:shadow-[0_4px_20px_rgba(6,182,212,0.15)] overflow-hidden">
+            <div class="flex items-center justify-between mb-3 relative z-10">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center shadow-inner overflow-hidden">
+                  <img src="${t.image || 'https://placehold.co/100x100/0f172a/06b6d4?text=T'}" class="w-full h-full object-cover opacity-90" onerror="this.style.display='none'" />
+                </div>
+                <span class="font-black text-sm text-slate-200 group-hover:text-cyan-300 transition-colors">${t.name}</span>
+              </div>
+              <div class="flex items-center bg-slate-900/80 px-3 py-1 rounded-lg border border-slate-700/50 backdrop-blur-sm shadow-md">
+                <span class="font-black text-cyan-400 text-xs">${count} Corridas</span>
               </div>
             </div>
-            <div class="w-full bg-slate-900 rounded-full h-3 border border-slate-800 overflow-hidden relative shadow-inner">
-              <div class="bg-gradient-to-r from-cyan-600 via-cyan-400 to-blue-500 h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(6,182,212,0.5)]" style="width: ${percent}%;"></div>
+            <div class="w-full bg-slate-900/90 rounded-full h-3.5 border border-slate-800/80 overflow-hidden relative shadow-inner p-0.5">
+              <div class="bg-gradient-to-r from-cyan-600 via-blue-500 to-purple-500 h-full rounded-full transition-all duration-[1500ms] ease-out shadow-[0_0_12px_rgba(6,182,212,0.6)] relative overflow-hidden" style="width: ${percent}%;">
+                <div class="absolute inset-0 bg-white/20 w-[200%] h-full [animation:shimmer_2.5s_infinite_linear]"></div>
+              </div>
             </div>
           </div>
         `;
       }).join('');
 
-      // Histórico de fechamentos
+      // 2. HISTÓRICO DE FECHAMENTOS (COM LIXEIRA PARA O MARRISON)
       const histList = document.getElementById('report-history-list');
       if (registerHistory.length === 0) {
         histList.innerHTML = `<p class="text-xs text-slate-500 text-center py-3">Nenhum fechamento registrado ainda.</p>`;
       } else {
-        histList.innerHTML = registerHistory.slice(-10).reverse().map(h => `
-          <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between text-xs">
+        histList.innerHTML = registerHistory.slice().reverse().map(h => `
+          <div class="p-3.5 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between text-xs transition-all hover:border-slate-700 group">
             <div>
-              <span class="font-bold text-slate-200">${h.date}</span>
-              <p class="text-[10px] text-slate-400">Fechado por: ${h.closedBy} • ${h.rentals} locações</p>
+              <span class="font-bold text-slate-200 text-sm">${h.date}</span>
+              <p class="text-[10px] text-slate-400 mt-1">Fechado por: ${h.closedBy} • ${h.rentals} locações</p>
             </div>
-            <div class="text-right">
-              <span class="font-black text-green-400">R$ ${h.revenue.toFixed(2)}</span>
-              <p class="text-[10px] text-slate-500">PIX: R$ ${(h.pix || 0).toFixed(2)} | Din: R$ ${(h.money || 0).toFixed(2)}</p>
+            <div class="flex items-center gap-3">
+              <div class="text-right">
+                <span class="font-black text-green-400 text-sm block">R$ ${h.revenue.toFixed(2)}</span>
+                <span class="text-[10px] text-slate-500">PIX: R$ ${(h.pix || 0).toFixed(2)}</span>
+              </div>
+              ${currentUser && currentUser.username.toLowerCase() === 'marrison' ? `
+                <button onclick="deleteHistoryEntry(${h.id})" class="p-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-950/40 hover:border-red-500/50 transition-colors shadow-sm" title="Apagar Fechamento">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              ` : ''}
             </div>
           </div>
         `).join('');
       }
+      lucide.createIcons();
     }
 
     function handleCloseRegister() {
@@ -1594,9 +1623,8 @@
       }
 
       const now = new Date();
-      const dateFormatted = `${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+      const dateFormatted = `${now.toLocaleDateString('pt-BR')} às ${now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
 
-      // Salva no histórico perpétuo
       registerHistory.push({
         id: Date.now(),
         date: dateFormatted,
@@ -1650,7 +1678,6 @@
     async function initSupabaseSync() {
       if (supabaseClient) {
         try {
-          // Busca os dados da nuvem
           const { data, error } = await supabaseClient.from('app_data').select('payload').eq('id', 1).single();
           if (data && data.payload) {
             trikes = data.payload.trikes || DEFAULT_TRIKES;
@@ -1660,14 +1687,12 @@
             dailyByPayment = data.payload.dailyByPayment || { pix: 0, money: 0, card: 0 };
             registerHistory = data.payload.registerHistory || [];
             
-            // Força a manter os usuários originais caso a nuvem zere
             if(users.length === 0) users = DEFAULT_USERS;
           }
         } catch(e) {
           console.warn("Sem dados na nuvem ou erro de conexão. Usando local.");
         }
 
-        // Inscreve-se para escutar mudanças em tempo real de outros celulares
         supabaseClient.channel('realtime_sync')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'app_data' }, (payload) => {
             console.log('Atualização recebida da nuvem!', payload);
@@ -1679,7 +1704,6 @@
                dailyByPayment = payload.new.payload.dailyByPayment || dailyByPayment;
                registerHistory = payload.new.payload.registerHistory || registerHistory;
                
-               // === NOVO: DESLOGA SE A SENHA FOI ALTERADA REMOTAMENTE ===
                if (currentUser) {
                  const updatedMe = users.find(u => u.id === currentUser.id);
                  if (!updatedMe || updatedMe.password !== currentUser.password) {
@@ -1689,7 +1713,6 @@
                  }
                }
                
-               // Atualiza a tela atual imediatamente
                if (currentView === 'dashboard') renderDashboard();
                if (currentView === 'rental') renderRentalSelection();
                if (currentView === 'active') renderActiveRentals();
