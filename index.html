@@ -17,8 +17,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Supabase JS Client (Pronto para sincronização) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  
-  <!-- Chart.js para Gráficos Interativos (LINKS ATUALIZADOS E SEGUROS) -->
+  <!-- Chart.js para Gráficos Interativos -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
   
@@ -119,7 +118,7 @@
   </div>
 
   <!-- ========================================== -->
-  <!-- 2. CABEÇALHO & MENU SUPERIOR (APROVADO)   -->
+  <!-- 2. CABEÇALHO & MENU SUPERIOR                -->
   <!-- ========================================== -->
   <div id="app-container" class="hidden flex-1 flex flex-col">
     <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 shadow-xl">
@@ -187,7 +186,6 @@
       <!-- ========================================== -->
       <section id="view-dashboard" class="app-view space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Ação Rápida: Alugar -->
           <div onclick="navigate('rental')" class="bg-gradient-to-br from-cyan-600 to-blue-700 p-6 rounded-3xl cursor-pointer hover:shadow-[0_0_25px_rgba(6,182,212,0.4)] transition-all relative overflow-hidden group">
             <div class="absolute -right-4 -bottom-4 opacity-20 group-hover:scale-110 transition-transform">
               <i data-lucide="play" class="w-36 h-36"></i>
@@ -197,7 +195,6 @@
             <p class="text-cyan-100 font-semibold text-sm">Tempos flexíveis a partir de 10 Min</p>
           </div>
 
-          <!-- Ação Rápida: Na Pista -->
           <div onclick="navigate('active')" class="bg-slate-900 border border-slate-800 hover:border-cyan-500/60 p-6 rounded-3xl cursor-pointer transition-all flex flex-col justify-between">
             <div class="flex items-start justify-between">
               <div>
@@ -215,7 +212,6 @@
           </div>
         </div>
 
-        <!-- Resumo da Frota -->
         <div>
           <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Status dos Drift Trikes</h3>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -258,7 +254,6 @@
           </div>
         </div>
 
-        <!-- Carrossel / Galeria Visual da Frota -->
         <div onclick="navigate('rental')" class="bg-slate-900/60 border border-slate-800 hover:border-cyan-500/60 p-4 sm:p-6 rounded-3xl cursor-pointer transition-all group">
           <div class="flex items-center justify-between mb-4">
             <h4 class="font-bold text-base text-slate-200 uppercase tracking-wider flex items-center gap-2 group-hover:text-cyan-400 transition-colors">
@@ -282,12 +277,10 @@
           </div>
         </div>
 
-        <!-- Grade de Carrinhos Disponíveis -->
         <div id="rental-trikes-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pb-20">
           <!-- Renderizado via JS -->
         </div>
 
-        <!-- Barra Inferior Fixa para Prosseguir ao PIX -->
         <div id="rental-bottom-bar" class="fixed bottom-3 left-0 w-full px-4 z-40 hidden">
           <div class="max-w-5xl mx-auto bg-slate-900/95 backdrop-blur-xl border-2 border-cyan-500/80 p-4 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.3)] flex items-center justify-between">
             <div>
@@ -321,7 +314,6 @@
           <h2 class="text-2xl font-black text-white italic uppercase">Cobrança da Locação</h2>
           <p id="payment-summary-text" class="text-sm text-slate-400 mt-1 mb-3">Tempos Selecionados</p>
 
-          <!-- Seletor de Método de Pagamento -->
           <div class="mb-4">
             <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Forma de Pagamento</label>
             <div class="grid grid-cols-3 gap-2 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
@@ -337,18 +329,14 @@
             </div>
           </div>
 
-          <!-- Valor Destaque -->
           <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl mb-4 flex items-center justify-between">
             <span class="text-xs text-slate-400 font-bold uppercase">Valor a Cobrar</span>
             <span id="payment-total-value" class="text-3xl font-black text-orange-400">R$ 0,00</span>
           </div>
 
-          <!-- Container do Cartaz PIX (Visível quando método for PIX) -->
           <div id="payment-pix-container" class="space-y-4">
-            <!-- Cartaz do QR Code Real (Renderizado diretamente / Alta Definição) -->
             <div class="bg-white p-3 sm:p-4 rounded-3xl shadow-2xl inline-block max-w-[320px] w-full border-4 border-orange-500 text-slate-900 select-none">
               
-              <!-- Moldura do QR Code Real (Sem distorção de proporção) -->
               <div class="rounded-2xl bg-white shadow-inner mb-3 overflow-hidden flex flex-col items-center justify-center p-2 border border-slate-200">
                 <img 
                   id="pix-qr-image"
@@ -359,7 +347,6 @@
                 />
               </div>
 
-              <!-- Dados do Beneficiário -->
               <div class="text-left text-xs space-y-1.5 px-1 font-sans">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-1">
                   <span class="text-slate-400 font-semibold flex items-center gap-1"><i data-lucide="user" class="w-3.5 h-3.5 text-orange-500"></i> Nome</span>
@@ -375,7 +362,6 @@
                 </div>
               </div>
 
-              <!-- Botão para Carregar Foto da Galeria se Quiser Usar Arquivo Local -->
               <div class="mt-3 pt-2 border-t border-slate-100 text-center">
                 <label class="cursor-pointer text-[11px] text-orange-600 hover:text-orange-700 font-bold inline-flex items-center gap-1">
                   <i data-lucide="upload" class="w-3.5 h-3.5"></i> Usar Foto 2 da Minha Galeria
@@ -384,7 +370,6 @@
               </div>
             </div>
 
-            <!-- Chave Copia e Cola Oficial do Banco Central / Celular -->
             <div class="mt-4 bg-slate-950/80 border border-slate-800 p-3.5 rounded-2xl text-left text-xs space-y-2.5">
               <button onclick="copyPixCode()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md">
                 <i data-lucide="copy" class="w-4 h-4"></i>
@@ -401,7 +386,6 @@
             </div>
           </div>
 
-          <!-- Mensagem alternativa para Dinheiro ou Cartão -->
           <div id="payment-alt-container" class="hidden bg-slate-950 border border-slate-800 p-6 rounded-2xl text-center space-y-2">
             <div id="alt-payment-icon" class="w-12 h-12 rounded-2xl mx-auto flex items-center justify-center bg-cyan-500/10 text-cyan-400">
               <i data-lucide="banknote" class="w-6 h-6"></i>
@@ -410,7 +394,6 @@
             <p id="alt-payment-desc" class="text-xs text-slate-400">Receba a quantia em espécie com o cliente antes de liberar os carrinhos para a pista.</p>
           </div>
 
-          <!-- Botão de Liberação de Alta Prioridade -->
           <div class="mt-5 space-y-2.5">
             <button onclick="confirmPaymentAndRelease()" class="w-full bg-gradient-to-r from-green-600 via-emerald-500 to-green-600 hover:from-green-500 hover:to-emerald-400 text-white font-black py-4 rounded-2xl uppercase tracking-wider text-base flex items-center justify-center gap-2.5 shadow-[0_0_25px_rgba(34,197,94,0.4)] transition-all">
               <i data-lucide="check-circle" class="w-6 h-6"></i>
@@ -692,7 +675,6 @@
     const PRICE_PER_TRIKE = 10.00;
 
     // --- 2. DADOS PADRÃO ---
-    // Adicionado totalMinutes e totalRevenue para sincronizar com precisão
     const DEFAULT_TRIKES = [
       { id: 1, name: "Carrinho 1 (Vermelho Xtreme)", image: "https://raw.githubusercontent.com/Marrisonkrlos/maysa/main/carrinho%20(1)", status: "available", endTime: null, totalRentals: 0, totalMinutes: 0, totalRevenue: 0, rentedBy: null },
       { id: 2, name: "Carrinho 2 (Amarelo Graffiti)", image: "https://raw.githubusercontent.com/Marrisonkrlos/maysa/main/carrinho%20(2)", status: "available", endTime: null, totalRentals: 0, totalMinutes: 0, totalRevenue: 0, rentedBy: null },
@@ -725,8 +707,85 @@
     let selectedTrikesData = {}; 
     let tempTrikePhoto = null;
     
-    // Instância do Gráfico Interativo
     let trikesChartInstance = null;
+
+    // --- SISTEMA DE WAKELOCK (Impede tela de desligar) ---
+    let wakeLock = null;
+    async function requestWakeLock() {
+      try {
+        if ('wakeLock' in navigator && !wakeLock) {
+          wakeLock = await navigator.wakeLock.request('screen');
+        }
+      } catch (err) {
+        console.log('Wake Lock erro:', err);
+      }
+    }
+    function releaseWakeLock() {
+      if (wakeLock) {
+        wakeLock.release().then(() => { wakeLock = null; });
+      }
+    }
+
+    // --- SISTEMA AVANÇADO DE SOM PARA ALERTAS ---
+    let globalAudioCtx = null;
+    function initAudio() {
+      if (!globalAudioCtx) {
+        globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (globalAudioCtx.state === 'suspended') {
+        globalAudioCtx.resume();
+      }
+    }
+
+    function playAdvancedSound(type) {
+      try {
+        if(!globalAudioCtx) initAudio();
+        const now = globalAudioCtx.currentTime;
+        const osc = globalAudioCtx.createOscillator();
+        const gain = globalAudioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(globalAudioCtx.destination);
+
+        if (type === '1min') {
+          // Sino suave e longo
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.1);
+          gain.gain.setValueAtTime(0, now);
+          gain.gain.linearRampToValueAtTime(0.5, now + 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+          osc.start(now);
+          osc.stop(now + 0.5);
+          if (navigator.vibrate) navigator.vibrate(300);
+        } else if (type === '10s') {
+          // Bip Duplo Alerta Médio
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(523.25, now); // C5
+          gain.gain.setValueAtTime(0, now);
+          gain.gain.linearRampToValueAtTime(0.4, now + 0.02);
+          gain.gain.linearRampToValueAtTime(0, now + 0.1);
+          
+          gain.gain.setValueAtTime(0, now + 0.15);
+          gain.gain.linearRampToValueAtTime(0.4, now + 0.17);
+          gain.gain.linearRampToValueAtTime(0, now + 0.25);
+          osc.start(now);
+          osc.stop(now + 0.25);
+          if (navigator.vibrate) navigator.vibrate([100, 100, 100]);
+        } else if (type === '5s') {
+          // Bip Radar Curto
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(880, now); // A5
+          gain.gain.setValueAtTime(0, now);
+          gain.gain.linearRampToValueAtTime(0.1, now + 0.01);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+          osc.start(now);
+          osc.stop(now + 0.1);
+          if (navigator.vibrate) navigator.vibrate(50);
+        }
+      } catch (e) {
+        console.log('Audio error:', e);
+      }
+    }
 
     async function saveState() {
       localStorage.setItem('dt_trikes', JSON.stringify(trikes));
@@ -776,33 +835,6 @@
       }, 3000);
     }
 
-    function playBeepAlert(isCritical = false) {
-      if (navigator.vibrate) {
-        if (isCritical) {
-          navigator.vibrate([200, 100, 200, 100, 400]);
-        } else {
-          navigator.vibrate(150);
-        }
-      }
-
-      try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = isCritical ? 'sawtooth' : 'triangle';
-        osc.frequency.setValueAtTime(isCritical ? 587 : 440, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(isCritical ? 880 : 660, audioCtx.currentTime + 0.35);
-        gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.35);
-      } catch (e) {
-        console.log('Audio Context muted:', e);
-      }
-    }
-
     // --- 5. NAVEGAÇÃO ENTRE TELAS ---
     function navigate(viewName) {
       currentView = viewName;
@@ -845,6 +877,7 @@
     // --- 6. AUTENTICAÇÃO ---
     function handleLogin(e) {
       e.preventDefault();
+      initAudio(); // Inicia contexto de audio no primeiro clique de login
       const u = document.getElementById('login-user').value.trim();
       const p = document.getElementById('login-pass').value.trim();
       const errEl = document.getElementById('login-error');
@@ -1077,6 +1110,7 @@
     }
 
     function confirmPaymentAndRelease() {
+      initAudio(); // Garante permissão de audio
       const now = Date.now();
       const operatorName = currentUser ? currentUser.name : 'Operador';
       
@@ -1105,15 +1139,61 @@
       dailyByPayment[currentPaymentMethod] = (dailyByPayment[currentPaymentMethod] || 0) + totalAmount;
       
       saveState();
-      playBeepAlert(false);
-      showToast(`${selectedTrikeIds.length} Carrinho(s) Liberado(s)! [${currentPaymentMethod.toUpperCase()}]`, 'success');
+      showToast(`${selectedTrikeIds.length} Carrinho(s) Liberado(s)!`, 'success');
       
       selectedTrikeIds = [];
       selectedTrikesData = {};
       navigate('active');
     }
 
-    // --- 10. CRONÔMETRO / MONITORAMENTO NA PISTA + EXTENSÕES ---
+    // --- 10. CRONÔMETRO / MONITORAMENTO NA PISTA E ALERTAS ---
+    let alertState = {};
+
+    function checkAlarms(inUse) {
+      const now = Date.now();
+      let hasActive = false;
+
+      inUse.forEach(t => {
+        hasActive = true;
+        if (!alertState[t.id]) {
+          alertState[t.id] = { m1: false, s10: false, lastTick: 0 };
+        }
+        
+        const state = alertState[t.id];
+        const remaining = t.endTime - now;
+
+        // Reset alarmes se tempo for adicionado
+        if (remaining > 61000) state.m1 = false;
+        if (remaining > 11000) state.s10 = false;
+
+        // Alerta 1 Minuto
+        if (remaining <= 60000 && remaining > 58000 && !state.m1) {
+          state.m1 = true;
+          playAdvancedSound('1min');
+          showToast(`⚠️ Carrinho: ${t.name.split(' (')[0]} com 1 Minuto!`, 'info');
+        }
+        // Alerta 10 Segundos
+        if (remaining <= 10000 && remaining > 8000 && !state.s10) {
+          state.s10 = true;
+          playAdvancedSound('10s');
+        }
+        // Alerta últimos 5 Segundos (1 bip por seg)
+        if (remaining <= 5000 && remaining > 0) {
+          if (now - state.lastTick >= 1000) {
+            state.lastTick = now;
+            playAdvancedSound('5s');
+          }
+        }
+      });
+
+      // Se há carrinhos na pista, pede pra não apagar a tela (WakeLock)
+      if (hasActive) {
+         requestWakeLock();
+      } else {
+         releaseWakeLock();
+      }
+    }
+
     function extendRentalTime(trikeId, extraMinutes, extraValue) {
       trikes = trikes.map(t => {
         if (t.id === trikeId) {
@@ -1133,7 +1213,6 @@
       dailyRevenue += extraValue;
       dailyByPayment[currentPaymentMethod] = (dailyByPayment[currentPaymentMethod] || 0) + extraValue;
       saveState();
-      playBeepAlert(false);
       showToast(`+${extraMinutes} Min adicionados! (+R$ ${extraValue.toFixed(2)})`, "success");
       renderActiveRentals();
     }
@@ -1154,7 +1233,7 @@
           <div class="bg-slate-900 border border-slate-800 p-10 rounded-3xl text-center">
             <i data-lucide="timer-off" class="w-12 h-12 text-slate-600 mx-auto mb-2"></i>
             <h4 class="text-base font-bold text-slate-300">Pista vazia no momento</h4>
-            <p class="text-xs text-slate-500 mt-1">Alugue carrinhos para iniciar os cronômetros.</p>
+            <p class="text-xs text-slate-500 mt-1">Alugue carrinhos para iniciar os cronômetros. A tela ficará acesa automaticamente.</p>
           </div>
         `;
         lucide.createIcons();
@@ -1224,6 +1303,8 @@
     function stopRentalEarly(trikeId) {
       trikes = trikes.map(t => {
         if (t.id === trikeId) {
+          // Remove from alarms
+          delete alertState[trikeId];
           return { ...t, status: 'available', endTime: null, rentedBy: null };
         }
         return t;
@@ -1236,9 +1317,12 @@
     setInterval(() => {
       const inUse = trikes.filter(t => t.status === 'in-use');
       if (inUse.length > 0) {
+        checkAlarms(inUse);
         if (currentView === 'active') {
           renderActiveRentals();
         }
+      } else {
+        releaseWakeLock();
       }
     }, 1000);
 
@@ -1596,13 +1680,13 @@
           data: {
             labels: temCorridas ? labels : ['Aguardando locações...'],
             datasets: [{
-              data: temCorridas ? dataVals : [1], // Fictício se não tiver dados
+              data: temCorridas ? dataVals : [1],
               backgroundColor: temCorridas ? [
                 'rgba(6, 182, 212, 0.85)',  // cyan
                 'rgba(249, 115, 22, 0.85)', // orange
                 'rgba(168, 85, 247, 0.85)', // purple
                 'rgba(34, 197, 94, 0.85)'   // green
-              ] : ['rgba(30, 41, 59, 0.5)'], // Cinza escuro pra quando o caixa tá zerado
+              ] : ['rgba(30, 41, 59, 0.5)'],
               borderColor: '#020617', // Espaço preto entre fatias
               borderWidth: temCorridas ? 4 : 0,
               hoverOffset: temCorridas ? 15 : 0
@@ -1622,14 +1706,13 @@
                   font: { family: "'Inter', sans-serif", size: 12, weight: 'bold' },
                   padding: 20,
                   generateLabels: function(chart) {
-                    // Esconde a legenda se o caixa estiver zerado
                     if (!temCorridas) return []; 
                     return Chart.defaults.plugins.legend.labels.generateLabels(chart);
                   }
                 }
               },
               tooltip: {
-                enabled: temCorridas, // Só ativa tooltip quando houver corridas
+                enabled: temCorridas,
                 backgroundColor: 'rgba(2, 6, 23, 0.95)',
                 titleColor: '#38bdf8',
                 bodyColor: '#f8fafc',
@@ -1645,12 +1728,12 @@
                 }
               },
               datalabels: {
-                display: temCorridas, // Só exibe os textos dentro da pizza se tiver corridas
+                display: temCorridas,
                 color: '#ffffff',
                 font: { weight: 'bold', size: 15, family: "'Inter', sans-serif" },
                 formatter: (value) => {
                   if (value === 0) return '';
-                  return value + ' min'; // Aqui ele escreve "10 min", "20 min" na fatia
+                  return value + ' min';
                 },
                 textShadowBlur: 6,
                 textShadowColor: 'rgba(0, 0, 0, 0.8)'
