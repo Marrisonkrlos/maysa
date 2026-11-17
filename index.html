@@ -17,8 +17,11 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Supabase JS Client (Pronto para sincronização) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
   <!-- Chart.js para Gráficos Interativos -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Plugin Chart.js para textos dentro do gráfico -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
   
   <!-- Fonte Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -591,12 +594,12 @@
           </button>
         </div>
 
-        <!-- Estatísticas por Carrinho (GRÁFICO COM CHART.JS - INTERATIVO E LEGAL) -->
+        <!-- Estatísticas por Carrinho (GRÁFICO DE PIZZA ESTILIZADO) -->
         <div class="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl">
-          <h3 class="font-bold text-base text-slate-200 mb-4 flex items-center gap-2">
-            <i data-lucide="bar-chart-2" class="w-5 h-5 text-cyan-400"></i> Desempenho por Carrinho
+          <h3 class="font-bold text-base text-slate-200 mb-6 flex items-center gap-2">
+            <i data-lucide="pie-chart" class="w-5 h-5 text-cyan-400"></i> Desempenho por Carrinho
           </h3>
-          <div class="relative h-64 w-full">
+          <div class="relative w-full flex justify-center" style="height: 320px;">
             <canvas id="trikesChart"></canvas>
           </div>
         </div>
@@ -690,43 +693,12 @@
     const PRICE_PER_TRIKE = 10.00;
 
     // --- 2. DADOS PADRÃO ---
+    // Adicionado totalMinutes e totalRevenue para sincronizar com precisão
     const DEFAULT_TRIKES = [
-      { 
-        id: 1, 
-        name: "Carrinho 1 (Vermelho Xtreme)", 
-        image: "https://raw.githubusercontent.com/Marrisonkrlos/maysa/main/carrinho%20(1)",
-        status: "available", 
-        endTime: null,
-        totalRentals: 0,
-        rentedBy: null
-      },
-      { 
-        id: 2, 
-        name: "Carrinho 2 (Amarelo Graffiti)", 
-        image: "https://raw.githubusercontent.com/Marrisonkrlos/maysa/main/carrinho%20(2)", 
-        status: "available", 
-        endTime: null,
-        totalRentals: 0,
-        rentedBy: null 
-      },
-      { 
-        id: 3, 
-        name: "Carrinho 3 (Azul Camuflado)", 
-        image: "https://raw.githubusercontent.com/Marrisonkrlos/maysa/main/carrinho%20(3)", 
-        status: "available", 
-        endTime: null,
-        totalRentals: 0,
-        rentedBy: null 
-      },
-      { 
-        id: 4, 
-        name: "Carrinho 4 (Fogo & Gelo)", 
-        image: "https://raw.githubusercontent.com/Marrisonkrlos/maysa/main/carrinho%20(4)", 
-        status: "available", 
-        endTime: null,
-        totalRentals: 0,
-        rentedBy: null 
-      }
+      { id: 1, name: "Carrinho 1 (Vermelho Xtreme)", image: "https://raw.githubusercontent.com/Marrisonkrlos/maysa/main/carrinho%20(1)", status: "available", endTime: null, totalRentals: 0, totalMinutes: 0, totalRevenue: 0, rentedBy: null },
+      { id: 2, name: "Carrinho 2 (Amarelo Graffiti)", image: "https://raw.githubusercontent.com/Marrisonkrlos/maysa/main/carrinho%20(2)", status: "available", endTime: null, totalRentals: 0, totalMinutes: 0, totalRevenue: 0, rentedBy: null },
+      { id: 3, name: "Carrinho 3 (Azul Camuflado)", image: "https://raw.githubusercontent.com/Marrisonkrlos/maysa/main/carrinho%20(3)", status: "available", endTime: null, totalRentals: 0, totalMinutes: 0, totalRevenue: 0, rentedBy: null },
+      { id: 4, name: "Carrinho 4 (Fogo & Gelo)", image: "https://raw.githubusercontent.com/Marrisonkrlos/maysa/main/carrinho%20(4)", status: "available", endTime: null, totalRentals: 0, totalMinutes: 0, totalRevenue: 0, rentedBy: null }
     ];
 
     const DEFAULT_USERS = [
@@ -1113,12 +1085,16 @@
 
       trikes = trikes.map(t => {
         if (selectedTrikeIds.includes(t.id)) {
-          const timeMs = selectedTrikesData[t.id].time * 60 * 1000;
+          const timeMin = selectedTrikesData[t.id].time;
+          const price = selectedTrikesData[t.id].price;
+          const timeMs = timeMin * 60 * 1000;
           return {
             ...t,
             status: 'in-use',
             endTime: now + timeMs,
             totalRentals: (t.totalRentals || 0) + 1,
+            totalMinutes: (t.totalMinutes || 0) + timeMin,
+            totalRevenue: (t.totalRevenue || 0) + price,
             rentedBy: operatorName
           };
         }
@@ -1147,7 +1123,9 @@
           return {
             ...t,
             status: 'in-use',
-            endTime: baseTime + (extraMinutes * 60 * 1000)
+            endTime: baseTime + (extraMinutes * 60 * 1000),
+            totalMinutes: (t.totalMinutes || 0) + extraMinutes,
+            totalRevenue: (t.totalRevenue || 0) + extraValue
           };
         }
         return t;
@@ -1367,7 +1345,9 @@
           image: tempTrikePhoto || "https://placehold.co/400x300/020617/06b6d4?text=Novo+Trike",
           status: 'available',
           endTime: null,
-          totalRentals: 0
+          totalRentals: 0,
+          totalMinutes: 0,
+          totalRevenue: 0
         });
         showToast("Novo carrinho cadastrado!", "success");
       }
@@ -1586,106 +1566,107 @@
       document.getElementById('report-pay-money').innerText = `R$ ${(dailyByPayment.money || 0).toFixed(2)}`;
       document.getElementById('report-pay-card').innerText = `R$ ${(dailyByPayment.card || 0).toFixed(2)}`;
 
-      // --- GRÁFICO CHART.JS INTERATIVO ---
+      // --- GRÁFICO CHART.JS DE PIZZA ESTILIZADO COM DADOS SINCRONIZADOS ---
       const ctx = document.getElementById('trikesChart');
       if (ctx) {
-        // Extrai apenas o nome simples do carrinho para a legenda caber legal
-        const labels = trikes.map(t => t.name.split(' (')[0]); 
-        const dataVals = trikes.map(t => t.totalRentals || 0);
+        // Legenda mostra o Nome e o Valor Arrecadado
+        const labels = trikes.map(t => {
+           const name = t.name.split(' (')[0];
+           const money = (t.totalRevenue || 0).toFixed(2);
+           return `${name}: R$ ${money}`;
+        }); 
         
+        // Fatias do gráfico baseadas nos minutos
+        const dataVals = trikes.map(t => t.totalMinutes || 0);
+        
+        // Só renderiza a pizza se houver corridas para evitar erro visual no gráfico zerado
+        const temCorridas = dataVals.some(v => v > 0);
+
         if (trikesChartInstance) {
           trikesChartInstance.destroy();
         }
 
-        trikesChartInstance = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: 'Corridas Realizadas',
-              data: dataVals,
-              backgroundColor: [
-                'rgba(6, 182, 212, 0.7)',  // cyan
-                'rgba(249, 115, 22, 0.7)', // orange
-                'rgba(168, 85, 247, 0.7)', // purple
-                'rgba(34, 197, 94, 0.7)'   // green
-              ],
-              borderColor: [
-                'rgba(6, 182, 212, 1)',
-                'rgba(249, 115, 22, 1)',
-                'rgba(168, 85, 247, 1)',
-                'rgba(34, 197, 94, 1)'
-              ],
-              borderWidth: 2,
-              borderRadius: 8,
-              hoverBackgroundColor: [
-                'rgba(6, 182, 212, 1)',
-                'rgba(249, 115, 22, 1)',
-                'rgba(168, 85, 247, 1)',
-                'rgba(34, 197, 94, 1)'
-              ]
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                display: false
-              },
-              tooltip: {
-                backgroundColor: 'rgba(2, 6, 23, 0.95)',
-                titleColor: '#38bdf8',
-                bodyColor: '#f8fafc',
-                titleFont: { size: 13, family: "'Inter', sans-serif" },
-                bodyFont: { size: 12, font: 'bold', family: "'Inter', sans-serif" },
-                borderColor: 'rgba(56, 189, 248, 0.4)',
-                borderWidth: 1,
-                padding: 12,
-                displayColors: false,
-                callbacks: {
-                  label: function(context) {
-                    const count = context.raw;
-                    // Valor estimado base (como você tem preços dinâmicos, essa é uma média visual)
-                    const estimativaValor = (count * PRICE_PER_TRIKE).toFixed(2);
-                    return count + ' corridas (R$ ' + estimativaValor + ')';
-                  }
-                }
-              }
+        if (temCorridas) {
+          Chart.register(ChartDataLabels);
+          trikesChartInstance = new Chart(ctx, {
+            type: 'pie',
+            data: {
+              labels: labels,
+              datasets: [{
+                data: dataVals,
+                backgroundColor: [
+                  'rgba(6, 182, 212, 0.85)',  // cyan
+                  'rgba(249, 115, 22, 0.85)', // orange
+                  'rgba(168, 85, 247, 0.85)', // purple
+                  'rgba(34, 197, 94, 0.85)'   // green
+                ],
+                borderColor: '#020617', // Cor de fundo do app para dar espaçamento nas fatias
+                borderWidth: 4,
+                hoverOffset: 15
+              }]
             },
-            scales: {
-              y: {
-                beginAtZero: true,
-                grid: {
-                  color: 'rgba(30, 41, 59, 0.6)',
-                  drawBorder: false
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              layout: {
+                padding: { bottom: 20 }
+              },
+              plugins: {
+                legend: {
+                  position: 'bottom',
+                  labels: {
+                    color: '#cbd5e1',
+                    font: { family: "'Inter', sans-serif", size: 12, weight: 'bold' },
+                    padding: 20
+                  }
                 },
-                ticks: {
-                  color: '#94a3b8',
-                  stepSize: 1,
-                  font: { family: "'Inter', sans-serif" }
+                tooltip: {
+                  backgroundColor: 'rgba(2, 6, 23, 0.95)',
+                  titleColor: '#38bdf8',
+                  bodyColor: '#f8fafc',
+                  padding: 12,
+                  borderColor: 'rgba(56, 189, 248, 0.4)',
+                  borderWidth: 1,
+                  titleFont: { size: 13, family: "'Inter', sans-serif" },
+                  bodyFont: { size: 13, font: 'bold', family: "'Inter', sans-serif" },
+                  callbacks: {
+                    label: function(context) {
+                       return ` ${context.raw} Minutos na pista`;
+                    }
+                  }
+                },
+                datalabels: {
+                  color: '#ffffff',
+                  font: { weight: 'bold', size: 15, family: "'Inter', sans-serif" },
+                  formatter: (value) => {
+                    if (value === 0) return '';
+                    return value + ' min'; // Aqui aparece os minutos dentro das fatias
+                  },
+                  textShadowBlur: 6,
+                  textShadowColor: 'rgba(0, 0, 0, 0.8)'
                 }
               },
-              x: {
-                grid: {
-                  display: false
-                },
-                ticks: {
-                  color: '#cbd5e1',
-                  font: {
-                    size: 11,
-                    weight: 'bold',
-                    family: "'Inter', sans-serif"
-                  }
-                }
+              animation: {
+                animateScale: true,
+                animateRotate: true,
+                duration: 1500,
+                easing: 'easeOutQuart'
               }
-            },
-            animation: {
-              duration: 1200,
-              easing: 'easeOutBounce' // Dá um efeitinho elástico legal ao carregar
             }
-          }
-        });
+          });
+        } else {
+           // Se não houver corridas ainda, destroi e não cria para evitar o fallback cinza
+           if (trikesChartInstance) trikesChartInstance.destroy();
+           const parent = ctx.parentElement;
+           const currentP = parent.querySelector('.empty-chart-msg');
+           if(!currentP){
+              const p = document.createElement('p');
+              p.className = 'empty-chart-msg absolute inset-0 flex items-center justify-center text-slate-500 text-sm font-bold flex-col gap-2';
+              p.innerHTML = '<i data-lucide="pie-chart" class="w-10 h-10 opacity-30"></i> Nenhum dado para o gráfico ainda.';
+              parent.appendChild(p);
+              lucide.createIcons();
+           }
+        }
       }
 
       // Renderiza Histórico dentro do Modal
@@ -1741,9 +1722,17 @@
       dailyRevenue = 0;
       dailyRentals = 0;
       dailyByPayment = { pix: 0, money: 0, card: 0 };
-      trikes = trikes.map(t => ({ ...t, totalRentals: 0 }));
+      // Zera tudo no carrinho
+      trikes = trikes.map(t => ({ ...t, totalRentals: 0, totalMinutes: 0, totalRevenue: 0 }));
       
       saveState();
+      
+      // Remove msg de empty chart se tiver
+      const ctx = document.getElementById('trikesChart');
+      if (ctx && ctx.parentElement.querySelector('.empty-chart-msg')) {
+        ctx.parentElement.querySelector('.empty-chart-msg').remove();
+      }
+      
       renderReports();
     }
 
@@ -1795,7 +1784,6 @@
 
         supabaseClient.channel('realtime_sync')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'app_data' }, (payload) => {
-            console.log('Atualização recebida da nuvem!', payload);
             if (payload.new && payload.new.payload) {
                trikes = payload.new.payload.trikes || trikes;
                users = payload.new.payload.users || users;
