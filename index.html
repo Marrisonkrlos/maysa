@@ -1836,11 +1836,15 @@
       }
 
       const ctx = document.getElementById('historyDetailChartCanvas');
+      const chartContainer = ctx.parentElement;
+      
       if (historyDetailChartInstance) {
         historyDetailChartInstance.destroy();
       }
 
       if (shiftTrikes.length > 0) {
+        chartContainer.style.display = 'flex';
+        
         const labels = shiftTrikes.map(t => t.name.split(' (')[0]);
         const dataVals = shiftTrikes.map(t => t.revenue); 
 
@@ -1876,11 +1880,7 @@
           }
         });
       } else {
-         historyDetailChartInstance = new Chart(ctx, {
-          type: 'pie',
-          data: { labels: ['Sem Dados'], datasets: [{ data: [1], backgroundColor: ['#1e293b'] }] },
-          options: { plugins: { legend: { display: false }, datalabels: { display: false } } }
-        });
+         chartContainer.style.display = 'none';
       }
 
       lucide.createIcons();
