@@ -901,8 +901,8 @@
       document.querySelectorAll('.app-view').forEach(el => el.classList.add('hidden'));
 
       document.querySelectorAll('.nav-item').forEach(btn => {
-        btn.classList.remove('text-cyan-400', 'bg-slate-800', 'shadow-inner');
-        btn.classList.add('text-slate-400');
+        btn.classList.remove('text-cyan-400', 'bg-slate-800', 'shadow-[0_0_15px_rgba(34,211,238,0.25)]', 'border-cyan-500/30');
+        btn.classList.add('text-slate-400', 'border-transparent');
       });
 
       const targetView = document.getElementById(`view-${viewName}`);
@@ -910,8 +910,8 @@
 
       const activeNav = document.getElementById(`nav-${viewName}`);
       if (activeNav) {
-        activeNav.classList.remove('text-slate-400');
-        activeNav.classList.add('text-cyan-400', 'bg-slate-800', 'shadow-inner');
+        activeNav.classList.remove('text-slate-400', 'border-transparent');
+        activeNav.classList.add('text-cyan-400', 'bg-slate-800', 'shadow-[0_0_15px_rgba(34,211,238,0.25)]', 'border-cyan-500/30');
       }
 
       if (viewName === 'dashboard') renderDashboard();
