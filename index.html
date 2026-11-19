@@ -653,6 +653,37 @@
         </div>
       </div>
 
+      <!-- Modal: Detalhes do Fechamento Específico -->
+      <div id="modal-history-detail" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-sm transition-opacity">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl w-full max-w-md p-6 relative flex flex-col max-h-[90vh]">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-lg text-slate-200 flex items-center gap-2">
+              <i data-lucide="pie-chart" class="w-6 h-6 text-cyan-400"></i> Detalhes do Caixa
+            </h3>
+            <button onclick="closeModal('modal-history-detail')" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-xl transition-colors">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+          
+          <div class="overflow-y-auto no-scrollbar flex-1 pr-1 space-y-4">
+            <div id="history-detail-info" class="text-sm text-slate-300 space-y-1 bg-slate-950 p-4 rounded-xl border border-slate-800">
+               <!-- Injetado via JS -->
+            </div>
+            
+            <div class="relative w-full flex justify-center" style="height: 250px;">
+              <canvas id="historyDetailChartCanvas"></canvas>
+            </div>
+
+            <div>
+              <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Desempenho dos Carrinhos</h4>
+              <div id="history-detail-trikes" class="space-y-2">
+                 <!-- Injetado via JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 
@@ -676,7 +707,6 @@
     const PRICE_PER_TRIKE = 10.00;
 
     // --- 2. DADOS PADRÃO ---
-    // Adicionado totalMinutes e totalRevenue para sincronizar com precisão
     const DEFAULT_TRIKES = [
       { id: 1, name: "Carrinho 1 (Vermelho Xtreme)", image: "https://raw.githubusercontent.com/Marrisonkrlos/maysa/main/carrinho%20(1)", status: "available", endTime: null, totalRentals: 0, totalMinutes: 0, totalRevenue: 0, rentedBy: null },
       { id: 2, name: "Carrinho 2 (Amarelo Graffiti)", image: "https://raw.githubusercontent.com/Marrisonkrlos/maysa/main/carrinho%20(2)", status: "available", endTime: null, totalRentals: 0, totalMinutes: 0, totalRevenue: 0, rentedBy: null },
@@ -749,7 +779,6 @@
         gain.connect(globalAudioCtx.destination);
 
         if (type === '1min') {
-          // Sino suave e longo
           osc.type = 'sine';
           osc.frequency.setValueAtTime(440, now);
           osc.frequency.exponentialRampToValueAtTime(880, now + 0.1);
@@ -760,9 +789,8 @@
           osc.stop(now + 0.5);
           if (navigator.vibrate) navigator.vibrate(300);
         } else if (type === '10s') {
-          // Bip Duplo Alerta Médio
           osc.type = 'triangle';
-          osc.frequency.setValueAtTime(523.25, now); // C5
+          osc.frequency.setValueAtTime(523.25, now);
           gain.gain.setValueAtTime(0, now);
           gain.gain.linearRampToValueAtTime(0.4, now + 0.02);
           gain.gain.linearRampToValueAtTime(0, now + 0.1);
@@ -774,9 +802,8 @@
           osc.stop(now + 0.25);
           if (navigator.vibrate) navigator.vibrate([100, 100, 100]);
         } else if (type === '5s') {
-          // Bip Radar Curto
           osc.type = 'square';
-          osc.frequency.setValueAtTime(880, now); // A5
+          osc.frequency.setValueAtTime(880, now);
           gain.gain.setValueAtTime(0, now);
           gain.gain.linearRampToValueAtTime(0.1, now + 0.01);
           gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
@@ -815,7 +842,6 @@
       }
     }
 
-    // --- 4. SISTEMA DE TOAST CUSTOMIZADO & ALERTAS ---
     function showToast(msg, type = 'info') {
       const toast = document.getElementById('toast');
       const msgEl = document.getElementById('toast-message');
@@ -837,7 +863,6 @@
       }, 3000);
     }
 
-    // --- 5. NAVEGAÇÃO ENTRE TELAS ---
     function navigate(viewName) {
       currentView = viewName;
       
@@ -867,7 +892,6 @@
       lucide.createIcons();
     }
 
-    // --- CONTROLE DOS MODAIS ---
     function openModal(id) {
       document.getElementById(id).classList.remove('hidden');
     }
@@ -876,10 +900,9 @@
       document.getElementById(id).classList.add('hidden');
     }
 
-    // --- 6. AUTENTICAÇÃO ---
     function handleLogin(e) {
       e.preventDefault();
-      initAudio(); // Inicia contexto de audio no primeiro clique de login
+      initAudio();
       const u = document.getElementById('login-user').value.trim();
       const p = document.getElementById('login-pass').value.trim();
       const errEl = document.getElementById('login-error');
@@ -933,7 +956,6 @@
       navigate('dashboard');
     }
 
-    // --- 7. TELA DASHBOARD ---
     function renderDashboard() {
       const avail = trikes.filter(t => t.status === 'available').length;
       const inUse = trikes.filter(t => t.status === 'in-use').length;
@@ -965,7 +987,6 @@
       lucide.createIcons();
     }
 
-    // --- 8. TELA: SELEÇÃO PARA ALUGUEL (DINÂMICO) ---
     function updateTrikeTime(id, time, price) {
       if (selectedTrikesData[id]) {
         selectedTrikesData[id] = { time, price };
@@ -1050,7 +1071,6 @@
       renderRentalSelection();
     }
 
-    // --- 9. TELA DE PAGAMENTO COM SELETOR DE MÉTODO ---
     function selectPaymentMethod(method) {
       currentPaymentMethod = method;
       const pixBtn = document.getElementById('pay-method-pix');
@@ -1112,7 +1132,7 @@
     }
 
     function confirmPaymentAndRelease() {
-      initAudio(); // Garante permissão de audio
+      initAudio();
       const now = Date.now();
       const operatorName = currentUser ? currentUser.name : 'Operador';
       
@@ -1148,7 +1168,6 @@
       navigate('active');
     }
 
-    // --- 10. CRONÔMETRO / MONITORAMENTO NA PISTA E ALERTAS ---
     let alertState = {};
 
     function checkAlarms(inUse) {
@@ -1164,22 +1183,18 @@
         const state = alertState[t.id];
         const remaining = t.endTime - now;
 
-        // Reset alarmes se tempo for adicionado
         if (remaining > 61000) state.m1 = false;
         if (remaining > 11000) state.s10 = false;
 
-        // Alerta 1 Minuto
         if (remaining <= 60000 && remaining > 58000 && !state.m1) {
           state.m1 = true;
           playAdvancedSound('1min');
           showToast(`⚠️ Carrinho: ${t.name.split(' (')[0]} com 1 Minuto!`, 'info');
         }
-        // Alerta 10 Segundos
         if (remaining <= 10000 && remaining > 8000 && !state.s10) {
           state.s10 = true;
           playAdvancedSound('10s');
         }
-        // Alerta últimos 5 Segundos (1 bip por seg)
         if (remaining <= 5000 && remaining > 0) {
           if (now - state.lastTick >= 1000) {
             state.lastTick = now;
@@ -1188,7 +1203,6 @@
         }
       });
 
-      // Se há carrinhos na pista, pede pra não apagar a tela (WakeLock)
       if (hasActive) {
          requestWakeLock();
       } else {
@@ -1305,7 +1319,6 @@
     function stopRentalEarly(trikeId) {
       trikes = trikes.map(t => {
         if (t.id === trikeId) {
-          // Remove from alarms
           delete alertState[trikeId];
           return { ...t, status: 'available', endTime: null, rentedBy: null };
         }
@@ -1390,7 +1403,6 @@
       }
     }
 
-    // --- 11. GERENCIAR FROTA (CADASTRAR/EDITAR CARRINHOS) ---
     function previewTrikePhoto(event) {
       const file = event.target.files[0];
       if (file) {
@@ -1518,7 +1530,6 @@
       lucide.createIcons();
     }
 
-    // --- 12. GERENCIAR USUÁRIOS (EQUIPE & PRIVILÉGIOS) ---
     function handleCreateUser(e) {
       e.preventDefault();
       const name = document.getElementById('new-user-name').value.trim();
@@ -1631,8 +1642,6 @@
       lucide.createIcons();
     }
 
-    // --- 13. RELATÓRIOS & FECHAMENTO DE CAIXA PERPÉTUO ---
-
     function deleteHistoryEntry(id) {
       if (confirm("Tem certeza que deseja APAGAR este fechamento do histórico?")) {
         registerHistory = registerHistory.filter(h => h.id !== id);
@@ -1646,15 +1655,12 @@
       document.getElementById('report-revenue').innerText = `R$ ${dailyRevenue.toFixed(2)}`;
       document.getElementById('report-rentals').innerText = dailyRentals;
 
-      // Popula dados nos modais
       document.getElementById('report-pay-pix').innerText = `R$ ${(dailyByPayment.pix || 0).toFixed(2)}`;
       document.getElementById('report-pay-money').innerText = `R$ ${(dailyByPayment.money || 0).toFixed(2)}`;
       document.getElementById('report-pay-card').innerText = `R$ ${(dailyByPayment.card || 0).toFixed(2)}`;
 
-      // --- GRÁFICO CHART.JS DE PIZZA (CORRIGIDO PARA SEMPRE RENDERIZAR) ---
       const ctx = document.getElementById('trikesChart');
       if (ctx) {
-        
         const labels = trikes.map(t => {
            const name = t.name.split(' (')[0];
            const money = (t.totalRevenue || 0).toFixed(2);
@@ -1662,7 +1668,6 @@
         }); 
         
         const dataVals = trikes.map(t => t.totalMinutes || 0);
-        
         const temCorridas = dataVals.some(v => v > 0);
 
         if (trikesChartInstance) {
@@ -1680,10 +1685,10 @@
             datasets: [{
               data: temCorridas ? dataVals : [1],
               backgroundColor: temCorridas ? [
-                'rgba(6, 182, 212, 0.85)',  // cyan
-                'rgba(249, 115, 22, 0.85)', // orange
-                'rgba(168, 85, 247, 0.85)', // purple
-                'rgba(34, 197, 94, 0.85)'   // green
+                'rgba(6, 182, 212, 0.85)',
+                'rgba(249, 115, 22, 0.85)',
+                'rgba(168, 85, 247, 0.85)',
+                'rgba(34, 197, 94, 0.85)'
               ] : ['rgba(30, 41, 59, 0.5)'],
               borderColor: '#020617', 
               borderWidth: temCorridas ? 4 : 0,
@@ -1693,18 +1698,12 @@
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            layout: {
-              padding: { bottom: 20 }
-            },
+            layout: { padding: { bottom: 20 } },
             plugins: {
               legend: {
                 display: temCorridas,
                 position: 'bottom',
-                labels: {
-                  color: '#cbd5e1',
-                  font: { family: "'Inter', sans-serif", size: 12, weight: 'bold' },
-                  padding: 20
-                }
+                labels: { color: '#cbd5e1', font: { family: "'Inter', sans-serif", size: 12, weight: 'bold' }, padding: 20 }
               },
               tooltip: {
                 enabled: temCorridas,
@@ -1716,35 +1715,22 @@
                 borderWidth: 1,
                 titleFont: { size: 13, family: "'Inter', sans-serif" },
                 bodyFont: { size: 13, font: 'bold', family: "'Inter', sans-serif" },
-                callbacks: {
-                  label: function(context) {
-                     return ` ${context.raw} Minutos na pista`;
-                  }
-                }
+                callbacks: { label: function(context) { return ` ${context.raw} Minutos na pista`; } }
               },
               datalabels: {
                 display: temCorridas,
                 color: '#ffffff',
                 font: { weight: 'bold', size: 15, family: "'Inter', sans-serif" },
-                formatter: (value) => {
-                  if (value === 0) return '';
-                  return value + ' min';
-                },
+                formatter: (value) => { if (value === 0) return ''; return value + ' min'; },
                 textShadowBlur: 6,
                 textShadowColor: 'rgba(0, 0, 0, 0.8)'
               }
             },
-            animation: {
-              animateScale: true,
-              animateRotate: true,
-              duration: 1500,
-              easing: 'easeOutQuart'
-            }
+            animation: { animateScale: true, animateRotate: true, duration: 1500, easing: 'easeOutQuart' }
           }
         });
       }
 
-      // Renderiza Histórico dentro do Modal
       const histList = document.getElementById('report-history-list');
       if (registerHistory.length === 0) {
         histList.innerHTML = `<p class="text-xs text-slate-500 text-center py-3">Nenhum fechamento registrado.</p>`;
@@ -1760,6 +1746,9 @@
                 <span class="font-black text-green-400 text-sm block">R$ ${h.revenue.toFixed(2)}</span>
                 <span class="text-[10px] text-slate-500">PIX: R$ ${(h.pix || 0).toFixed(2)}</span>
               </div>
+              <button onclick="showHistoryDetails(${h.id})" class="p-2 bg-cyan-900/30 border border-cyan-700/50 rounded-lg text-cyan-400 hover:bg-cyan-500 hover:text-slate-900 transition-colors shadow-sm" title="Ver Detalhes do Fechamento">
+                <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+              </button>
               ${currentUser && currentUser.username.toLowerCase() === 'marrison' ? `
                 <button onclick="deleteHistoryEntry(${h.id})" class="p-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-950/40 hover:border-red-500/50 transition-colors shadow-sm" title="Apagar Fechamento">
                   <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -1781,6 +1770,16 @@
       const now = new Date();
       const dateFormatted = `${now.toLocaleDateString('pt-BR')} às ${now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
 
+      // NOVA LÓGICA: Salva a "fotografia" do desempenho dos carrinhos antes de zerar o caixa.
+      const shiftTrikes = trikes
+        .filter(t => t.totalRentals > 0)
+        .map(t => ({
+          name: t.name,
+          rentals: t.totalRentals || 0,
+          minutes: t.totalMinutes || 0,
+          revenue: t.totalRevenue || 0
+        }));
+
       registerHistory.push({
         id: Date.now(),
         date: dateFormatted,
@@ -1789,7 +1788,8 @@
         pix: dailyByPayment.pix || 0,
         money: dailyByPayment.money || 0,
         card: dailyByPayment.card || 0,
-        closedBy: currentUser ? currentUser.name : 'Marrison Carlos'
+        closedBy: currentUser ? currentUser.name : 'Marrison Carlos',
+        shiftTrikes: shiftTrikes // Vinculado a este fechamento
       });
 
       showToast(`Caixa fechado! Total: R$ ${dailyRevenue.toFixed(2)} (${dailyRentals} corridas)`, "success");
@@ -1797,12 +1797,94 @@
       dailyRevenue = 0;
       dailyRentals = 0;
       dailyByPayment = { pix: 0, money: 0, card: 0 };
-      // Zera tudo no carrinho
+      
       trikes = trikes.map(t => ({ ...t, totalRentals: 0, totalMinutes: 0, totalRevenue: 0 }));
       
       saveState();
-      
       renderReports();
+    }
+
+    // --- NOVA FUNÇÃO: Mostrar Detalhes Específicos e Gráfico de um Fechamento Histórico ---
+    let historyDetailChartInstance = null;
+
+    function showHistoryDetails(historyId) {
+      const h = registerHistory.find(x => x.id === historyId);
+      if (!h) return;
+
+      document.getElementById('history-detail-info').innerHTML = `
+        <p><strong class="text-white">Data do Fechamento:</strong> ${h.date}</p>
+        <p><strong class="text-white">Operador:</strong> ${h.closedBy}</p>
+        <p><strong class="text-white">Total Arrecadado:</strong> <span class="text-green-400 font-bold">R$ ${h.revenue.toFixed(2)}</span></p>
+        <p><strong class="text-white">Corridas Liberadas:</strong> ${h.rentals}</p>
+      `;
+
+      const trikesList = document.getElementById('history-detail-trikes');
+      const shiftTrikes = h.shiftTrikes || []; 
+      
+      if (shiftTrikes.length === 0) {
+         trikesList.innerHTML = `<p class="text-xs text-slate-500 italic text-center py-2">Dados detalhados dos carrinhos indisponíveis (fechamento muito antigo).</p>`;
+      } else {
+         trikesList.innerHTML = shiftTrikes.map(t => `
+           <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex justify-between items-center">
+             <span class="text-sm font-bold text-slate-200">${t.name.split(' (')[0]}</span>
+             <div class="text-right text-[11px] text-slate-400">
+               <span class="block text-cyan-400 font-black text-sm">R$ ${t.revenue.toFixed(2)}</span>
+               <span>${t.minutes} min • ${t.rentals} loc.</span>
+             </div>
+           </div>
+         `).join('');
+      }
+
+      const ctx = document.getElementById('historyDetailChartCanvas');
+      if (historyDetailChartInstance) {
+        historyDetailChartInstance.destroy();
+      }
+
+      if (shiftTrikes.length > 0) {
+        const labels = shiftTrikes.map(t => t.name.split(' (')[0]);
+        const dataVals = shiftTrikes.map(t => t.revenue); 
+
+        historyDetailChartInstance = new Chart(ctx, {
+          type: 'pie',
+          data: {
+            labels: labels,
+            datasets: [{
+              data: dataVals,
+              backgroundColor: [
+                'rgba(6, 182, 212, 0.85)',
+                'rgba(249, 115, 22, 0.85)',
+                'rgba(168, 85, 247, 0.85)',
+                'rgba(34, 197, 94, 0.85)',
+                'rgba(239, 68, 68, 0.85)'
+              ],
+              borderColor: '#020617', 
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'bottom', labels: { color: '#cbd5e1', font: { family: "'Inter', sans-serif", size: 11 } } },
+              datalabels: {
+                display: true,
+                color: '#ffffff',
+                font: { weight: 'bold', size: 12, family: "'Inter', sans-serif" },
+                formatter: (value) => 'R$ ' + value.toFixed(2)
+              }
+            }
+          }
+        });
+      } else {
+         historyDetailChartInstance = new Chart(ctx, {
+          type: 'pie',
+          data: { labels: ['Sem Dados'], datasets: [{ data: [1], backgroundColor: ['#1e293b'] }] },
+          options: { plugins: { legend: { display: false }, datalabels: { display: false } } }
+        });
+      }
+
+      lucide.createIcons();
+      openModal('modal-history-detail');
     }
 
     // --- 14. SINCRONIZAÇÃO EM TEMPO REAL ENTRE ABAS ---
