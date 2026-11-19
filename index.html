@@ -59,50 +59,17 @@
       transform: scale(0.97);
     }
   
-      button.nav-item {
-        border-color: #1e293b;
+      .bg-arena-pattern {
+        background-color: #050814;
+        background-image: repeating-linear-gradient(-45deg, rgba(255,255,255,0.015) 0, rgba(255,255,255,0.015) 2px, transparent 2px, transparent 12px);
       }
-      button.nav-item .nav-text {
-        color: #64748b;
-      }
-      
-      button.nav-item.is-active.nav-cyan {
-        border-color: #06b6d4; background-color: rgba(6, 182, 212, 0.05);
-      }
-      button.nav-item.is-active.nav-cyan .nav-text {
-        color: #22d3ee;
-      }
-      
-      button.nav-item.is-active.nav-orange {
-        border-color: #f97316; background-color: rgba(249, 115, 22, 0.05);
-      }
-      button.nav-item.is-active.nav-orange .nav-text {
-        color: #fb923c;
-      }
-      
-      button.nav-item.is-active.nav-purple {
-        border-color: #a855f7; background-color: rgba(168, 85, 247, 0.05);
-      }
-      button.nav-item.is-active.nav-purple .nav-text {
-        color: #c084fc;
-      }
-      
-      button.nav-item.is-active.nav-green {
-        border-color: #22c55e; background-color: rgba(34, 197, 94, 0.05);
-      }
-      button.nav-item.is-active.nav-green .nav-text {
-        color: #4ade80;
-      }
-      
-      button.nav-item.is-active.nav-emerald {
-        border-color: #10b981; background-color: rgba(16, 185, 129, 0.05);
-      }
-      button.nav-item.is-active.nav-emerald .nav-text {
-        color: #34d399;
+      .bg-stripe-blue {
+        background: linear-gradient(135deg, #0284c7, #1e3a8a);
+        background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0, rgba(255,255,255,0.05) 2px, transparent 2px, transparent 12px), linear-gradient(135deg, #0284c7, #1e3a8a);
       }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans select-none pb-10">
+<body class="bg-arena-pattern text-slate-100 min-h-screen flex flex-col font-sans select-none pb-10">
 
   <!-- ========================================== -->
   <!-- CAIXA DE MENSAGENS / TOAST PERSONALIZADO   -->
@@ -115,53 +82,62 @@
   </div>
 
   <!-- ========================================== -->
-  <!-- 1. TELA DE LOGIN                           -->
-  <!-- ========================================== -->
-  <div id="view-login" class="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
-    <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-cyan-500/20 rounded-full blur-[128px]"></div>
-    <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-orange-500/20 rounded-full blur-[128px]"></div>
+  <!-- 1. TELA DE LOGIN -->
+  <div id="view-login" class="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden bg-arena-pattern">
+    <div class="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none overflow-hidden font-black text-6xl sm:text-8xl uppercase text-center leading-tight select-none text-slate-500 whitespace-nowrap transform -rotate-12 scale-150">
+      STREET DRIFT • KART RACING<br>ARENA • PATINETES<br>RUBBER • URBAN
+    </div>
     
-    <div class="bg-slate-900/90 backdrop-blur-xl border border-slate-800 p-8 rounded-3xl w-full max-w-md shadow-2xl z-10">
-      <div class="text-center mb-6">
-        <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-slate-800 border-2 border-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.4)] mb-4">
-          <i data-lucide="zap" class="w-10 h-10 text-cyan-400"></i>
-        </div>
-        <h1 class="text-3xl font-black italic uppercase tracking-wider bg-gradient-to-r from-cyan-400 via-blue-400 to-orange-400 bg-clip-text text-transparent">
-          Drift Trikes
-        </h1>
-        <p class="text-slate-400 text-xs mt-1 uppercase font-bold tracking-widest">Painel Operacional & PIX</p>
+    <div class="bg-[#0b1120]/95 backdrop-blur-md border border-slate-800/80 p-8 sm:p-10 rounded-[2.5rem] w-full max-w-sm shadow-[0_0_50px_rgba(0,0,0,0.5)] z-10 flex flex-col items-center relative">
+      <div class="w-16 h-16 rounded-3xl bg-[#0f172a] shadow-inner border border-cyan-900/50 flex items-center justify-center mb-5 relative group">
+        <div class="absolute inset-0 bg-cyan-500/20 blur-xl rounded-full"></div>
+        <i data-lucide="gamepad-2" class="w-8 h-8 text-cyan-400 relative z-10"></i>
+        <i data-lucide="flame" class="w-5 h-5 text-orange-500 absolute -bottom-1 -right-1 z-10 drop-shadow-[0_0_5px_rgba(249,115,22,0.8)]"></i>
       </div>
+      
+      <h1 class="text-3xl font-black italic uppercase tracking-wider bg-gradient-to-r from-cyan-400 via-blue-400 to-pink-500 bg-clip-text text-transparent mb-1">
+        ARENA SAAS
+      </h1>
+      <p class="text-slate-400 text-[9px] uppercase font-bold tracking-[0.25em] mb-8">Gestão Street & Drift</p>
 
-      <form id="form-login" class="space-y-4" onsubmit="handleLogin(event)">
+      <form id="form-login" class="space-y-4 w-full" onsubmit="handleLogin(event)">
         <div id="login-error" class="hidden bg-red-500/10 border border-red-500/50 text-red-400 p-3 rounded-xl text-xs font-semibold text-center"></div>
         
-        <div>
-          <label class="block text-slate-400 text-xs font-bold mb-1.5 uppercase">Usuário</label>
+        <div class="w-full">
+          <label class="block text-slate-400 text-[10px] font-bold mb-1.5 uppercase tracking-wider">Usuário</label>
           <div class="relative">
-            <i data-lucide="user" class="w-5 h-5 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
-            <input id="login-user" type="text" required placeholder="Digite o usuário" class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-500 text-slate-100 pl-11 pr-4 py-3 rounded-xl text-sm focus:outline-none transition-colors" />
+            <i data-lucide="user" class="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2"></i>
+            <input id="login-user" type="text" required placeholder="Digite o usuário" class="w-full bg-[#0a0f1c] border border-slate-800 focus:border-cyan-500 text-slate-100 pl-11 pr-4 py-3.5 rounded-2xl text-sm focus:outline-none transition-colors shadow-inner" />
           </div>
         </div>
 
-        <div>
-          <label class="block text-slate-400 text-xs font-bold mb-1.5 uppercase">Senha</label>
+        <div class="w-full">
+          <label class="block text-slate-400 text-[10px] font-bold mb-1.5 uppercase tracking-wider">Senha</label>
           <div class="relative">
-            <i data-lucide="lock" class="w-5 h-5 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
-            <input id="login-pass" type="password" required placeholder="Digite a senha" class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-500 text-slate-100 pl-11 pr-4 py-3 rounded-xl text-sm focus:outline-none transition-colors" />
+            <i data-lucide="lock" class="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2"></i>
+            <input id="login-pass" type="password" required placeholder="Digite a senha" class="w-full bg-[#0a0f1c] border border-slate-800 focus:border-cyan-500 text-slate-100 pl-11 pr-11 py-3.5 rounded-2xl text-sm focus:outline-none transition-colors shadow-inner" />
+            <i data-lucide="eye" class="w-4 h-4 text-slate-600 absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer hover:text-cyan-400"></i>
           </div>
         </div>
+        
+        <div class="flex items-center justify-between pt-1 pb-2">
+          <label class="flex items-center gap-2 cursor-pointer group">
+            <div class="w-4 h-4 rounded bg-[#0a0f1c] border border-slate-700 flex items-center justify-center group-hover:border-cyan-500">
+              <i data-lucide="check" class="w-3 h-3 text-cyan-400"></i>
+            </div>
+            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-slate-300">Lembrar Login</span>
+          </label>
+          <a href="#" class="text-[9px] font-bold text-slate-500 uppercase tracking-wider hover:text-cyan-400">Esqueci a senha</a>
+        </div>
 
-        <button type="submit" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-black py-3.5 rounded-xl uppercase tracking-wider text-sm transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] mt-2">
-          Entrar no Sistema
+        <button type="submit" class="w-full bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-xs transition-all shadow-[0_0_20px_rgba(99,102,241,0.4)] mt-2">
+          Acelerar
         </button>
-
-
       </form>
     </div>
   </div>
 
-  <!-- ========================================== -->
-  <!-- 2. CABEÇALHO & MENU SUPERIOR                -->
+  <!-- 2. CABEÇALHO & MENU SUPERIOR -->
   <!-- ========================================== -->
   <div id="app-container" class="hidden flex-1 flex flex-col">
     <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 shadow-xl">
@@ -228,35 +204,49 @@
       <!-- TELA: DASHBOARD                            -->
       <!-- ========================================== -->
       <section id="view-dashboard" class="app-view space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div onclick="navigate('rental')" class="bg-gradient-to-br from-cyan-600 to-blue-700 p-6 rounded-3xl cursor-pointer hover:shadow-[0_0_25px_rgba(6,182,212,0.4)] transition-all relative overflow-hidden group">
-            <div class="absolute -right-4 -bottom-4 opacity-20 group-hover:scale-110 transition-transform">
-              <i data-lucide="play" class="w-36 h-36"></i>
-            </div>
-            <span class="bg-cyan-900/60 text-cyan-200 text-xs font-black uppercase px-3 py-1 rounded-full border border-cyan-400/30">Locação Rápida</span>
-            <h2 class="text-3xl font-black italic uppercase text-white mt-3 mb-1">Liberar<br>Carrinhos</h2>
-            <p class="text-cyan-100 font-semibold text-sm">Tempos flexíveis a partir de 10 Min</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        
+        <!-- LOCAÇÃO RÁPIDA (AZUL) -->
+        <div onclick="navigate('rental')" class="bg-stripe-blue p-6 sm:p-8 rounded-[2rem] cursor-pointer hover:shadow-[0_0_30px_rgba(2,132,199,0.3)] transition-all relative overflow-hidden group border border-cyan-400/20">
+          <div class="absolute -right-4 -bottom-10 opacity-[0.05] group-hover:scale-110 group-hover:opacity-10 transition-all duration-500">
+            <i data-lucide="zap" class="w-64 h-64 text-white"></i>
           </div>
-
-          <div onclick="navigate('active')" class="bg-slate-900 border border-slate-800 hover:border-cyan-500/60 p-6 rounded-3xl cursor-pointer transition-all flex flex-col justify-between">
-            <div class="flex items-start justify-between">
-              <div>
-                <span class="bg-orange-500/10 text-orange-400 text-xs font-black uppercase px-3 py-1 rounded-full border border-orange-500/30">Cronômetros</span>
-                <h3 class="text-xl font-bold text-slate-100 mt-2">Monitoramento da Pista</h3>
-              </div>
-              <div class="p-3 bg-slate-800 rounded-2xl text-orange-400">
-                <i data-lucide="timer" class="w-7 h-7"></i>
-              </div>
-            </div>
-            <div class="mt-6 flex items-baseline gap-2">
-              <span id="dash-active-count" class="text-4xl font-black text-cyan-400">0</span>
-              <span class="text-slate-400 text-sm font-semibold">em corrida agora</span>
-            </div>
+          <div class="flex items-center gap-2 mb-4 relative z-10">
+            <div class="h-4 w-1 bg-cyan-300 rounded-full skew-x-[-15deg]"></div>
+            <span class="text-cyan-100 text-[10px] font-black uppercase tracking-widest bg-black/20 px-3 py-1 rounded-sm skew-x-[-10deg]">Locação Rápida</span>
           </div>
+          <h2 class="text-4xl sm:text-5xl font-black italic uppercase text-white mt-3 mb-1 leading-none tracking-tight drop-shadow-md">
+            Liberar<br>Máquina
+          </h2>
+          <p class="text-cyan-100/70 font-black text-[9px] uppercase tracking-[0.2em] mt-3">Acesso direto ao asfalto</p>
         </div>
 
-        <div>
-          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Status dos Drift Trikes</h3>
+        <!-- CRONÔMETROS (LARANJA) -->
+        <div onclick="navigate('active')" class="bg-[#111827] border border-slate-800 p-6 sm:p-8 rounded-[2rem] cursor-pointer hover:border-orange-500/50 transition-all flex flex-col justify-between relative overflow-hidden group shadow-xl">
+          <div class="absolute left-0 top-6 bottom-6 w-1 bg-gradient-to-b from-orange-500 to-orange-700 rounded-r-full"></div>
+          
+          <div class="flex items-start justify-between pl-3 relative z-10">
+            <div>
+              <div class="flex items-center gap-2 mb-4">
+                <div class="h-4 w-1 bg-orange-500 rounded-full skew-x-[-15deg]"></div>
+                <span class="bg-orange-950/50 text-orange-500 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-sm skew-x-[-10deg]">Cronômetros</span>
+              </div>
+              <h3 class="text-3xl font-black italic text-white uppercase tracking-tight drop-shadow-md">Na Pista</h3>
+            </div>
+            <div class="p-4 bg-[#0a0f1c] border border-slate-800 rounded-2xl text-orange-500 shadow-inner group-hover:bg-orange-500/10 transition-colors">
+              <i data-lucide="timer" class="w-6 h-6"></i>
+            </div>
+          </div>
+          
+          <div class="mt-6 flex items-end gap-3 pl-3 relative z-10">
+            <span id="dash-active-count" class="text-6xl sm:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-br from-orange-400 to-orange-600 leading-none tracking-tighter">0</span>
+            <span class="text-slate-400 text-[9px] uppercase font-black tracking-[0.2em] mb-2 sm:mb-3">Máquinas Rodando</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Status dos Drift Trikes</h3>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
               <div class="p-3 bg-green-500/10 text-green-400 rounded-xl">
@@ -911,8 +901,8 @@
       document.querySelectorAll('.app-view').forEach(el => el.classList.add('hidden'));
 
       document.querySelectorAll('.nav-item').forEach(btn => {
-        btn.classList.remove('text-cyan-400', 'bg-slate-800', 'shadow-inner');
-        btn.classList.add('text-slate-400');
+        btn.classList.remove('text-cyan-400', 'bg-slate-800', 'shadow-[0_0_15px_rgba(34,211,238,0.25)]', 'border-cyan-500/30');
+        btn.classList.add('text-slate-400', 'border-transparent');
       });
 
       const targetView = document.getElementById(`view-${viewName}`);
@@ -920,8 +910,8 @@
 
       const activeNav = document.getElementById(`nav-${viewName}`);
       if (activeNav) {
-        activeNav.classList.remove('text-slate-400');
-        activeNav.classList.add('text-cyan-400', 'bg-slate-800', 'shadow-inner');
+        activeNav.classList.remove('text-slate-400', 'border-transparent');
+        activeNav.classList.add('text-cyan-400', 'bg-slate-800', 'shadow-[0_0_15px_rgba(34,211,238,0.25)]', 'border-cyan-500/30');
       }
 
       if (viewName === 'dashboard') renderDashboard();
