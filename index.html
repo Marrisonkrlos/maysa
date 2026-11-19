@@ -160,41 +160,47 @@
         </div>
       </div>
 
-      <!-- Barra de Navegação Horizontal Estilo App Mobile -->
-      <nav class="w-full bg-slate-900 overflow-x-auto no-scrollbar py-2 px-3 border-t border-slate-800/40">
-        <div class="max-w-5xl mx-auto flex items-center justify-start sm:justify-center gap-2 min-w-max">
-          <button onclick="navigate('dashboard')" id="nav-dashboard" class="nav-item flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
-            <i data-lucide="layout-dashboard" class="w-5 h-5 mb-1"></i>
-            <span class="text-[10px] font-bold uppercase tracking-wider">Início</span>
-          </button>
+      <!-- Barra de Navegação Horizontal Estilo Painel de Controle (Vídeo) -->
+      <div class="w-full bg-[#030712] py-4 px-4 border-t border-slate-800/60 overflow-hidden relative">
+        <div class="max-w-5xl mx-auto relative z-10">
+          <div class="flex items-center gap-2 mb-3 px-1">
+            <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Painel de Controle</span>
+          </div>
+          
+          <nav class="flex items-center justify-start sm:justify-center gap-3 overflow-x-auto no-scrollbar min-w-max pb-1">
+            <button onclick="navigate('dashboard')" id="nav-dashboard" class="nav-item flex flex-col items-center justify-center py-3.5 px-6 min-w-[115px] rounded-[14px] border border-slate-800/60 bg-[#0a0f1c] hover:bg-[#0f172a] hover:border-slate-700 transition-all duration-300 relative group">
+              <i data-lucide="layout-dashboard" class="w-5 h-5 mb-2 text-slate-400 group-hover:scale-110 transition-transform"></i>
+              <span class="nav-text text-[10px] font-bold uppercase tracking-wider text-slate-400">Início</span>
+            </button>
 
-          <button onclick="navigate('rental')" id="nav-rental" class="nav-item flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
-            <i data-lucide="play" class="w-5 h-5 mb-1"></i>
-            <span class="text-[10px] font-bold uppercase tracking-wider">Alugar</span>
-          </button>
+            <button onclick="navigate('rental')" id="nav-rental" class="nav-item flex flex-col items-center justify-center py-3.5 px-6 min-w-[115px] rounded-[14px] border border-slate-800/60 bg-[#0a0f1c] hover:bg-[#0f172a] hover:border-slate-700 transition-all duration-300 relative group">
+              <i data-lucide="play" class="w-5 h-5 mb-2 text-blue-400 group-hover:scale-110 transition-transform"></i>
+              <span class="nav-text text-[10px] font-bold uppercase tracking-wider text-slate-400">Alugar</span>
+            </button>
 
-          <button onclick="navigate('active')" id="nav-active" class="nav-item flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all relative">
-            <span id="badge-active" class="hidden absolute top-1 right-2 w-2.5 h-2.5 bg-orange-500 rounded-full animate-ping"></span>
-            <i data-lucide="timer" class="w-5 h-5 mb-1"></i>
-            <span class="text-[10px] font-bold uppercase tracking-wider">Na Pista</span>
-          </button>
+            <button onclick="navigate('active')" id="nav-active" class="nav-item flex flex-col items-center justify-center py-3.5 px-6 min-w-[115px] rounded-[14px] border border-slate-800/60 bg-[#0a0f1c] hover:bg-[#0f172a] hover:border-slate-700 transition-all duration-300 relative group">
+              <span id="badge-active" class="hidden absolute top-2 right-2 w-2 h-2 bg-orange-500 rounded-full animate-ping"></span>
+              <i data-lucide="timer" class="w-5 h-5 mb-2 text-orange-400 group-hover:scale-110 transition-transform"></i>
+              <span class="nav-text text-[10px] font-bold uppercase tracking-wider text-slate-400">Na Pista</span>
+            </button>
 
-          <button onclick="navigate('reports')" id="nav-reports" class="nav-item flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
-            <i data-lucide="bar-chart-3" class="w-5 h-5 mb-1"></i>
-            <span class="text-[10px] font-bold uppercase tracking-wider">Caixa</span>
-          </button>
+            <button onclick="navigate('fleet')" id="nav-fleet" class="nav-item admin-only flex flex-col items-center justify-center py-3.5 px-6 min-w-[115px] rounded-[14px] border border-slate-800/60 bg-[#0a0f1c] hover:bg-[#0f172a] hover:border-slate-700 transition-all duration-300 relative group">
+              <i data-lucide="box" class="w-5 h-5 mb-2 text-cyan-400 group-hover:scale-110 transition-transform"></i>
+              <span class="nav-text text-[10px] font-bold uppercase tracking-wider text-slate-400">Máquinas</span>
+            </button>
 
-          <button onclick="navigate('fleet')" id="nav-fleet" class="nav-item admin-only flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
-            <i data-lucide="car" class="w-5 h-5 mb-1"></i>
-            <span class="text-[10px] font-bold uppercase tracking-wider">Frota</span>
-          </button>
+            <button onclick="navigate('users')" id="nav-users" class="nav-item admin-only flex flex-col items-center justify-center py-3.5 px-6 min-w-[115px] rounded-[14px] border border-slate-800/60 bg-[#0a0f1c] hover:bg-[#0f172a] hover:border-slate-700 transition-all duration-300 relative group">
+              <i data-lucide="users" class="w-5 h-5 mb-2 text-purple-400 group-hover:scale-110 transition-transform"></i>
+              <span class="nav-text text-[10px] font-bold uppercase tracking-wider text-slate-400">Pilotos</span>
+            </button>
 
-          <button onclick="navigate('users')" id="nav-users" class="nav-item admin-only flex flex-col items-center justify-center py-2 px-4 rounded-xl transition-all">
-            <i data-lucide="user-plus" class="w-5 h-5 mb-1"></i>
-            <span class="text-[10px] font-bold uppercase tracking-wider">Equipe</span>
-          </button>
+            <button onclick="navigate('reports')" id="nav-reports" class="nav-item flex flex-col items-center justify-center py-3.5 px-6 min-w-[115px] rounded-[14px] border border-slate-800/60 bg-[#0a0f1c] hover:bg-[#0f172a] hover:border-slate-700 transition-all duration-300 relative group">
+              <i data-lucide="bar-chart-2" class="w-5 h-5 mb-2 text-green-400 group-hover:scale-110 transition-transform"></i>
+              <span class="nav-text text-[10px] font-bold uppercase tracking-wider text-slate-400">Desempenho</span>
+            </button>
+          </nav>
         </div>
-      </nav>
+      </div>
     </header>
 
     <!-- ÁREA PRINCIPAL -->
@@ -900,18 +906,30 @@
       
       document.querySelectorAll('.app-view').forEach(el => el.classList.add('hidden'));
 
+      // Reseta todas as abas
       document.querySelectorAll('.nav-item').forEach(btn => {
-        btn.classList.remove('text-cyan-400', 'bg-slate-800', 'shadow-[0_0_15px_rgba(34,211,238,0.25)]', 'border-cyan-500/30');
-        btn.classList.add('text-slate-400', 'border-transparent');
+        btn.classList.remove('border-cyan-500/50', 'bg-slate-800/80', 'shadow-[0_0_15px_rgba(6,182,212,0.25)]');
+        btn.classList.add('border-slate-800/60', 'bg-[#0a0f1c]');
+        const text = btn.querySelector('.nav-text');
+        if (text) {
+          text.classList.remove('text-cyan-400');
+          text.classList.add('text-slate-400');
+        }
       });
 
       const targetView = document.getElementById(`view-${viewName}`);
       if (targetView) targetView.classList.remove('hidden');
 
+      // Aplica efeito na aba ativa
       const activeNav = document.getElementById(`nav-${viewName}`);
       if (activeNav) {
-        activeNav.classList.remove('text-slate-400', 'border-transparent');
-        activeNav.classList.add('text-cyan-400', 'bg-slate-800', 'shadow-[0_0_15px_rgba(34,211,238,0.25)]', 'border-cyan-500/30');
+        activeNav.classList.remove('border-slate-800/60', 'bg-[#0a0f1c]');
+        activeNav.classList.add('border-cyan-500/50', 'bg-slate-800/80', 'shadow-[0_0_15px_rgba(6,182,212,0.25)]');
+        const text = activeNav.querySelector('.nav-text');
+        if (text) {
+          text.classList.remove('text-slate-400');
+          text.classList.add('text-cyan-400');
+        }
       }
 
       if (viewName === 'dashboard') renderDashboard();
