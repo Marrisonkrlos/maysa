@@ -167,34 +167,34 @@
             <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Painel de Controle</span>
           </div>
           
-          <nav class="flex items-center justify-start sm:justify-center gap-3 overflow-x-auto no-scrollbar min-w-max pb-1">
-            <button onclick="navigate('dashboard')" id="nav-dashboard" class="nav-item flex flex-col items-center justify-center py-3.5 px-6 min-w-[115px] rounded-[14px] border border-slate-800/60 bg-[#0a0f1c] hover:bg-[#0f172a] hover:border-slate-700 transition-all duration-300 relative group">
+          <nav class="flex items-center justify-start sm:justify-center gap-3 overflow-x-auto no-scrollbar w-full pb-1">
+            <button onclick="navigate('dashboard')" id="nav-dashboard" class="nav-item flex flex-col items-center justify-center py-3.5 px-6 min-w-[115px] flex-shrink-0 rounded-[14px] border border-slate-800/60 bg-[#0a0f1c] hover:bg-[#0f172a] hover:border-slate-700 transition-all duration-300 relative group">
               <i data-lucide="layout-dashboard" class="w-5 h-5 mb-2 text-slate-400 group-hover:scale-110 transition-transform"></i>
               <span class="nav-text text-[10px] font-bold uppercase tracking-wider text-slate-400">Início</span>
             </button>
 
-            <button onclick="navigate('rental')" id="nav-rental" class="nav-item flex flex-col items-center justify-center py-3.5 px-6 min-w-[115px] rounded-[14px] border border-slate-800/60 bg-[#0a0f1c] hover:bg-[#0f172a] hover:border-slate-700 transition-all duration-300 relative group">
+            <button onclick="navigate('rental')" id="nav-rental" class="nav-item flex flex-col items-center justify-center py-3.5 px-6 min-w-[115px] flex-shrink-0 rounded-[14px] border border-slate-800/60 bg-[#0a0f1c] hover:bg-[#0f172a] hover:border-slate-700 transition-all duration-300 relative group">
               <i data-lucide="play" class="w-5 h-5 mb-2 text-blue-400 group-hover:scale-110 transition-transform"></i>
               <span class="nav-text text-[10px] font-bold uppercase tracking-wider text-slate-400">Alugar</span>
             </button>
 
-            <button onclick="navigate('active')" id="nav-active" class="nav-item flex flex-col items-center justify-center py-3.5 px-6 min-w-[115px] rounded-[14px] border border-slate-800/60 bg-[#0a0f1c] hover:bg-[#0f172a] hover:border-slate-700 transition-all duration-300 relative group">
+            <button onclick="navigate('active')" id="nav-active" class="nav-item flex flex-col items-center justify-center py-3.5 px-6 min-w-[115px] flex-shrink-0 rounded-[14px] border border-slate-800/60 bg-[#0a0f1c] hover:bg-[#0f172a] hover:border-slate-700 transition-all duration-300 relative group">
               <span id="badge-active" class="hidden absolute top-2 right-2 w-2 h-2 bg-orange-500 rounded-full animate-ping"></span>
               <i data-lucide="timer" class="w-5 h-5 mb-2 text-orange-400 group-hover:scale-110 transition-transform"></i>
               <span class="nav-text text-[10px] font-bold uppercase tracking-wider text-slate-400">Na Pista</span>
             </button>
 
-            <button onclick="navigate('fleet')" id="nav-fleet" class="nav-item admin-only flex flex-col items-center justify-center py-3.5 px-6 min-w-[115px] rounded-[14px] border border-slate-800/60 bg-[#0a0f1c] hover:bg-[#0f172a] hover:border-slate-700 transition-all duration-300 relative group">
+            <button onclick="navigate('fleet')" id="nav-fleet" class="nav-item admin-only flex flex-col items-center justify-center py-3.5 px-6 min-w-[115px] flex-shrink-0 rounded-[14px] border border-slate-800/60 bg-[#0a0f1c] hover:bg-[#0f172a] hover:border-slate-700 transition-all duration-300 relative group">
               <i data-lucide="box" class="w-5 h-5 mb-2 text-cyan-400 group-hover:scale-110 transition-transform"></i>
               <span class="nav-text text-[10px] font-bold uppercase tracking-wider text-slate-400">Máquinas</span>
             </button>
 
-            <button onclick="navigate('users')" id="nav-users" class="nav-item admin-only flex flex-col items-center justify-center py-3.5 px-6 min-w-[115px] rounded-[14px] border border-slate-800/60 bg-[#0a0f1c] hover:bg-[#0f172a] hover:border-slate-700 transition-all duration-300 relative group">
+            <button onclick="navigate('users')" id="nav-users" class="nav-item admin-only flex flex-col items-center justify-center py-3.5 px-6 min-w-[115px] flex-shrink-0 rounded-[14px] border border-slate-800/60 bg-[#0a0f1c] hover:bg-[#0f172a] hover:border-slate-700 transition-all duration-300 relative group">
               <i data-lucide="users" class="w-5 h-5 mb-2 text-purple-400 group-hover:scale-110 transition-transform"></i>
               <span class="nav-text text-[10px] font-bold uppercase tracking-wider text-slate-400">Pilotos</span>
             </button>
 
-            <button onclick="navigate('reports')" id="nav-reports" class="nav-item flex flex-col items-center justify-center py-3.5 px-6 min-w-[115px] rounded-[14px] border border-slate-800/60 bg-[#0a0f1c] hover:bg-[#0f172a] hover:border-slate-700 transition-all duration-300 relative group">
+            <button onclick="navigate('reports')" id="nav-reports" class="nav-item flex flex-col items-center justify-center py-3.5 px-6 min-w-[115px] flex-shrink-0 rounded-[14px] border border-slate-800/60 bg-[#0a0f1c] hover:bg-[#0f172a] hover:border-slate-700 transition-all duration-300 relative group">
               <i data-lucide="bar-chart-2" class="w-5 h-5 mb-2 text-green-400 group-hover:scale-110 transition-transform"></i>
               <span class="nav-text text-[10px] font-bold uppercase tracking-wider text-slate-400">Desempenho</span>
             </button>
